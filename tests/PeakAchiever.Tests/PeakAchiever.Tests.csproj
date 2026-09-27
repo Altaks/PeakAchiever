@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <!-- Declared here, not only by Microsoft.NET.Test.Sdk: restore reads it before package props load. -->
+    <IsTestProject>true</IsTestProject>
+    <IsThunderstorePackable>false</IsThunderstorePackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Test names read as sentences, with underscores between words. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SolutionRoot)src/PeakAchiever/PeakAchiever.csproj" />
+  </ItemGroup>
+
+  <!--
+    BepInEx.Core 5.4.21 (build/BepInEx.Core.targets, target SkipBepinRefs) drops BepInEx and Harmony
+    from the output, since the game provides them. The test host has no game, so copy them back.
+  -->
+  <Target Name="RestoreModdingRuntimeForTests" AfterTargets="SkipBepinRefs">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths
+        Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.NuGetPackageId)' == 'BepInEx.BaseLib' Or '%(ReferencePath.NuGetPackageId)' == 'HarmonyX' Or '%(ReferencePath.NuGetPackageId)' == 'Mono.Cecil' Or '%(ReferencePath.NuGetPackageId)' == 'MonoMod.RuntimeDetour' Or '%(ReferencePath.NuGetPackageId)' == 'MonoMod.Utils'"
+      />
+    </ItemGroup>
+  </Target>
+</Project>
