@@ -23,6 +23,16 @@ Pin the badges you want to chase, and see during your run which ones you can sti
 - Secret badges keep their `???` until earned. The tracker hides while the pause menu is open.
 - Client-side only: other players do not need the mod.
 
+## Installation
+
+Requires [BepInExPack for PEAK](https://thunderstore.io/c/peak/p/BepInEx/BepInExPack_PEAK/).
+
+- **With a mod manager** (Thunderstore Mod Manager, r2modman, Gale): install PeakAchiever into your
+  PEAK profile and launch the game from the manager.
+- **By hand**: copy `Altaks.PeakAchiever.dll` into `BepInEx/plugins/` of your PEAK BepInEx install.
+
+Tested with PEAK 2.4.c. If a game update breaks the mod, the error shows in `BepInEx/LogOutput.log`.
+
 ## Configuration
 
 `BepInEx/config/Altaks.PeakAchiever.cfg`, section `[Tracker]`:
