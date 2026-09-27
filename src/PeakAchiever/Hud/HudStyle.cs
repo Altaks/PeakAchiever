@@ -51,6 +51,7 @@ internal sealed class HudStyle
         Circle = CreateCircle();
         Cross = LoadEmbeddedSprite("Cross.png", log);
         Pin = LoadEmbeddedSprite("Pin.png", log);
+        Warning = LoadEmbeddedSprite("Warning.png", log);
         Sprite? gameCheck = Resources.FindObjectsOfTypeAll<Sprite>().FirstOrDefault(s => s.name == GameCheckSpriteName);
         if (gameCheck == null)
             log.LogError($"Game sprite '{GameCheckSpriteName}' not found; earned badges show a plain dot instead.");
@@ -63,6 +64,7 @@ internal sealed class HudStyle
     public Sprite Check { get; }
     public Sprite Cross { get; }
     public Sprite Pin { get; }
+    public Sprite Warning { get; }
 
     /// <summary>A 9-sliced rounded rectangle for card backgrounds and bars.</summary>
     public Sprite RoundedRect { get; }

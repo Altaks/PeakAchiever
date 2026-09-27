@@ -13,6 +13,11 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   - A green check once earned.
   - A red cross, with the reason, once the badge can no longer be earned this run: its biome is not
     on this map or is behind you, or the clean-run condition broke.
+- **Forbidden items marked in the inventory.** While a pinned Naturalist or Leave No Trace badge is
+  still holding, a red cross sits in the bottom-right corner of every hotbar slot holding an item that
+  would break it (packaged food; pitons, rope spools, the rope cannon, the chain launcher and other
+  placeable objects). The backpack slot shows a yellow warning if something forbidden is inside, and
+  the opened backpack shows the cross on that item. The marks go away once the badge is earned or broken.
 - **Pins persist.** They are saved in the config. At the start of the next run, badges earned are
   unpinned and failed ones are doable again.
 - Secret badges keep their `???` until earned. The tracker hides while the pause menu is open.
