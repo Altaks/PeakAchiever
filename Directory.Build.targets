@@ -39,7 +39,7 @@
     <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" />
     <PackageReference Include="Hamunii.BepInEx.AutoPlugin" Version="2.1.*" PrivateAssets="all" />
     <!-- Source-only polyfills for C# language features https://github.com/Sergio0694/PolySharp -->
-    <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
+    <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" Condition="'$(IsTestProject)' != 'true'" />
   </ItemGroup>
 
   <!-- Modding dependencies -->
@@ -54,23 +54,31 @@
     <PackageReference Include="UnityEngine.Modules" Version="6000.0.36" PrivateAssets="all" />
   </ItemGroup>
 
+  <!--
+    Game assemblies are not copied to build output, except for test projects:
+    the test host loads the game's types from its own folder.
+  -->
+  <PropertyGroup>
+    <CopyGameAssemblies Condition="'$(IsTestProject)' == 'true'">true</CopyGameAssemblies>
+    <CopyGameAssemblies Condition="'$(CopyGameAssemblies)' == ''">false</CopyGameAssemblies>
+  </PropertyGroup>
+
   <!-- Local game references -->
   <ItemGroup Condition="Exists('$(ManagedDir)')">
     <!--
       Reference all assemblies except ones that come
       with our target framework or would cause conflicts.
-      Private="false" prevents these from being copied to build output.
     -->
     <LocalReferences
       Include="$(ManagedDir)*.dll"
       Exclude="$(ManagedDir)Mono*.dll;$(ManagedDir)netstandard.dll;$(ManagedDir)System*.dll;$(ManagedDir)mscorlib.dll"
     />
-    <Reference Include="@(LocalReferences)" Private="false" />
+    <Reference Include="@(LocalReferences)" Private="$(CopyGameAssemblies)" />
     <!--
       Publicize these assemblies so we can access their internal members.
       Learn more at: https://github.com/BepInEx/BepInEx.AssemblyPublicizer
     -->
-    <Reference Include="$(ManagedDir)Assembly-CSharp.dll" Private="false" Publicize="true" />
+    <Reference Include="$(ManagedDir)Assembly-CSharp.dll" Private="$(CopyGameAssemblies)" Publicize="true" />
   </ItemGroup>
 
   <!-- Copy mod files defined in projects to the target BepInEx directory -->

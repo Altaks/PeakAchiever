@@ -22,7 +22,7 @@
   <!--
     Configuring Thunderstore API token for uploading to Thunderstore:
 
-    NOTE: If you have done this before on this PC for this Thunderstore team (Test_Team),
+    NOTE: If you have done this before on this PC for this Thunderstore team (Altaks),
           you don't need to do this again! Meaning that you can ignore these instructions.
 
     0. Do I need to configure a Thunderstore API token?
@@ -60,13 +60,13 @@
         2. If `secret-tool` command is not found, install 'libsecret' to provide it
 
         3. Paste your Thunderstore token as input for the following command:
-            secret-tool store -l "Token for Test_Team" service thunderstore team Test_Team
+            secret-tool store -l "Token for Altaks" service thunderstore team Altaks
 
           Note: pasting can be done with Ctrl+Shift+V or Ctrl+V depending on your terminal app.
           The input may be hidden, which is a feature. Press enter to set the secret.
 
         4. You can confirm the secret is set correctly by running the following:
-            secret-tool lookup service thunderstore team Test_Team
+            secret-tool lookup service thunderstore team Altaks
 
         You are now done.
 
@@ -77,10 +77,10 @@
             Install-Module -Name CredentialManager
 
         3. Set password as your Thunderstore token when running the following command:
-            New-StoredCredential -Persist LocalMachine -Target 'service thunderstore team Test_Team' -Password YOUR_API_TOKEN
+            New-StoredCredential -Persist LocalMachine -Target 'service thunderstore team Altaks' -Password YOUR_API_TOKEN
 
         4. You can confirm the secret is set correctly by running the following:
-            (Get-StoredCredential -Target 'service thunderstore team Test_Team' -AsCredentialObject).Password
+            (Get-StoredCredential -Target 'service thunderstore team Altaks' -AsCredentialObject).Password
 
         You are now done.
 

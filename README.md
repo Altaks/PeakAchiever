@@ -1,155 +1,64 @@
-# BepInEx Template for PEAK
+# PeakAchiever
 
-- [BepInEx Template for PEAK](#bepinex-template-for-gamename)
-  - [Installing](#installing)
-    - [From NuGet (Recommended)](#from-nuget-recommended)
-    - [Manually](#manually)
-  - [Creating a Project](#creating-a-project)
-    - [Project Structure](#project-structure)
-    - [Setting Up The Config File](#setting-up-the-config-file)
-    - [Thunderstore Packaging \& Publishing](#thunderstore-packaging--publishing)
-    - [Publishing via GitHub Actions](#publishing-via-github-actions)
-      - [Setting up GitHub Actions](#setting-up-github-actions)
+Pin the badges you want to chase, and see during your run which ones you can still earn.
 
-> [!TIP]  
-> Looking to create a template like this? See [FORKING.md](./FORKING.md)
+- **Pin from the pause menu.** Open the badges page of the pause menu and click a badge you have not
+  earned yet: a yellow pin marks it, and the badge's tooltip says whether a click pins or unpins it.
+  Works in the airport too, so you can pick your targets before take-off.
+- **Track in the top-right corner.** During a run, each pinned badge shows its icon, name and
+  condition, taken from the game in your language.
+  - A yellow bar and `current / total` for badges with a counter. `LIFETIME` marks counters the game
+    keeps across all runs (meals cooked, height climbed...).
+  - "Holding so far" for clean-run badges (no fall damage, no packaged food...) still intact.
+  - A green check once earned.
+  - A red cross, with the reason, once the badge can no longer be earned this run: its biome is not
+    on this map or is behind you, or the clean-run condition broke.
+- **Pins persist.** They are saved in the config. At the start of the next run, badges earned are
+  unpinned and failed ones are doable again.
+- Secret badges keep their `???` until earned. The tracker hides while the pause menu is open.
+- Client-side only: other players do not need the mod.
 
-## Installing
+## Configuration
 
-.NET templates must be installed before they can be used. This means that when you install the template, it doesn't create a new project for you, but now you have the ability to do that.
+`BepInEx/config/Altaks.PeakAchiever.cfg`, section `[Tracker]`:
 
-> [!NOTE]  
-> You must use .NET SDK 10 or newer to use this template. You can check your .NET SDK version by running the following in a terminal: `dotnet --version`. To download .NET SDK, see: <https://dotnet.microsoft.com/en-us/download>
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `ToggleKey` | `F6` | Shows or hides the tracker during a run. |
+| `MaxPinnedBadges` | `5` | How many badges can be pinned at once (1 to 12). |
+| `PinnedBadges` | empty | The pins, edited from the pause menu. |
 
-### From NuGet (Recommended)
+## How badges are judged
 
-Run the following command:
+Every rule comes from the game's own code and scene data (game version 2.4.c). When nothing in the
+game can rule a badge out, the tracker never shows a red cross for it.
 
-```bash
-dotnet new install PEAKModding.BepInExTemplate
-```
+| Kind | Badges | Red cross when |
+| --- | --- | --- |
+| Run counter | Knot Tying, Clutch, Plunderer, First Aid, Jester, Archery, Foraging, Mycology, Advanced Mycology, Gourmand | never |
+| Lifetime counter | Cooking, Happy Camper, Bouldering, Toxicology, Ascender, Bookworm, Calcium Intake | never |
+| Clean run | Balloon, Naturalist, Survivalist, Leave No Trace, Lone Wolf, Speed Climber | the condition breaks |
+| Clean biome | Cool Cucumber, Bundled Up, Tread Lightly, Medieval History | the biome is not on the map, or the condition breaks |
+| Area reached | Beachcomber, Trailblazer, Alpinist, Volcanology, Nomad, Forestry, Wanderer | the biome is not on the map |
+| Found in a biome | Astronomy, Megaentomology, Daredevil (Mesa); Web Security (Roots); Bellringer (Gloom); Animal Serenading (Alpine or Mesa); Arborist (Tropics or Roots) | none of those biomes is on the map, or all are behind you |
+| Anywhere | every other badge | never |
 
-> [!TIP]  
-> You can run `dotnet new update` to update all your dotnet templates. You should do this get the latest versions of everything with the latest fixes and improvements!
+If an achievement-blocking mode is active for the run, the tracker says so above the cards.
 
-### Manually
+## Credits and licence
 
-If you're contributing to the template or prefer a manual installation:
+MIT licence, see `LICENSE`. The mod ships only its own cross and pin icons. Badge icons, names,
+descriptions and fonts are read from your copy of the game while it runs, and never redistributed.
+PEAK belongs to its developers; this mod is not affiliated with them.
 
-1. Clone or download this repository
-2. Open a terminal at the root of the repository
-3. Run:
+## Development
 
-```bash
-dotnet new install .
-```
-
-To update:
-
-```bash
-dotnet new install . --force
-```
-
-To uninstall:
-
-```bash
-dotnet new uninstall .
-```
-
-Once installed, the template will be available as `PEAK BepInEx Plugin` with an alias `peakmod`.
-
-## Creating a Project
-
-Before creating a project, take a look at the available options so you are aware of what can be customized:
-
-| Short Flag | Long Flag            | Description                                                     | Required | Type | Default             |
-| ---------- | -------------------- | --------------------------------------------------------------- | -------- | ---- | ------------------- |
-| -g         | --guid               | The global identifier for your mod. Example: AuthorName.ModName | true     | text |                     |
-| -tt        | --ts-team            | The thunderstore team to publish this package under.            | false    | text | TODO_team_name_here |
-| -nt        | --no-tutorial        | If true, tutorial comments will not be present.                 | false    | bool | false               |
-| -li        | --library            | If true, NuGet metadata is included in the project.             | false    | bool | false               |
-| -ig        | --inverted-gitignore | Gitignore ignores everything and specifies what to include.     | false    | bool | false               |
-
-You can run `dotnet new peakmod --help` to see all available options.
-
-Now that you are ready to create a project, open a terminal in your PEAK modding directory, and run the following, including any options of your choice:
-
-> [!NOTE]  
-> You should [set up a Thunderstore team first](<https://thunderstore.io/settings/teams/create/>) so you can use its name in the optional `--ts-team` argument so the template can give you a mostly correctly configured packaging setup.
+Built from the PEAK BepInEx template (NuGet `PEAKModding.BepInExTemplate`). Copy
+`Config.Build.user.props.template` to `Config.Build.user.props` and point it at your game and BepInEx
+folders; a Debug build then copies the plugin there.
 
 ```sh
-dotnet new peakmod --output ModName --guid AuthorName.ModName --ts-team YourThunderstoreTeam
+dotnet build          # builds and deploys the plugin
+dotnet test           # unit tests; needs the game installed, they load its assemblies
+dotnet build -c Release   # Thunderstore package in ./artifacts/thunderstore/
 ```
-
-This will create a new directory with the mod name which contains the project.
-
-You now have a (mostly) working setup. See [Setting Up The Config File](#setting-up-the-config-file) and [Thunderstore Packaging \& Publishing](#thunderstore-packaging--publishing) for more.
-
-### Project Structure
-
-This example demonstrates what files should appear and where:
-
-```sh
-~/Workspace/PEAK$ dotnet new peakmod --output MyCoolMod --guid PEAKModding.MyCoolMod --ts-team PEAKModding
-The template "PEAK BepInEx Plugin" was created successfully.
-
-~/Workspace/PEAK$ cd MyCoolMod/
-~/Workspace/PEAK/MyCoolMod$ tree
-.
-├── CHANGELOG.md
-├── Config.Build.user.props.template
-├── Directory.Build.props
-├── Directory.Build.targets
-├── global.json
-├── icon.png
-├── LICENSE
-├── MyCoolMod.slnx
-├── README.md
-└── src
-    └── MyCoolMod
-        ├── MyCoolMod.csproj
-        └── Plugin.cs
-
-3 directories, 11 files
-```
-
-- `./src/<project-name>/` contains the C# source files for your mod
-  - `<project-name>.csproj` is the C# project configuration file, which builds a `dll` file
-  - `Plugin.cs` is the C# source code file which defines your BepInEx plugin class
-- `./` contains project configuration files
-  - `Directory.Build.*` files contain shared configuration for all projects in subdirectories
-  - `Config.Build.user.props.template` is a template file for per-user configuration (see [Setting Up The Config File](#setting-up-the-config-file))
-  - `<project-name>.slnx` is file which defines which `csproj` files are included in your project
-  - `global.json` informs your dev tools of the minimum supported .NET SDK version for the project
-  - `CHANGELOG.md`, `icon.png`, `LICENSE`, and `README.md` are placeholder files which are to be modified by you
-    - These are included in your Thunderstore package, which is configured in `./src/<project-name>/<project-name>.csproj`
-
-The project is configured so that it's easy to add new projects into your project solution. Even if you don't need that, it's a good idea to follow a standard project structure in case a need ever comes, or just so that everything is where you'd expect it to be. For example, does your project need automated tests? Copy your `./src/<project-name>/` plugin's `csproj` and `Plugin.cs` to `./tests/<project-name>.Tests/`, add the new `csproj` to your `slnx` project, and start working on your test project.
-
-### Setting Up The Config File
-
-At the root of your new project you should see `Config.Build.user.props.template` this is a special file that is the template for the project's user-specific config. Make a copy of this file and rename it `Config.Build.user.props` without the template part.
-
-This file will copy your assembly files to a plugins directory and it can be used to configure your paths to the game files and BepInEx plugins directory if the defaults don't work for you.
-
-### Thunderstore Packaging & Publishing
-
-This template comes with Thunderstore packaging built-in, using [ThunderPipe](<https://github.com/WarperSan/ThunderPipe>). You should configure the `src/<project-name>/<project-name>.csproj` file with the Thunderstore metadata for your mod.
-
-You can build Thunderstore packages by building with release configuration:
-
-```sh
-dotnet build -c Release -v d
-```
-
-> [!NOTE]  
-> You can learn about different build options with `dotnet build --help`.  
-> `-c` is short for `--configuration` and `-v d` is `--verbosity detailed`.
-
-The built package will be found at `./artifacts/thunderstore/`.
-
-You can directly publish to Thunderstore by including `-p:PublishTS=true` in the command. See the `Config.Build.user.props.template` file for configuration instructions.
-
-### Publishing via GitHub Actions
-
-This template doesn't support GitHub actions publishing due to a lack of GameLibs package for the game.
