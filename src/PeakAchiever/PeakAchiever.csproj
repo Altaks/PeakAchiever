@@ -24,7 +24,7 @@
       Categories: https://thunderstore.io/api/experimental/community/peak/category/
     -->
     <ThunderstoreCommunities>peak</ThunderstoreCommunities>
-    <ThunderstoreCategories>mods</ThunderstoreCategories>
+    <ThunderstoreCategories>mods;accolades;client;qol</ThunderstoreCategories>
   </PropertyGroup>
 
   <ItemGroup>
