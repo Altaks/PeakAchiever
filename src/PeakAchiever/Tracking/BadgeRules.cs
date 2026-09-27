@@ -53,9 +53,15 @@ internal static class BadgeRules
 
         // Clean runs checked at the summit (AchievementManager.TestWonRun, TestTimeAchievements).
         [ACHIEVEMENTTYPE.BalloonBadge] = BadgeRule.CleanRun(new RunValueCeiling(RUNBASEDVALUETYPE.FallDamageTaken, 0f, BrokenCondition.TookFallDamage)),
-        [ACHIEVEMENTTYPE.NaturalistBadge] = BadgeRule.CleanRun(new RunValueCeiling(RUNBASEDVALUETYPE.PackagedFoodEaten, 0f, BrokenCondition.AtePackagedFood)),
+        [ACHIEVEMENTTYPE.NaturalistBadge] = BadgeRule.CleanRunForbidding(
+            ItemTraits.PackagedFood,
+            new RunValueCeiling(RUNBASEDVALUETYPE.PackagedFoodEaten, 0f, BrokenCondition.AtePackagedFood)
+        ),
         [ACHIEVEMENTTYPE.SurvivalistBadge] = BadgeRule.CleanRun(new RunValueCeiling(RUNBASEDVALUETYPE.TimesPassedOut, 0f, BrokenCondition.PassedOut)),
-        [ACHIEVEMENTTYPE.LeaveNoTraceBadge] = BadgeRule.CleanRun(new RunValueCeiling(RUNBASEDVALUETYPE.PermanentItemsPlaced, 0f, BrokenCondition.PlacedPermanentItem)),
+        [ACHIEVEMENTTYPE.LeaveNoTraceBadge] = BadgeRule.CleanRunForbidding(
+            ItemTraits.PlacesPermanentObject,
+            new RunValueCeiling(RUNBASEDVALUETYPE.PermanentItemsPlaced, 0f, BrokenCondition.PlacedPermanentItem)
+        ),
         [ACHIEVEMENTTYPE.LoneWolfBadge] = BadgeRule.CleanRun(new SoloOnly()),
         [ACHIEVEMENTTYPE.SpeedClimberBadge] = BadgeRule.CleanRun(new RunDurationCeiling(AchievementManager.ONE_HOUR_IN_SECONDS)),
 

@@ -9,14 +9,23 @@ internal sealed class BadgeRule
     private readonly bool _isCleanRun;
     private readonly IReadOnlyList<IBlocker> _blockers;
 
-    private BadgeRule(IProgressMeasure? progressMeasure, bool isCleanRun, IReadOnlyList<IBlocker> blockers)
+    private BadgeRule(
+        IProgressMeasure? progressMeasure,
+        bool isCleanRun,
+        IReadOnlyList<IBlocker> blockers,
+        ItemTraits forbiddenItems = ItemTraits.None
+    )
     {
         ProgressMeasure = progressMeasure;
         _isCleanRun = isCleanRun;
         _blockers = blockers;
+        ForbiddenItems = forbiddenItems;
     }
 
     public IProgressMeasure? ProgressMeasure { get; }
+
+    /// <summary>Items whose use breaks this badge's clean-run condition.</summary>
+    public ItemTraits ForbiddenItems { get; }
 
     /// <summary>A badge unlocked by reaching a counter's target.</summary>
     public static BadgeRule Counted(IProgressMeasure progressMeasure, params IBlocker[] blockers) =>
@@ -24,6 +33,10 @@ internal sealed class BadgeRule
 
     /// <summary>A badge the game grants at the summit if nothing broke the condition along the way.</summary>
     public static BadgeRule CleanRun(params IBlocker[] blockers) => new(null, isCleanRun: true, blockers);
+
+    /// <summary>A clean run broken by using a kind of item, marked on the inventory while it holds.</summary>
+    public static BadgeRule CleanRunForbidding(ItemTraits forbiddenItems, params IBlocker[] blockers) =>
+        new(null, isCleanRun: true, blockers, forbiddenItems);
 
     /// <summary>A badge unlocked by a single in-game event, with no counter to show.</summary>
     public static BadgeRule OneOff(params IBlocker[] blockers) => new(null, isCleanRun: false, blockers);
