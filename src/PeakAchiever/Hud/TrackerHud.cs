@@ -2,12 +2,10 @@ using System.Collections.Generic;
 using BepInEx.Configuration;
 using PeakAchiever.Game;
 using PeakAchiever.Localization;
-using PeakAchiever.Pinning;
 using PeakAchiever.Tracking;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Zorro.Core;
 
 namespace PeakAchiever.Hud;
 
@@ -33,7 +31,7 @@ internal sealed class TrackerHud : MonoBehaviour
     private static readonly Vector2 ToastOutline = new(1.5f, -1.5f);
 
     private readonly List<BadgeCard> _cards = [];
-    private PinnedBadgesStore _store = null!;
+    private PinnedBadgeTracker _tracker = null!;
     private ConfigEntry<KeyboardShortcut> _toggleKey = null!;
     private HudStyle? _style;
     private GameObject _panel = null!;
@@ -41,6 +39,7 @@ internal sealed class TrackerHud : MonoBehaviour
     private GameObject _toast = null!;
     private TextMeshProUGUI _toastText = null!;
     private bool _refreshRequested = true;
+    private bool _cardsStale = true;
     private bool _hiddenByPlayer;
     private float _nextPeriodicRefresh;
     private float _toastHideTime;
@@ -48,9 +47,9 @@ internal sealed class TrackerHud : MonoBehaviour
     /// <summary>Null until the game's GUI has loaded (see <see cref="Update"/>).</summary>
     public HudStyle? Style => _style;
 
-    public void Init(PinnedBadgesStore store, ConfigEntry<KeyboardShortcut> toggleKey)
+    public void Init(PinnedBadgeTracker tracker, ConfigEntry<KeyboardShortcut> toggleKey)
     {
-        _store = store;
+        _tracker = tracker;
         _toggleKey = toggleKey;
     }
 
@@ -85,33 +84,43 @@ internal sealed class TrackerHud : MonoBehaviour
         if (_toast.activeSelf && Time.unscaledTime >= _toastHideTime)
             _toast.SetActive(false);
 
-        bool showCards = !_hiddenByPlayer && _store.Board.Pins.Count > 0 && RunFactsReader.IsInRun && !GUIManager.InPauseMenu;
+        // Evaluated even while the cards are hidden: the inventory marks depend on it too.
+        if (_refreshRequested || Time.unscaledTime >= _nextPeriodicRefresh)
+            Evaluate();
+
+        bool showCards = !_hiddenByPlayer && _tracker.Tracked.Count > 0 && !GUIManager.InPauseMenu;
         _panel.SetActive(showCards);
-        if (!showCards || (!_refreshRequested && Time.unscaledTime < _nextPeriodicRefresh))
-            return;
-        Refresh(_style);
+        if (showCards)
+            ShowCards(_style);
     }
 
-    private void Refresh(HudStyle style)
+    private void Evaluate()
     {
         _refreshRequested = false;
         _nextPeriodicRefresh = Time.unscaledTime + PeriodicRefreshSeconds;
-        _banner.SetActive(RunSettings.blockingAchievements);
+        ItemTraits forbiddenBefore = _tracker.ForbiddenItems;
+        _tracker.Evaluate();
+        _cardsStale = true;
+        // The inventory marks are drawn when the game fills its slots, so have it refill them.
+        if (_tracker.ForbiddenItems != forbiddenBefore)
+            GUIManager.instance.UpdateItems();
+    }
 
-        RunFacts facts = RunFactsReader.Read();
-        AchievementManager achievements = Singleton<AchievementManager>.Instance;
-        IReadOnlyList<ACHIEVEMENTTYPE> pins = _store.Board.Pins;
-        while (_cards.Count < pins.Count)
+    private void ShowCards(HudStyle style)
+    {
+        if (!_cardsStale)
+            return;
+        _cardsStale = false;
+        _banner.SetActive(RunSettings.blockingAchievements);
+        IReadOnlyList<TrackedBadge> tracked = _tracker.Tracked;
+        while (_cards.Count < tracked.Count)
             _cards.Add(new BadgeCard(_panel.transform, style));
         for (int i = 0; i < _cards.Count; i++)
         {
-            bool used = i < pins.Count;
+            bool used = i < tracked.Count;
             _cards[i].Root.SetActive(used);
-            if (!used)
-                continue;
-            ACHIEVEMENTTYPE badge = pins[i];
-            TrackedStatus status = BadgeRules.For(badge).Evaluate(facts, achievements.IsAchievementUnlocked(badge));
-            _cards[i].Show(BadgeCatalog.Present(badge), status);
+            if (used)
+                _cards[i].Show(BadgeCatalog.Present(tracked[i].Badge), tracked[i].Status);
         }
     }
 

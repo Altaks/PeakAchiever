@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using PeakAchiever.Game;
 using PeakAchiever.Hud;
 using PeakAchiever.Pinning;
 using UnityEngine;
@@ -18,12 +19,15 @@ public partial class Plugin : BaseUnityPlugin
 
     internal static PinnedBadgesStore Pins { get; private set; } = null!;
 
+    internal static PinnedBadgeTracker Tracker { get; private set; } = null!;
+
     internal static TrackerHud Hud { get; private set; } = null!;
 
     private void Awake()
     {
         Log = Logger;
         Pins = new PinnedBadgesStore(Config, Logger);
+        Tracker = new PinnedBadgeTracker(Pins.Board);
         ConfigEntry<KeyboardShortcut> toggleKey = Config.Bind(
             "Tracker",
             "ToggleKey",
@@ -34,7 +38,7 @@ public partial class Plugin : BaseUnityPlugin
         var overlay = new GameObject("PeakAchiever.Overlay");
         DontDestroyOnLoad(overlay);
         Hud = overlay.AddComponent<TrackerHud>();
-        Hud.Init(Pins, toggleKey);
+        Hud.Init(Tracker, toggleKey);
 
         new Harmony(Id).PatchAll(typeof(Plugin).Assembly);
         Log.LogInfo($"Plugin {Name} is loaded!");
