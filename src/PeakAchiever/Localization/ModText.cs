@@ -44,6 +44,8 @@ internal enum ModTextKey
     StatsColumnBest,
     StatsLayoutTotal,
     StatsEmpty,
+    StatsNoLowerAscent,
+    StatsNoHigherAscent,
     StatsErase,
     StatsEraseConfirm,
     StatsErased,
@@ -119,6 +121,16 @@ internal static class ModText
         [ModTextKey.StatsColumnBest] = ["Best", "Meilleur"],
         [ModTextKey.StatsLayoutTotal] = ["Total ({0})", "Total ({0})"],
         [ModTextKey.StatsEmpty] = ["No biome finished at this ascent yet.", "Aucun biome terminé à cette ascension pour l'instant."],
+        [ModTextKey.StatsNoLowerAscent] =
+        [
+            "No lower ascent has biome times yet: finish a biome at another ascent to see it here.",
+            "Aucune ascension plus basse n'a encore de temps : terminez un biome à une autre ascension pour la voir ici.",
+        ],
+        [ModTextKey.StatsNoHigherAscent] =
+        [
+            "No higher ascent has biome times yet: finish a biome at another ascent to see it here.",
+            "Aucune ascension plus haute n'a encore de temps : terminez un biome à une autre ascension pour la voir ici.",
+        ],
         [ModTextKey.StatsErase] = ["Erase this ascent", "Effacer cette ascension"],
         [ModTextKey.StatsEraseConfirm] = ["Click again to erase {0}", "Cliquez encore pour effacer {0}"],
         [ModTextKey.StatsErased] = ["{0}: biome times erased.", "{0} : temps des biomes effacés."],

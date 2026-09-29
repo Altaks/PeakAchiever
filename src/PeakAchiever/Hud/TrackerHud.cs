@@ -143,9 +143,7 @@ internal sealed class TrackerHud : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = ReferenceResolution;
         scaler.matchWidthOrHeight = 0.5f;
-        // The statistics panel takes clicks; every other graphic here leaves them to the game.
-        gameObject.AddComponent<GraphicRaycaster>();
-        _stats = new StatsPanel(transform, style, Plugin.Splits);
+        _stats = new StatsPanel(Plugin.Splits);
 
         _panel = UiFactory.Create("PinnedBadges", transform);
         var panelRect = (RectTransform)_panel.transform;

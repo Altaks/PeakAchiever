@@ -20,8 +20,6 @@ internal sealed class HudStyle
     public static readonly Color BarTrack = new(Ink.r, Ink.g, Ink.b, 0.16f);
     // A light rim that draws the bar's shape against any background.
     public static readonly Color BarRim = new(Ink.r, Ink.g, Ink.b, 0.4f);
-    public static readonly Color ButtonBackground = new(Ink.r, Ink.g, Ink.b, 0.14f);
-    public static readonly Color PanelBackground = new(CardBackground.r, CardBackground.g, CardBackground.b, 0.94f);
     public static readonly Color ProgressFill = Rgb(0xF2, 0xC1, 0x4E);
     public static readonly Color Achieved = Rgb(0x8F, 0xD4, 0x6A);
     public static readonly Color Unattainable = Rgb(0xFF, 0x7A, 0x66);

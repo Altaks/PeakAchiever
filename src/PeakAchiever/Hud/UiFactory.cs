@@ -7,9 +7,6 @@ namespace PeakAchiever.Hud;
 /// <summary>Builds the uGUI objects of the tracker in code, since the mod ships no prefab.</summary>
 internal static class UiFactory
 {
-    private const int ButtonPaddingX = 12;
-    private const int ButtonPaddingY = 6;
-    private const float ButtonFontSize = 14f;
 
     public static GameObject Create(string name, Transform parent)
     {
@@ -65,26 +62,6 @@ internal static class UiFactory
         rect.pivot = anchor;
         rect.anchoredPosition = offset;
         rect.sizeDelta = new Vector2(size, size);
-    }
-
-    /// <summary>
-    /// A clickable label on a rounded background. Its layout group reports the label's size plus padding,
-    /// so the layout it sits in sizes it; a ContentSizeFitter here would fight that layout.
-    /// </summary>
-    public static Button AddButton(Transform parent, string name, HudStyle style, string label, UnityEngine.Events.UnityAction onClick)
-    {
-        GameObject root = Create(name, parent);
-        Image background = AddImage(root, style.RoundedRect, HudStyle.ButtonBackground);
-        background.type = Image.Type.Sliced;
-        background.raycastTarget = true;
-        root.AddComponent<HorizontalLayoutGroup>().padding = new RectOffset(ButtonPaddingX, ButtonPaddingX, ButtonPaddingY, ButtonPaddingY);
-        TextMeshProUGUI text = AddText(root.transform, "Label", style.StrongFont, ButtonFontSize, HudStyle.Ink);
-        text.text = label;
-        text.textWrappingMode = TextWrappingModes.NoWrap;
-        Button button = root.AddComponent<Button>();
-        button.targetGraphic = background;
-        button.onClick.AddListener(onClick);
-        return button;
     }
 
     /// <summary>
