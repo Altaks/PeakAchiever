@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 
@@ -10,7 +7,6 @@ namespace PeakAchiever.Pinning;
 internal sealed class PinnedBadgesStore
 {
     private const string Section = "Tracker";
-    private const char Separator = ',';
     private const int DefaultCapacity = 5;
     private const int MaxCapacity = 12;
 
@@ -25,7 +21,8 @@ internal sealed class PinnedBadgesStore
             Section,
             "PinnedBadges",
             "",
-            "Badges pinned to the tracker, in order. Edited from the pause menu badges page."
+            "Badges pinned to the tracker, in order; a leading + marks one pinned while already earned, to help an ally. "
+                + "Edited from the pause menu badges page."
         );
         _capacity = config.Bind(
             Section,
@@ -36,22 +33,14 @@ internal sealed class PinnedBadgesStore
                 new AcceptableValueRange<int>(1, MaxCapacity)
             )
         );
-        Board = new PinBoard(ParsePins(_pins.Value).Distinct(), _capacity.Value);
+        PinList stored = PinList.Read(_pins.Value);
+        foreach (string name in stored.Unknown)
+            _log.LogWarning($"Ignoring unknown pinned badge '{name}' in the config.");
+        Board = new PinBoard(stored.Pins, _capacity.Value, stored.ForAllies);
         _capacity.SettingChanged += (_, _) => Board.Capacity = _capacity.Value;
     }
 
     public PinBoard Board { get; }
 
-    public void Save() => _pins.Value = string.Join(Separator.ToString(), Board.Pins);
-
-    private IEnumerable<ACHIEVEMENTTYPE> ParsePins(string stored)
-    {
-        foreach (string name in stored.Split([Separator], StringSplitOptions.RemoveEmptyEntries).Select(n => n.Trim()))
-        {
-            if (Enum.TryParse(name, out ACHIEVEMENTTYPE badge) && badge != ACHIEVEMENTTYPE.NONE)
-                yield return badge;
-            else
-                _log.LogWarning($"Ignoring unknown pinned badge '{name}' in the config.");
-        }
-    }
+    public void Save() => _pins.Value = PinList.Write(Board);
 }

@@ -28,13 +28,13 @@ internal static class BadgesPagePatches
         Plugin.Hud.Stats?.Watch(page);
     }
 
-    /// <summary>Adds the click hint under the game's own description of a badge not yet earned.</summary>
+    /// <summary>Adds the click hint under the game's own description of a badge; an earned one pins for an ally.</summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(BadgeManager), nameof(BadgeManager.selectedBadge), MethodType.Setter)]
     private static void AppendPinHint(BadgeManager __instance)
     {
         BadgeUI selected = __instance.selectedBadge;
-        if (selected == null || selected.data == null || !selected.data.IsLocked || !IsOnPauseMenu(__instance))
+        if (selected == null || selected.data == null || !IsOnPauseMenu(__instance))
             return;
         ACHIEVEMENTTYPE badge = selected.data.linkedAchievement;
         string hint;
@@ -43,7 +43,7 @@ internal static class BadgesPagePatches
         else if (PinnableBadge.ConflictOf(badge) is { } conflict)
             hint = ModText.Format(ModTextKey.HintConflict, BadgeCatalog.Present(conflict).Name);
         else
-            hint = ModText.Get(ModTextKey.HintClickToPin);
+            hint = ModText.Get(selected.data.IsLocked ? ModTextKey.HintClickToPin : ModTextKey.HintClickToPinForAlly);
         if (PinnableBadge.Suggestions(__instance).Contains(badge) && MapCatalog.CurrentOrToday is { } suggestedFor)
         {
             ModTextKey why = suggestedFor.IsToday ? ModTextKey.HintSuggestedToday : ModTextKey.HintSuggestedThisMap;

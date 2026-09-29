@@ -65,7 +65,7 @@ public class PinBoardTests
     }
 
     [Fact]
-    public void Toggle_rejects_an_earned_badge()
+    public void Toggle_pins_an_earned_badge_to_help_an_ally()
     {
         // given
         var board = new PinBoard([], capacity: 5);
@@ -74,8 +74,9 @@ public class PinBoardTests
         PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.PeakBadge, isEarned: true, BadgeCompatibility.Unconstrained);
 
         // then
-        Assert.Equal(PinToggleOutcome.RejectedAlreadyEarned, outcome);
-        Assert.Empty(board.Pins);
+        Assert.Equal(PinToggleOutcome.Pinned, outcome);
+        Assert.Equal([ACHIEVEMENTTYPE.PeakBadge], board.Pins);
+        Assert.True(board.IsForAlly(ACHIEVEMENTTYPE.PeakBadge));
     }
 
     [Fact]
@@ -127,5 +128,50 @@ public class PinBoardTests
         // then
         Assert.Equal(PinToggleOutcome.RejectedConflict, outcome);
         Assert.Equal([ACHIEVEMENTTYPE.TrailblazerBadge], board.Pins);
+    }
+
+    [Fact]
+    public void DropEarned_keeps_the_badges_pinned_to_help_an_ally()
+    {
+        // given: Foraging was pinned while already earned, Cooking was earned after being pinned
+        var board = new PinBoard(
+            [ACHIEVEMENTTYPE.CookingBadge, ACHIEVEMENTTYPE.ForagingBadge],
+            capacity: 5,
+            pinnedForAllies: [ACHIEVEMENTTYPE.ForagingBadge]
+        );
+
+        // when
+        bool changed = board.DropEarned(_ => true);
+
+        // then
+        Assert.True(changed);
+        Assert.Equal([ACHIEVEMENTTYPE.ForagingBadge], board.Pins);
+    }
+
+    [Fact]
+    public void Unpinning_a_badge_pinned_for_an_ally_forgets_that_it_was()
+    {
+        // given
+        var board = new PinBoard([ACHIEVEMENTTYPE.PeakBadge], capacity: 5, pinnedForAllies: [ACHIEVEMENTTYPE.PeakBadge]);
+
+        // when
+        board.Toggle(ACHIEVEMENTTYPE.PeakBadge, isEarned: true, BadgeCompatibility.Unconstrained);
+
+        // then
+        Assert.Empty(board.Pins);
+        Assert.False(board.IsForAlly(ACHIEVEMENTTYPE.PeakBadge));
+    }
+
+    [Fact]
+    public void A_badge_pinned_before_it_was_earned_is_not_for_an_ally()
+    {
+        // given
+        var board = new PinBoard([], capacity: 5);
+
+        // when
+        board.Toggle(ACHIEVEMENTTYPE.CookingBadge, isEarned: false, BadgeCompatibility.Unconstrained);
+
+        // then
+        Assert.False(board.IsForAlly(ACHIEVEMENTTYPE.CookingBadge));
     }
 }

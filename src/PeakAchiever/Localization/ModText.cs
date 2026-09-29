@@ -24,8 +24,8 @@ internal enum ModTextKey
     ReasonHitByTrap,
     HintClickToPin,
     HintClickToUnpin,
+    HintClickToPinForAlly,
     RefusalBoardFull,
-    RefusalAlreadyEarned,
     RefusalConflict,
     HintConflict,
     HintNotOnTodaysMap,
@@ -88,13 +88,13 @@ internal static class ModText
         [ModTextKey.ReasonTooManySpores] = ["Impossible: too many spores taken", "Impossible : trop de spores subies"],
         [ModTextKey.ReasonHitByTrap] = ["Impossible: hit by a trap", "Impossible : touché par un piège"],
         [ModTextKey.HintClickToPin] = ["Click: pin to tracker", "Clic : épingler au traqueur"],
+        [ModTextKey.HintClickToPinForAlly] = ["Click: pin to help an ally earn it", "Clic : épingler pour aider un allié"],
         [ModTextKey.HintClickToUnpin] = ["Click: unpin from tracker", "Clic : retirer du traqueur"],
         [ModTextKey.RefusalBoardFull] =
         [
             "{0} badges pinned at most. Unpin one, or raise the limit in the config.",
             "{0} distinctions épinglées au maximum. Retirez-en une, ou augmentez la limite dans la config.",
         ],
-        [ModTextKey.RefusalAlreadyEarned] = ["Already earned, nothing left to chase.", "Déjà obtenue, plus rien à viser."],
         [ModTextKey.RefusalConflict] =
         [
             "Can't be earned in the same run as {0}: no map has both their biomes. Unpin it first.",
