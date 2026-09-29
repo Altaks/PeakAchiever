@@ -181,8 +181,10 @@ public class BlockerTests
 
     [Theory]
     [InlineData(3600f, false)]
-    [InlineData(3600.5f, true)]
-    public void RunDurationCeiling_blocks_only_past_the_limit(float seconds, bool blocked)
+    // The game floors the run time before comparing, so the last started second still counts.
+    [InlineData(3600.9f, false)]
+    [InlineData(3601f, true)]
+    public void RunDurationCeiling_blocks_only_once_the_whole_seconds_pass_the_limit(float seconds, bool blocked)
     {
         // given
         RunFacts facts = new RunFactsBuilder().AfterSeconds(seconds).Build();

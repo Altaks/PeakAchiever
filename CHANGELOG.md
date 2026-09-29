@@ -2,6 +2,12 @@
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- Speed Climber no longer shows its red cross during the last second of the hour, which the game still counts.
+
 ## [0.1.0]
 
 ### Added
