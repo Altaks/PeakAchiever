@@ -45,6 +45,7 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
   `HarmonyPatchTargetsTests` resolves each target through HarmonyX's internal `PatchTools.GetOriginalMethod`
   instead. Adding a hook means updating its expected count.
 - Prove a new test with a mutation: break the code, watch it go red, restore.
+- xUnit rejects a public theory taking an internal type: pass an internal enum as `object` and cast it.
 
 ## Investigating the game
 
@@ -54,10 +55,21 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
   at a time. Read each MonoBehaviour's `m_Script` header without a type tree generator, attach the generator
   only for matching scripts, and write results to disk as they come. Loading every scene with the generator
   attached ran past 25 minutes and 11 GB.
+- Single assets are cheaper than scenes. The level table is the `MapBaker` MonoBehaviour in
+  `PEAK_Data/data.unity3d`: find it by the name after the `m_Script` header, then decode its raw bytes by
+  hand. In 2.4.c, 48 bytes of base-class fields sit before `ScenePaths`, then `BiomeIDs`, then
+  `selectedBiomes` (each: `List<BiomeType>` as int32, `List<string>` variant names). At runtime the mod
+  logs the same table: `25 levels, map layouts: ...`.
+- Game facts the rules depend on and the code alone does not show: `SerializableRunBasedValues` does not
+  serialize `nonToxicMushroomsEaten`, so Mycology restarts at zero after a reconnect; `RunManager.RunId`
+  can be empty (seen in a solo run), hence the mod's own run key in `SplitHistoryStore`.
 
 ## Running the game with the mod
 
 - A Debug build deploys the DLL to the profile set by `PEAKBepInExDir`. The game loads it only at startup.
+- Remove any Thunderstore-installed copy (`plugins/Altaks-PeakAchiever/`) from that profile first: with the
+  same version, BepInEx skips one of the two copies ("Skipping [PeakAchiever] because a newer version
+  exists") and it may be the Debug build.
 - Launch through Steam with the profile's preloader. PEAK ships **Doorstop 4.4.1**, whose flag is
   `--doorstop-target-assembly`; the Doorstop 3 flag `--doorstop-target` silently loads no mod.
   ```
