@@ -13,6 +13,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Speed Climber ETA: when the summit should be reached, from the median time of each biome in past
   runs at the same ascent. The times of every biome finished are saved to
   `BepInEx/config/Altaks.PeakAchiever.splits.csv`, mini runs excepted.
+- Badges that no map allows together can no longer be pinned together: the click is refused with a
+  message naming the pinned badge in the way, and the badges page fades them, with the reason in
+  their tooltip. The maps come from the game's own level table.
 - Foraging, Mycology, Advanced Mycology and Gourmand cards: a grid of every item that counts, dimmed
   until eaten this run, then in full colour with a green tick.
 
