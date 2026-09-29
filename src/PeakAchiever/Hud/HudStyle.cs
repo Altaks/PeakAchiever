@@ -18,6 +18,8 @@ internal sealed class HudStyle
     public static readonly Color CardBackground = new(24f / 255, 19f / 255, 15f / 255, 0.74f);
     public static readonly Color MarkBackground = Rgb(0x18, 0x13, 0x0F);
     public static readonly Color BarTrack = new(Ink.r, Ink.g, Ink.b, 0.16f);
+    // A light rim that draws the bar's shape against any background.
+    public static readonly Color BarRim = new(Ink.r, Ink.g, Ink.b, 0.4f);
     public static readonly Color ButtonBackground = new(Ink.r, Ink.g, Ink.b, 0.14f);
     public static readonly Color PanelBackground = new(CardBackground.r, CardBackground.g, CardBackground.b, 0.94f);
     public static readonly Color ProgressFill = Rgb(0xF2, 0xC1, 0x4E);
@@ -58,6 +60,7 @@ internal sealed class HudStyle
         StrongFont = FindFont(fonts, StrongFontName, log);
         RoundedRect = CreateRoundedRect();
         Circle = CreateCircle();
+        Pill = CreatePill(Circle.texture);
         Star = CreateStar();
         Cross = LoadEmbeddedSprite("Cross.png", log);
         Pin = LoadEmbeddedSprite("Pin.png", log);
@@ -80,6 +83,15 @@ internal sealed class HudStyle
     public Sprite RoundedRect { get; }
 
     public Sprite Circle { get; }
+
+    /// <summary>
+    /// The circle cut in nine, its borders the whole radius: stretched, it keeps half-circle ends
+    /// (see <see cref="UiFactory.AddPill"/>).
+    /// </summary>
+    public Sprite Pill { get; }
+
+    /// <summary>The border of <see cref="Pill"/>, in texture pixels.</summary>
+    public const float PillBorder = CircleTextureSize / 2f - 1f;
 
     /// <summary>A five-point star, drawn in code like <see cref="Circle"/>.</summary>
     public Sprite Star { get; }
@@ -131,6 +143,18 @@ internal sealed class HudStyle
         );
         return Sprite.Create(texture, new Rect(0, 0, CircleTextureSize, CircleTextureSize), new Vector2(0.5f, 0.5f));
     }
+
+    // One texel is left between the borders, for the stretched middle.
+    private static Sprite CreatePill(Texture2D circle) =>
+        Sprite.Create(
+            circle,
+            new Rect(0, 0, CircleTextureSize, CircleTextureSize),
+            new Vector2(0.5f, 0.5f),
+            100f,
+            0,
+            SpriteMeshType.FullRect,
+            new Vector4(PillBorder, PillBorder, PillBorder, PillBorder)
+        );
 
     private static Sprite CreateStar()
     {

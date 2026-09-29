@@ -86,4 +86,16 @@ internal static class UiFactory
         button.onClick.AddListener(onClick);
         return button;
     }
+
+    /// <summary>
+    /// A pill of this height: half-circle ends at any width, like a CSS border-radius of 50%. The sliced
+    /// borders are scaled to exactly half the height (Image.pixelsPerUnitMultiplier divides them).
+    /// </summary>
+    public static Image AddPill(GameObject target, HudStyle style, Color color, float height)
+    {
+        Image image = AddImage(target, style.Pill, color);
+        image.type = Image.Type.Sliced;
+        image.pixelsPerUnitMultiplier = HudStyle.PillBorder / (height / 2f);
+        return image;
+    }
 }

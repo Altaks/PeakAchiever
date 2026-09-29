@@ -19,6 +19,7 @@ internal sealed class BadgeCard
     private const float MarkRingWidth = 2f;
     private const float MarkGlyphSize = 14f;
     private const float BarHeight = 8f;
+    private const float BarRimWidth = 1f;
     private const float NameFontSize = 17f;
     private const float DescriptionFontSize = 13f;
     private const float StatusFontSize = 12f;
@@ -106,18 +107,26 @@ internal sealed class BadgeCard
         statusLayout.childForceExpandWidth = false;
         statusLayout.childForceExpandHeight = false;
 
+        // The rim, then the track inset by the rim's width, then the fill inside the track.
         _bar = UiFactory.Create("Bar", statusRow.transform);
-        UiFactory.AddImage(_bar, style.RoundedRect, HudStyle.BarTrack).type = Image.Type.Sliced;
+        UiFactory.AddPill(_bar, style, HudStyle.BarRim, BarHeight);
         LayoutElement barLayout = _bar.AddComponent<LayoutElement>();
         barLayout.flexibleWidth = 1f;
         barLayout.preferredHeight = BarHeight;
-        GameObject fill = UiFactory.Create("Fill", _bar.transform);
+        float trackHeight = BarHeight - 2 * BarRimWidth;
+        GameObject track = UiFactory.Create("Track", _bar.transform);
+        var trackRect = (RectTransform)track.transform;
+        trackRect.anchorMin = Vector2.zero;
+        trackRect.anchorMax = Vector2.one;
+        trackRect.offsetMin = new Vector2(BarRimWidth, BarRimWidth);
+        trackRect.offsetMax = new Vector2(-BarRimWidth, -BarRimWidth);
+        UiFactory.AddPill(track, style, HudStyle.BarTrack, trackHeight);
+        GameObject fill = UiFactory.Create("Fill", track.transform);
         _barFill = (RectTransform)fill.transform;
         _barFill.anchorMin = Vector2.zero;
         _barFill.offsetMin = Vector2.zero;
         _barFill.offsetMax = Vector2.zero;
-        _barFillImage = UiFactory.AddImage(fill, style.RoundedRect, HudStyle.ProgressFill);
-        _barFillImage.type = Image.Type.Sliced;
+        _barFillImage = UiFactory.AddPill(fill, style, HudStyle.ProgressFill, trackHeight);
 
         _count = UiFactory.AddText(statusRow.transform, "Count", style.StrongFont, StatusFontSize, HudStyle.Ink);
         _status = UiFactory.AddText(statusRow.transform, "Label", style.StrongFont, StatusFontSize, HudStyle.ProgressFill);
