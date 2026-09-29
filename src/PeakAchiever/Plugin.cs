@@ -21,6 +21,8 @@ public partial class Plugin : BaseUnityPlugin
 
     internal static PinnedBadgeTracker Tracker { get; private set; } = null!;
 
+    internal static SplitHistoryStore Splits { get; private set; } = null!;
+
     internal static TrackerHud Hud { get; private set; } = null!;
 
     private void Awake()
@@ -28,6 +30,7 @@ public partial class Plugin : BaseUnityPlugin
         Log = Logger;
         Pins = new PinnedBadgesStore(Config, Logger);
         Tracker = new PinnedBadgeTracker(Pins.Board);
+        Splits = new SplitHistoryStore(Paths.ConfigPath, Logger);
         ConfigEntry<KeyboardShortcut> toggleKey = Config.Bind(
             "Tracker",
             "ToggleKey",

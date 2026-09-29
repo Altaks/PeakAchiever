@@ -27,7 +27,7 @@ internal static class RunFactsReader
     /// </summary>
     public static bool JoinedMidRun => Singleton<MountainProgressHandler>.Instance.JoinedInSegment >= 0;
 
-    public static RunFacts Read()
+    public static RunFacts Read(SplitHistory history)
     {
         AchievementManager achievements = Singleton<AchievementManager>.Instance;
         MapHandler map = Singleton<MapHandler>.Instance;
@@ -43,6 +43,7 @@ internal static class RunFactsReader
             (int)map.GetCurrentSegment(),
             secondsSinceRunStarted,
             BiomeTimeline.Split(ReadTimeline(), secondsSinceRunStarted, JoinedMidRun),
+            history.MediansAt(Ascents.currentAscent),
             Character.AllCharacters.Count
         );
     }

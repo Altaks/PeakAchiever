@@ -99,7 +99,11 @@ internal sealed class TrackerHud : MonoBehaviour
         _refreshRequested = false;
         _nextPeriodicRefresh = Time.unscaledTime + PeriodicRefreshSeconds;
         ItemTraits forbiddenBefore = _tracker.ForbiddenItems;
-        _tracker.Evaluate();
+        RunFacts? facts = RunFactsReader.IsInRun ? RunFactsReader.Read(Plugin.Splits.History) : null;
+        // Recorded whatever is pinned, so the ETA has past runs to go by once Speed Climber is.
+        if (facts != null)
+            Plugin.Splits.RecordFinished(facts.BiomeSplits, runEnded: false);
+        _tracker.Evaluate(facts);
         _cardsStale = true;
         // The inventory marks are drawn when the game fills its slots, so have it refill them.
         if (_tracker.ForbiddenItems != forbiddenBefore)

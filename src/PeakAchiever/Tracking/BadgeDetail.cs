@@ -8,11 +8,17 @@ internal abstract record BadgeDetail
 {
     private BadgeDetail() { }
 
-    /// <summary>How long the run has lasted, and how that time splits across the biomes climbed.</summary>
-    public sealed record RunClock(float ElapsedSeconds, IReadOnlyList<BiomeSplit> Splits) : BadgeDetail
+    /// <summary>
+    /// How long the run has lasted, how that time splits across the biomes climbed, and when past runs
+    /// say the summit should be reached (null until they cover every biome left).
+    /// </summary>
+    public sealed record RunClock(float ElapsedSeconds, IReadOnlyList<BiomeSplit> Splits, float? EtaSeconds) : BadgeDetail
     {
         public bool Equals(RunClock? other) =>
-            other is not null && ElapsedSeconds.Equals(other.ElapsedSeconds) && Splits.SequenceEqual(other.Splits);
+            other is not null
+            && ElapsedSeconds.Equals(other.ElapsedSeconds)
+            && Splits.SequenceEqual(other.Splits)
+            && EtaSeconds.Equals(other.EtaSeconds);
 
         public override int GetHashCode() => ElapsedSeconds.GetHashCode();
     }
@@ -52,5 +58,6 @@ internal sealed class EatenItemsSource(RunCollection collection) : IDetailSource
 
 internal sealed class RunClockSource : IDetailSource
 {
-    public BadgeDetail Describe(RunFacts facts) => new BadgeDetail.RunClock(facts.SecondsSinceRunStarted, facts.BiomeSplits);
+    public BadgeDetail Describe(RunFacts facts) =>
+        new BadgeDetail.RunClock(facts.SecondsSinceRunStarted, facts.BiomeSplits, RunEta.Estimate(facts));
 }
