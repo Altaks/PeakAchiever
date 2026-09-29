@@ -25,13 +25,16 @@ internal sealed class RunDurationTarget(float maxSeconds) : IProgressMeasure
         new((int)facts.SecondsSinceRunStarted, (int)maxSeconds, ProgressScope.ThisRun, ProgressUnit.Duration);
 }
 
-/// <summary>A run value the game keeps as a fraction of a status bar, against the ceiling it checks.</summary>
-internal sealed class RunRateTarget(RUNBASEDVALUETYPE value, float ceiling) : IProgressMeasure
+/// <summary>
+/// A run value the game keeps as a fraction of one affliction of the status bar, against the ceiling it checks.
+/// </summary>
+internal sealed class RunRateTarget(RUNBASEDVALUETYPE value, float ceiling, CharacterAfflictions.STATUSTYPE affliction)
+    : IProgressMeasure
 {
     private const float PercentPerFraction = 100f;
 
     public Progress Measure(RunFacts facts) =>
-        new(ToPercent(facts.RunValue(value)), ToPercent(ceiling), ProgressScope.ThisRun, ProgressUnit.Percent);
+        new(ToPercent(facts.RunValue(value)), ToPercent(ceiling), ProgressScope.ThisRun, ProgressUnit.Percent, affliction);
 
     // Rounded, not truncated: 0.1f times 100 lands a hair off 10 in float.
     private static int ToPercent(float fraction) => (int)System.Math.Round(fraction * PercentPerFraction);

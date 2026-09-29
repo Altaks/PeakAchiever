@@ -16,7 +16,14 @@ internal enum ProgressUnit
     Percent,
 }
 
-internal readonly record struct Progress(int Current, int Target, ProgressScope Scope, ProgressUnit Unit = ProgressUnit.Count)
+/// <param name="Affliction">For a rate, the status bar affliction it measures (its heat, cold or spores).</param>
+internal readonly record struct Progress(
+    int Current,
+    int Target,
+    ProgressScope Scope,
+    ProgressUnit Unit = ProgressUnit.Count,
+    CharacterAfflictions.STATUSTYPE? Affliction = null
+)
 {
     // Warned about from three quarters of the limit on.
     private const float NearLimitShare = 0.75f;
