@@ -67,9 +67,11 @@ internal sealed class StatsPanel
         stack.childControlHeight = true;
         stack.childForceExpandWidth = true;
         stack.childForceExpandHeight = false;
+        // No layout above the panel reads a preferred width, so the width is set on the rect itself;
+        // the fitter only grows the height to the rows.
+        panelRect.sizeDelta = new Vector2(PanelWidth, panelRect.sizeDelta.y);
         ContentSizeFitter fitter = _panel.AddComponent<ContentSizeFitter>();
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        UiFactory.SetPreferredSize(_panel, PanelWidth, -1f);
 
         Transform header = Row(_panel.transform, "Header");
         TextMeshProUGUI title = UiFactory.AddText(header, "Title", style.DisplayFont, TitleFontSize, HudStyle.Ink);

@@ -67,7 +67,10 @@ internal static class UiFactory
         rect.sizeDelta = new Vector2(size, size);
     }
 
-    /// <summary>A clickable label on a rounded background, sized by its text.</summary>
+    /// <summary>
+    /// A clickable label on a rounded background. Its layout group reports the label's size plus padding,
+    /// so the layout it sits in sizes it; a ContentSizeFitter here would fight that layout.
+    /// </summary>
     public static Button AddButton(Transform parent, string name, HudStyle style, string label, UnityEngine.Events.UnityAction onClick)
     {
         GameObject root = Create(name, parent);
@@ -75,9 +78,6 @@ internal static class UiFactory
         background.type = Image.Type.Sliced;
         background.raycastTarget = true;
         root.AddComponent<HorizontalLayoutGroup>().padding = new RectOffset(ButtonPaddingX, ButtonPaddingX, ButtonPaddingY, ButtonPaddingY);
-        ContentSizeFitter fitter = root.AddComponent<ContentSizeFitter>();
-        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         TextMeshProUGUI text = AddText(root.transform, "Label", style.StrongFont, ButtonFontSize, HudStyle.Ink);
         text.text = label;
         text.textWrappingMode = TextWrappingModes.NoWrap;
