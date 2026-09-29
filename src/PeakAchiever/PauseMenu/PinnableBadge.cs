@@ -106,9 +106,6 @@ internal sealed class PinnableBadge : MonoBehaviour
             case PinToggleOutcome.RejectedBoardFull:
                 Plugin.Hud.ShowToast(ModText.Format(ModTextKey.RefusalBoardFull, store.Board.Capacity));
                 break;
-            case PinToggleOutcome.RejectedAlreadyEarned:
-                Plugin.Hud.ShowToast(ModText.Get(ModTextKey.RefusalAlreadyEarned));
-                break;
             case PinToggleOutcome.RejectedConflict:
                 ACHIEVEMENTTYPE conflict = ConflictOf(data.linkedAchievement)!.Value;
                 Plugin.Hud.ShowToast(ModText.Format(ModTextKey.RefusalConflict, BadgeCatalog.Present(conflict).Name));

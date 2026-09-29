@@ -4,6 +4,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Badges already earned can be pinned, to help an ally earn them in a multiplayer run. They stay pinned
+  from one run to the next until unpinned; the config marks them with a leading `+`.
+
 ### Changed
 
 - The heat, cold and spores bars are drawn like the matching segment of PEAK's stamina bar (its hatched

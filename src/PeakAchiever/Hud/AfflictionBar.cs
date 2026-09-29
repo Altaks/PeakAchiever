@@ -8,50 +8,39 @@ using Object = UnityEngine.Object;
 namespace PeakAchiever.Hud;
 
 /// <summary>
-/// A card's bar drawn like one of PEAK's stamina bar segments: the affliction's own hatched fill, outline,
-/// shadow and icon, copied from the game's bar (StaminaBar.afflictions, v2.4.c), on the bar's backing.
-/// Near its limit the outline blinks, so the affliction's colour stays readable.
+/// A card's bar drawn like one of PEAK's stamina bar segments: the affliction's own hatched fill, outline
+/// and shadow, copied from the game's bar (StaminaBar.afflictions, v2.4.c), on the bar's backing, without
+/// the segment's icon. Near its limit the outline blinks, so the affliction's colour stays readable.
 /// </summary>
 internal sealed class AfflictionBar
 {
     // Sizes in reference pixels of the 1920x1080 canvas.
     private const float Height = 16f;
-    private const float IconSize = 18f;
-    private const float Gap = 6f;
+    // Keeps the bar readable when the figures beside it are long ("0:42:13 / 1:00:00").
+    private const float MinTrackWidth = 40f;
     // Below this share the game hides a segment (BarAffliction.ChangeAffliction).
     private const float HiddenBelow = 0.01f;
     private const string IconName = "Icon";
     private const string OutlineName = "Outline";
 
     private readonly Dictionary<CharacterAfflictions.STATUSTYPE, Segment> _segments = [];
-    private readonly Image _icon;
     private readonly RectTransform _track;
     private bool _warnedMissing;
 
     public AfflictionBar(Transform parent)
     {
         Root = UiFactory.Create("AfflictionBar", parent);
-        HorizontalLayoutGroup row = Root.AddComponent<HorizontalLayoutGroup>();
-        row.spacing = Gap;
-        row.childAlignment = TextAnchor.MiddleLeft;
-        row.childControlWidth = true;
-        row.childControlHeight = true;
-        row.childForceExpandWidth = false;
-        row.childForceExpandHeight = false;
         LayoutElement rootLayout = Root.AddComponent<LayoutElement>();
         rootLayout.flexibleWidth = 1f;
-
-        GameObject icon = UiFactory.Create("Icon", Root.transform);
-        UiFactory.SetFixedSize(icon, IconSize, IconSize);
-        _icon = icon.AddComponent<Image>();
-        _icon.preserveAspect = true;
-        _icon.raycastTarget = false;
+        rootLayout.minWidth = MinTrackWidth;
+        rootLayout.preferredHeight = Height;
 
         GameObject track = UiFactory.Create("Track", Root.transform);
-        LayoutElement trackLayout = track.AddComponent<LayoutElement>();
-        trackLayout.flexibleWidth = 1f;
-        trackLayout.preferredHeight = Height;
         _track = (RectTransform)track.transform;
+        _track.anchorMin = Vector2.zero;
+        _track.anchorMax = Vector2.one;
+        _track.offsetMin = Vector2.zero;
+        _track.offsetMax = Vector2.zero;
         Image backing = GUIManager.instance.bar.backing;
         Image trackImage = track.AddComponent<Image>();
         trackImage.sprite = backing.sprite;
@@ -82,8 +71,6 @@ internal sealed class AfflictionBar
             segment.Root.SetActive(segment == shown && share >= HiddenBelow);
         shown.Rect.anchorMax = new Vector2(Mathf.Clamp01(share), 1f);
         shown.Blink.enabled = nearLimit;
-        _icon.sprite = shown.IconSprite;
-        _icon.color = shown.IconColor;
         Root.SetActive(true);
         return true;
     }
@@ -122,17 +109,16 @@ internal sealed class AfflictionBar
         rect.offsetMax = Vector2.zero;
         foreach (Image image in copy.GetComponentsInChildren<Image>(includeInactive: true))
             image.raycastTarget = false;
-        // The icon moves out to the left of the track, where it reads at the bar's small size.
-        Image icon = copy.transform.Find(IconName).GetComponent<Image>();
-        icon.gameObject.SetActive(false);
+        // The segment's icon is left out: the card already has the badge's own.
+        copy.transform.Find(IconName).gameObject.SetActive(false);
         Image outline = copy.transform.Find(OutlineName).GetComponent<Image>();
         OutlineBlink blink = outline.gameObject.AddComponent<OutlineBlink>();
         blink.enabled = false;
         copy.SetActive(true);
-        return new Segment(copy, rect, icon.sprite, icon.color, blink);
+        return new Segment(copy, rect, blink);
     }
 
-    private sealed record Segment(GameObject Root, RectTransform Rect, Sprite IconSprite, Color IconColor, OutlineBlink Blink);
+    private sealed record Segment(GameObject Root, RectTransform Rect, OutlineBlink Blink);
 }
 
 /// <summary>Pulses an outline's opacity while enabled; restores it when disabled.</summary>

@@ -2,8 +2,8 @@
 
 Pin the badges you want to chase, and see during your run which ones you can still earn.
 
-- **Pin from the pause menu.** Open the badges page of the pause menu and click a badge you have not
-  earned yet: a yellow pin marks it, and the badge's tooltip says whether a click pins or unpins it.
+- **Pin from the pause menu.** Open the badges page of the pause menu and click a badge: a yellow
+  pin marks it, and the badge's tooltip says whether a click pins or unpins it.
   Works in the airport too, so you can pick your targets before take-off.
 - **Today's map.** In the airport, badges today's map cannot hold carry a red cross on the badges
   page, and their tooltip names the missing biome ("Not on today's map (Roots)"). During a run the
@@ -50,6 +50,9 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   the opened backpack shows the cross on that item. The marks go away once the badge is earned or broken.
 - **Pins persist.** They are saved in the config. At the start of the next run, badges earned are
   unpinned and failed ones are doable again.
+- **Help an ally.** A badge you already earned can be pinned too, as a reminder of what a friend is
+  chasing in a multiplayer run: its card shows it earned, and it stays pinned from one run to the next
+  until you unpin it.
 - Secret badges keep their `???` until earned. The tracker hides while the pause menu is open.
 - Client-side only: other players do not need the mod.
 

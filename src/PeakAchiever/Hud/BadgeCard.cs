@@ -20,6 +20,8 @@ internal sealed class BadgeCard
     private const float MarkGlyphSize = 14f;
     private const float BarHeight = 8f;
     private const float BarRimWidth = 1f;
+    // Keeps the bar readable when the figures beside it are long.
+    private const float MinBarWidth = 40f;
     private const float NameFontSize = 17f;
     private const float DescriptionFontSize = 13f;
     private const float StatusFontSize = 12f;
@@ -113,6 +115,7 @@ internal sealed class BadgeCard
         UiFactory.AddPill(_bar, style, HudStyle.BarRim, BarHeight);
         LayoutElement barLayout = _bar.AddComponent<LayoutElement>();
         barLayout.flexibleWidth = 1f;
+        barLayout.minWidth = MinBarWidth;
         barLayout.preferredHeight = BarHeight;
         float trackHeight = BarHeight - 2 * BarRimWidth;
         GameObject track = UiFactory.Create("Track", _bar.transform);
@@ -131,6 +134,8 @@ internal sealed class BadgeCard
 
         _afflictionBar = new AfflictionBar(statusRow.transform);
         _count = UiFactory.AddText(statusRow.transform, "Count", style.StrongFont, StatusFontSize, HudStyle.Ink);
+        // Figures stay on one line; the bar beside them gives way instead.
+        _count.textWrappingMode = TextWrappingModes.NoWrap;
         _status = UiFactory.AddText(statusRow.transform, "Label", style.StrongFont, StatusFontSize, HudStyle.ProgressFill);
         _detail = UiFactory.AddText(column.transform, "Detail", style.BodyFont, StatusFontSize, HudStyle.InkSoft);
 
@@ -255,6 +260,8 @@ internal sealed class BadgeCard
 
     private void ShowLabel(string text, Color color)
     {
+        // Beside a bar the label is a word ("Earned"); alone it can be a whole reason, which wraps.
+        _status.textWrappingMode = _count.gameObject.activeSelf ? TextWrappingModes.NoWrap : TextWrappingModes.Normal;
         _status.gameObject.SetActive(text.Length > 0);
         _status.text = text;
         _status.color = color;
