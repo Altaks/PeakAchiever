@@ -14,6 +14,9 @@ Pin the badges you want to chase, and see during your run which ones you can sti
     current one in yellow). The time and splits stay under the red cross once the hour is over.
   - Cool Cucumber, Bundled Up and Tread Lightly show the highest heat, cold or spores rate reached in
     their biome against the limit, as a bar and `max 4% / 10%`.
+  - Foraging, Mycology, Advanced Mycology and Gourmand show every item that counts as a grid of
+    icons: dimmed until eaten this run, then in full colour with a green tick. The item lists are read
+    from the game, and written to `BepInEx/LogOutput.log` the first time a run needs them.
   - A green check once earned.
   - A red cross, with the reason, once the badge can no longer be earned this run: its biome is not
     on this map or is behind you, or the clean-run condition broke.
