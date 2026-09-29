@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Speed Climber card: a bar of the run time against one hour, and the time spent in each biome, the
   current one in yellow. Past one hour the red cross keeps the run time and the splits below it.
+- Cool Cucumber, Bundled Up and Tread Lightly cards: a bar of the highest heat, cold or spores rate
+  reached in the biome against the game's limit (10%, 20%, 25%).
 
 ## [0.1.0]
 

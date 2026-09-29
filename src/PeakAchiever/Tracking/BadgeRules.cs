@@ -71,15 +71,19 @@ internal static class BadgeRules
             .WithDetail(new RunClockSource()),
 
         // Clean biomes, checked once the next area is reached (MountainProgressHandler.CheckAreaAchievement).
+        // The rates are the highest bar fraction reached while in that biome (CharacterAfflictions.AddStatus).
         [ACHIEVEMENTTYPE.CoolCucumberBadge] = BadgeRule.CleanRun(
+            new RunRateTarget(RUNBASEDVALUETYPE.MaxHeatTakenInMesa, AchievementManager.MAX_MESA_HEAT_PERCENTAGE),
             new BiomeOnMap(Biome.BiomeType.Mesa),
             new RunValueCeiling(RUNBASEDVALUETYPE.MaxHeatTakenInMesa, AchievementManager.MAX_MESA_HEAT_PERCENTAGE, BrokenCondition.TooMuchHeat)
         ),
         [ACHIEVEMENTTYPE.BundledUpBadge] = BadgeRule.CleanRun(
+            new RunRateTarget(RUNBASEDVALUETYPE.MaxColdTakenInAlpine, AchievementManager.MAX_ALPINE_COLD_PERCENTAGE),
             new BiomeOnMap(Biome.BiomeType.Alpine),
             new RunValueCeiling(RUNBASEDVALUETYPE.MaxColdTakenInAlpine, AchievementManager.MAX_ALPINE_COLD_PERCENTAGE, BrokenCondition.TooMuchCold)
         ),
         [ACHIEVEMENTTYPE.TreadLightlyBadge] = BadgeRule.CleanRun(
+            new RunRateTarget(RUNBASEDVALUETYPE.MaxSporesTakenInRoots, AchievementManager.MAX_ROOTS_SPORES_PERCENTAGE),
             new BiomeOnMap(Biome.BiomeType.Roots),
             new RunValueCeiling(RUNBASEDVALUETYPE.MaxSporesTakenInRoots, AchievementManager.MAX_ROOTS_SPORES_PERCENTAGE, BrokenCondition.TooManySpores)
         ),

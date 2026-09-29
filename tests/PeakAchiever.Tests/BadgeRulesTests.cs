@@ -159,4 +159,28 @@ public class BadgeRulesTests
         // then
         Assert.Null(detail);
     }
+    [Theory]
+    [InlineData(ACHIEVEMENTTYPE.CoolCucumberBadge, RUNBASEDVALUETYPE.MaxHeatTakenInMesa, 0.04f, 4, 10)]
+    [InlineData(ACHIEVEMENTTYPE.BundledUpBadge, RUNBASEDVALUETYPE.MaxColdTakenInAlpine, 0.2f, 20, 20)]
+    [InlineData(ACHIEVEMENTTYPE.TreadLightlyBadge, RUNBASEDVALUETYPE.MaxSporesTakenInRoots, 0.126f, 13, 25)]
+    public void Biome_rate_badges_hold_with_the_highest_rate_against_the_limit(
+        ACHIEVEMENTTYPE badge,
+        RUNBASEDVALUETYPE rate,
+        float highest,
+        int percent,
+        int limitPercent
+    )
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder()
+            .WithSegments(Biome.BiomeType.Shore, Biome.BiomeType.Roots, Biome.BiomeType.Alpine, Biome.BiomeType.Mesa)
+            .WithRunValue(rate, highest)
+            .Build();
+
+        // when
+        TrackedStatus status = BadgeRules.For(badge).Evaluate(facts, isUnlocked: false);
+
+        // then
+        Assert.Equal(new TrackedStatus.Holding(new Progress(percent, limitPercent, ProgressScope.ThisRun, ProgressUnit.Percent)), status);
+    }
 }

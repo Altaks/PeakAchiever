@@ -31,6 +31,19 @@ public class StatusTextTests
         Assert.Equal("0:42:13 / 1:00:00", text);
     }
 
+    [Fact]
+    public void A_rate_reads_as_the_highest_percent_over_the_limit()
+    {
+        // given
+        var progress = new Progress(4, 10, ProgressScope.ThisRun, ProgressUnit.Percent);
+
+        // when
+        string text = StatusText.Count(progress);
+
+        // then
+        Assert.Equal("max 4% / 10%", text);
+    }
+
     [Theory]
     [InlineData(0f, "0:00:00")]
     [InlineData(59.9f, "0:00:59")]

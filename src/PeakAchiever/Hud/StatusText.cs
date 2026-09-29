@@ -55,6 +55,7 @@ internal static class StatusText
         {
             ProgressUnit.Count => $"{progress.Current} / {progress.Target}",
             ProgressUnit.Duration => $"{Clock(progress.Current)} / {Clock(progress.Target)}",
+            ProgressUnit.Percent => ModText.Format(ModTextKey.LimitRate, progress.Current, progress.Target),
             _ => throw new System.ArgumentOutOfRangeException(nameof(progress), progress.Unit, "Unhandled progress unit."),
         };
 
