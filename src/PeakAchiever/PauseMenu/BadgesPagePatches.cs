@@ -20,8 +20,12 @@ internal static class BadgesPagePatches
     [HarmonyPatch(typeof(BadgeUI), nameof(BadgeUI.Init))]
     private static void MakeBadgePinnable(BadgeUI __instance, BadgeData data)
     {
-        if (data != null && IsOnPauseMenu(__instance))
-            PinnableBadge.AttachTo(__instance);
+        // == null, not a pattern: Unity objects override the null check.
+        PauseMenuAccoladesPage page = __instance.GetComponentInParent<PauseMenuAccoladesPage>(includeInactive: true);
+        if (data == null || page == null)
+            return;
+        PinnableBadge.AttachTo(__instance);
+        Plugin.Hud.Stats?.Watch(page);
     }
 
     /// <summary>Adds the click hint under the game's own description of a badge not yet earned.</summary>

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using BepInEx.Configuration;
 using PeakAchiever.Game;
 using PeakAchiever.Localization;
+using PeakAchiever.PauseMenu;
 using PeakAchiever.Tracking;
 using TMPro;
 using UnityEngine;
@@ -34,6 +35,7 @@ internal sealed class TrackerHud : MonoBehaviour
     private PinnedBadgeTracker _tracker = null!;
     private ConfigEntry<KeyboardShortcut> _toggleKey = null!;
     private HudStyle? _style;
+    private StatsPanel? _stats;
     private GameObject _panel = null!;
     private GameObject _banner = null!;
     private GameObject _toast = null!;
@@ -46,6 +48,9 @@ internal sealed class TrackerHud : MonoBehaviour
 
     /// <summary>Null until the game's GUI has loaded (see <see cref="Update"/>).</summary>
     public HudStyle? Style => _style;
+
+    /// <summary>Null until the game's GUI has loaded, like <see cref="Style"/>.</summary>
+    public StatsPanel? Stats => _stats;
 
     public void Init(PinnedBadgeTracker tracker, ConfigEntry<KeyboardShortcut> toggleKey)
     {
@@ -83,6 +88,7 @@ internal sealed class TrackerHud : MonoBehaviour
 
         if (_toast.activeSelf && Time.unscaledTime >= _toastHideTime)
             _toast.SetActive(false);
+        _stats!.Tick();
 
         // Evaluated even while the cards are hidden: the inventory marks depend on it too.
         if (_refreshRequested || Time.unscaledTime >= _nextPeriodicRefresh)
@@ -137,6 +143,9 @@ internal sealed class TrackerHud : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = ReferenceResolution;
         scaler.matchWidthOrHeight = 0.5f;
+        // The statistics panel takes clicks; every other graphic here leaves them to the game.
+        gameObject.AddComponent<GraphicRaycaster>();
+        _stats = new StatsPanel(transform, style, Plugin.Splits);
 
         _panel = UiFactory.Create("PinnedBadges", transform);
         var panelRect = (RectTransform)_panel.transform;

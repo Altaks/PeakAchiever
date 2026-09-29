@@ -12,6 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reached in the biome against the game's limit (10%, 20%, 25%).
 - Speed Climber splits compare with the median of past runs at the same ascent: `(+1:20)` in red when
   slower, `(-0:40)` in green when faster; the current biome only once it runs over.
+- Statistics panel, opened from a button in the bottom-right corner of the pause menu's badges page:
+  per ascent, each biome's times, median and best, the whole climb of each map layout, and a
+  two-click erase of the ascent shown.
 - Warnings in orange: the heat, cold and spores bar and figures from 75% of the limit (8% of 10%),
   and the Speed Climber ETA once it is past one hour.
 - Speed Climber ETA: when the summit should be reached, from the median time of each biome in past
