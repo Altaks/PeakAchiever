@@ -21,19 +21,30 @@ internal static class RunFactsReader
         && RunManager.Instance != null
         && AchievementManager.Initialized;
 
-    public static RunFacts Read()
+    /// <summary>
+    /// True when the local scout joined after the first segment: their timeline only starts then
+    /// (MountainProgressHandler.JoinedInSegment stays -1 for a scout there from the start, v2.4.c).
+    /// </summary>
+    private static bool JoinedMidRun => Singleton<MountainProgressHandler>.Instance.JoinedInSegment >= 0;
+
+    public static RunFacts Read(SplitHistory history)
     {
         AchievementManager achievements = Singleton<AchievementManager>.Instance;
         MapHandler map = Singleton<MapHandler>.Instance;
         SerializableRunBasedValues run = achievements.runBasedValueData;
+        float secondsSinceRunStarted = RunManager.Instance.TimeSinceRunStarted;
         return new RunFacts(
             ReadRunValues(run),
-            ReadCollectionCounts(run),
+            ReadEatenItems(run),
+            ItemCatalog.CollectionCandidates,
             ReadLifetimeStats(achievements),
             map.segments.Select(segment => segment.biome).ToArray(),
             map.biomes.ToArray(),
             (int)map.GetCurrentSegment(),
-            RunManager.Instance.TimeSinceRunStarted,
+            secondsSinceRunStarted,
+            BiomeTimeline.Split(ReadTimeline(), secondsSinceRunStarted, JoinedMidRun),
+            history.MediansAt(Ascents.currentAscent),
+            MapItemScanner.ItemsOnMap,
             Character.AllCharacters.Count
         );
     }
@@ -51,13 +62,19 @@ internal static class RunFactsReader
         return values;
     }
 
-    private static Dictionary<RunCollection, int> ReadCollectionCounts(SerializableRunBasedValues run) =>
+    // CharacterStats.Record samples the local scout's biome (the current segment's) and the run time, in
+    // whole seconds, about once a second for the end screen; ReconnectData restores it on a rejoin (v2.4.c).
+    private static (Biome.BiomeType, float)[] ReadTimeline() =>
+        Character.localCharacter.refs.stats.timelineInfo.Select(sample => (sample.biome, sample.time)).ToArray();
+
+    // Copied: the game keeps adding to these lists while the snapshot is read.
+    private static Dictionary<RunCollection, IReadOnlyCollection<ushort>> ReadEatenItems(SerializableRunBasedValues run) =>
         new()
         {
-            [RunCollection.DifferentBerriesEaten] = run.runBasedFruitsEaten.Count,
-            [RunCollection.DifferentShroomBerriesEaten] = run.shroomBerriesEaten.Count,
-            [RunCollection.DifferentNonToxicMushroomsEaten] = run.nonToxicMushroomsEaten.Count,
-            [RunCollection.GourmandDishesEaten] = run.gourmandRequirementsEaten.Count,
+            [RunCollection.DifferentBerriesEaten] = run.runBasedFruitsEaten.ToHashSet(),
+            [RunCollection.DifferentShroomBerriesEaten] = run.shroomBerriesEaten.ToHashSet(),
+            [RunCollection.DifferentNonToxicMushroomsEaten] = run.nonToxicMushroomsEaten.ToHashSet(),
+            [RunCollection.GourmandDishesEaten] = run.gourmandRequirementsEaten.ToHashSet(),
         };
 
     private static Dictionary<STEAMSTATTYPE, int> ReadLifetimeStats(AchievementManager achievements)

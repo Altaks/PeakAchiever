@@ -28,6 +28,20 @@ internal static class RunTrackingPatches
     [HarmonyPatch(typeof(MapHandler), nameof(MapHandler.GoToSegment))]
     private static void AfterSegmentChanged() => Plugin.Hud.RequestRefresh();
 
+    // EndScreen.EndSequenceRoutine calls this only when the local scout won, after the run timer
+    // stopped: reaching the summit ends the last biome, which the periodic refresh never sees finish.
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(AchievementManager), nameof(AchievementManager.TestTimeAchievements))]
+    private static void AfterRunWon()
+    {
+        if (!RunFactsReader.IsInRun)
+        {
+            Plugin.Log.LogWarning("The run was won outside a readable run; its last biome time is not recorded.");
+            return;
+        }
+        Plugin.Splits.RecordFinished(RunFactsReader.Read(Plugin.Splits.History).BiomeSplits, runEnded: true);
+    }
+
     // CharacterSpawner resets the run-based values through this overload when a run begins.
     [HarmonyPostfix]
     [HarmonyPatch(typeof(AchievementManager), nameof(AchievementManager.InitRunBasedValues), typeof(SerializableRunBasedValues))]
@@ -36,6 +50,7 @@ internal static class RunTrackingPatches
         AchievementManager achievements = Singleton<AchievementManager>.Instance;
         if (Plugin.Pins.Board.DropEarned(achievements.IsAchievementUnlocked))
             Plugin.Pins.Save();
+        Plugin.Splits.StartRun();
         Plugin.Hud.RequestRefresh();
     }
 }

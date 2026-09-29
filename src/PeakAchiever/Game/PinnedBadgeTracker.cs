@@ -15,17 +15,18 @@ internal sealed class PinnedBadgeTracker(PinBoard board)
 
     public ItemTraits ForbiddenItems { get; private set; }
 
-    public void Evaluate()
+    /// <param name="facts">The run as of now; null outside a run.</param>
+    public void Evaluate(RunFacts? facts)
     {
         _tracked.Clear();
-        if (RunFactsReader.IsInRun)
+        if (facts != null)
         {
-            RunFacts facts = RunFactsReader.Read();
             AchievementManager achievements = Singleton<AchievementManager>.Instance;
             foreach (ACHIEVEMENTTYPE badge in board.Pins)
             {
                 BadgeRule rule = BadgeRules.For(badge);
-                _tracked.Add(new TrackedBadge(badge, rule, rule.Evaluate(facts, achievements.IsAchievementUnlocked(badge))));
+                TrackedStatus status = rule.Evaluate(facts, achievements.IsAchievementUnlocked(badge));
+                _tracked.Add(new TrackedBadge(badge, rule, status, rule.Detail(facts)));
             }
         }
         ForbiddenItems = ItemRestrictions.ForbiddenBy(_tracked);

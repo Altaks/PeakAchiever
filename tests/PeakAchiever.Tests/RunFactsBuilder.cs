@@ -6,7 +6,8 @@ namespace PeakAchiever.Tests;
 internal sealed class RunFactsBuilder
 {
     private readonly Dictionary<RUNBASEDVALUETYPE, float> _runValues = [];
-    private readonly Dictionary<RunCollection, int> _collections = [];
+    private readonly Dictionary<RunCollection, IReadOnlyCollection<ushort>> _eaten = [];
+    private readonly Dictionary<RunCollection, IReadOnlyList<ushort>> _candidates = [];
     private readonly Dictionary<STEAMSTATTYPE, int> _lifetimeStats = [];
     private Biome.BiomeType[] _segmentBiomes =
     [
@@ -20,6 +21,9 @@ internal sealed class RunFactsBuilder
     private int _currentSegment;
     private float _seconds;
     private int _scouts = 1;
+    private BiomeSplit[] _biomeSplits = [];
+    private IReadOnlyDictionary<Biome.BiomeType, float> _biomeMedians = new Dictionary<Biome.BiomeType, float>();
+    private IReadOnlyCollection<ushort>? _itemsOnMap;
 
     public RunFactsBuilder WithRunValue(RUNBASEDVALUETYPE type, float value)
     {
@@ -27,9 +31,19 @@ internal sealed class RunFactsBuilder
         return this;
     }
 
-    public RunFactsBuilder WithCollection(RunCollection collection, int count)
+    /// <summary>That many distinct items eaten, whichever they are.</summary>
+    public RunFactsBuilder WithCollection(RunCollection collection, int count) =>
+        WithEaten(collection, Enumerable.Range(0, count).Select(id => (ushort)id).ToArray());
+
+    public RunFactsBuilder WithEaten(RunCollection collection, params ushort[] items)
     {
-        _collections[collection] = count;
+        _eaten[collection] = items;
+        return this;
+    }
+
+    public RunFactsBuilder WithCandidates(RunCollection collection, params ushort[] items)
+    {
+        _candidates[collection] = items;
         return this;
     }
 
@@ -63,15 +77,37 @@ internal sealed class RunFactsBuilder
         return this;
     }
 
+    public RunFactsBuilder WithBiomeSplits(params BiomeSplit[] splits)
+    {
+        _biomeSplits = splits;
+        return this;
+    }
+
+    public RunFactsBuilder WithBiomeMedians(IReadOnlyDictionary<Biome.BiomeType, float> medians)
+    {
+        _biomeMedians = medians;
+        return this;
+    }
+
+    public RunFactsBuilder WithItemsOnMap(params ushort[] items)
+    {
+        _itemsOnMap = items;
+        return this;
+    }
+
     public RunFacts Build() =>
         new(
             _runValues,
-            _collections,
+            _eaten,
+            _candidates,
             _lifetimeStats,
             _segmentBiomes,
             _segmentBiomes.Distinct().ToArray(),
             _currentSegment,
             _seconds,
+            _biomeSplits,
+            _biomeMedians,
+            _itemsOnMap,
             _scouts
         );
 }

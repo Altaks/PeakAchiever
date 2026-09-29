@@ -37,10 +37,18 @@ internal static class BadgeRules
         [ACHIEVEMENTTYPE.ArcheryBadge] = BadgeRule.Counted(new RunValueTarget(RUNBASEDVALUETYPE.ArrowsRemoved, ArrowsForArchery)),
 
         // Distinct items eaten this run (AchievementManager.AddTo*Eaten, TestWonRun).
-        [ACHIEVEMENTTYPE.ForagingBadge] = BadgeRule.Counted(new RunCollectionTarget(RunCollection.DifferentBerriesEaten, AchievementManager.FRUITSNEEDEDFORACHIEVEMENT)),
-        [ACHIEVEMENTTYPE.AdvancedMycologyBadge] = BadgeRule.Counted(new RunCollectionTarget(RunCollection.DifferentShroomBerriesEaten, AchievementManager.SHROOMBERRIESNEEDEDFORACHIEVEMENT)),
-        [ACHIEVEMENTTYPE.MycologyBadge] = BadgeRule.Counted(new RunCollectionTarget(RunCollection.DifferentNonToxicMushroomsEaten, AchievementManager.MUSHROOMSNEEDEDFORACHIEVEMENT)),
-        [ACHIEVEMENTTYPE.GourmandBadge] = BadgeRule.Counted(new RunCollectionTarget(RunCollection.GourmandDishesEaten, DishesForGourmand)),
+        [ACHIEVEMENTTYPE.ForagingBadge] = BadgeRule
+            .Counted(new RunCollectionTarget(RunCollection.DifferentBerriesEaten, AchievementManager.FRUITSNEEDEDFORACHIEVEMENT))
+            .WithDetail(new EatenItemsSource(RunCollection.DifferentBerriesEaten)),
+        [ACHIEVEMENTTYPE.AdvancedMycologyBadge] = BadgeRule
+            .Counted(new RunCollectionTarget(RunCollection.DifferentShroomBerriesEaten, AchievementManager.SHROOMBERRIESNEEDEDFORACHIEVEMENT))
+            .WithDetail(new EatenItemsSource(RunCollection.DifferentShroomBerriesEaten)),
+        [ACHIEVEMENTTYPE.MycologyBadge] = BadgeRule
+            .Counted(new RunCollectionTarget(RunCollection.DifferentNonToxicMushroomsEaten, AchievementManager.MUSHROOMSNEEDEDFORACHIEVEMENT))
+            .WithDetail(new EatenItemsSource(RunCollection.DifferentNonToxicMushroomsEaten)),
+        [ACHIEVEMENTTYPE.GourmandBadge] = BadgeRule
+            .Counted(new RunCollectionTarget(RunCollection.GourmandDishesEaten, DishesForGourmand))
+            .WithDetail(new EatenItemsSource(RunCollection.GourmandDishesEaten)),
 
         // Lifetime Steam stats (AchievementManager.steamStatBasedAchievements).
         [ACHIEVEMENTTYPE.CookingBadge] = BadgeRule.Counted(new LifetimeStatTarget(STEAMSTATTYPE.MealsCooked, MealsForCooking)),
@@ -63,18 +71,27 @@ internal static class BadgeRules
             new RunValueCeiling(RUNBASEDVALUETYPE.PermanentItemsPlaced, 0f, BrokenCondition.PlacedPermanentItem)
         ),
         [ACHIEVEMENTTYPE.LoneWolfBadge] = BadgeRule.CleanRun(new SoloOnly()),
-        [ACHIEVEMENTTYPE.SpeedClimberBadge] = BadgeRule.CleanRun(new RunDurationCeiling(AchievementManager.ONE_HOUR_IN_SECONDS)),
+        [ACHIEVEMENTTYPE.SpeedClimberBadge] = BadgeRule
+            .CleanRun(
+                new RunDurationTarget(AchievementManager.ONE_HOUR_IN_SECONDS),
+                new RunDurationCeiling(AchievementManager.ONE_HOUR_IN_SECONDS)
+            )
+            .WithDetail(new RunClockSource(AchievementManager.ONE_HOUR_IN_SECONDS)),
 
         // Clean biomes, checked once the next area is reached (MountainProgressHandler.CheckAreaAchievement).
+        // The rates are the highest bar fraction reached while in that biome (CharacterAfflictions.AddStatus).
         [ACHIEVEMENTTYPE.CoolCucumberBadge] = BadgeRule.CleanRun(
+            new RunRateTarget(RUNBASEDVALUETYPE.MaxHeatTakenInMesa, AchievementManager.MAX_MESA_HEAT_PERCENTAGE),
             new BiomeOnMap(Biome.BiomeType.Mesa),
             new RunValueCeiling(RUNBASEDVALUETYPE.MaxHeatTakenInMesa, AchievementManager.MAX_MESA_HEAT_PERCENTAGE, BrokenCondition.TooMuchHeat)
         ),
         [ACHIEVEMENTTYPE.BundledUpBadge] = BadgeRule.CleanRun(
+            new RunRateTarget(RUNBASEDVALUETYPE.MaxColdTakenInAlpine, AchievementManager.MAX_ALPINE_COLD_PERCENTAGE),
             new BiomeOnMap(Biome.BiomeType.Alpine),
             new RunValueCeiling(RUNBASEDVALUETYPE.MaxColdTakenInAlpine, AchievementManager.MAX_ALPINE_COLD_PERCENTAGE, BrokenCondition.TooMuchCold)
         ),
         [ACHIEVEMENTTYPE.TreadLightlyBadge] = BadgeRule.CleanRun(
+            new RunRateTarget(RUNBASEDVALUETYPE.MaxSporesTakenInRoots, AchievementManager.MAX_ROOTS_SPORES_PERCENTAGE),
             new BiomeOnMap(Biome.BiomeType.Roots),
             new RunValueCeiling(RUNBASEDVALUETYPE.MaxSporesTakenInRoots, AchievementManager.MAX_ROOTS_SPORES_PERCENTAGE, BrokenCondition.TooManySpores)
         ),

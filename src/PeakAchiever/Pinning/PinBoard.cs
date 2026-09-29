@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PeakAchiever.Tracking;
 
 namespace PeakAchiever.Pinning;
 
@@ -9,6 +10,7 @@ internal enum PinToggleOutcome
     Unpinned,
     RejectedBoardFull,
     RejectedAlreadyEarned,
+    RejectedConflict,
 }
 
 /// <summary>The badges the player chose to chase, in the order they were pinned.</summary>
@@ -22,12 +24,14 @@ internal sealed class PinBoard(IEnumerable<ACHIEVEMENTTYPE> pins, int capacity)
 
     public bool IsPinned(ACHIEVEMENTTYPE badge) => _pins.Contains(badge);
 
-    public PinToggleOutcome Toggle(ACHIEVEMENTTYPE badge, bool isEarned)
+    public PinToggleOutcome Toggle(ACHIEVEMENTTYPE badge, bool isEarned, BadgeCompatibility compatibility)
     {
         if (_pins.Remove(badge))
             return PinToggleOutcome.Unpinned;
         if (isEarned)
             return PinToggleOutcome.RejectedAlreadyEarned;
+        if (compatibility.FirstConflict(badge, _pins) is not null)
+            return PinToggleOutcome.RejectedConflict;
         if (_pins.Count >= Capacity)
             return PinToggleOutcome.RejectedBoardFull;
         _pins.Add(badge);

@@ -5,11 +5,41 @@ Pin the badges you want to chase, and see during your run which ones you can sti
 - **Pin from the pause menu.** Open the badges page of the pause menu and click a badge you have not
   earned yet: a yellow pin marks it, and the badge's tooltip says whether a click pins or unpins it.
   Works in the airport too, so you can pick your targets before take-off.
+- **Today's map.** In the airport, badges today's map cannot hold carry a red cross on the badges
+  page, and their tooltip names the missing biome ("Not on today's map (Roots)"). During a run the
+  same mark reads the run's own map. They can still be pinned, for another day.
+- **Suggested pins.** The badges page stars as many badges as there are free pin slots: all doable
+  on today's map (or the run's), and compatible with your pins and with each other. Badges tied to
+  that map's biomes come first (the map alternates, so they wait otherwise), then clean runs. A locked
+  secret badge is never starred.
+- **No incompatible pins.** A map has either Tropics, Alpine and Caldera, or Roots, Mesa and the Gloom
+  (read from the game's level table). A badge that needs a biome no map shares with a pinned badge is
+  faded on the badges page, its tooltip names the pin in the way, and clicking it is refused. Only
+  proven clashes count: Lone Wolf, for instance, stays pinnable with Clutch, since other scouts can
+  leave before the summit.
 - **Track in the top-right corner.** During a run, each pinned badge shows its icon, name and
   condition, taken from the game in your language.
   - A yellow bar and `current / total` for badges with a counter. `LIFETIME` marks counters the game
     keeps across all runs (meals cooked, height climbed...).
   - "Holding so far" for clean-run badges (no fall damage, no packaged food...) still intact.
+  - Speed Climber shows the run time against one hour, and the time spent in each biome so far (the
+    current one in yellow). The time and splits stay under the red cross once the hour is over.
+  - Each biome time is followed by its gap to the median of past runs at the same ascent: `(+1:20)`
+    in red when slower, `(-0:40)` in green when faster. The biome in progress shows a gap only once
+    it runs over its median.
+  - Speed Climber also shows an ETA: the run time so far, plus the median time past runs at the same
+    ascent took for the rest of the current biome and for every biome ahead. It shows once each of
+    those biomes has been finished at least once with the mod installed. It turns orange once it is
+    past one hour.
+  - Cool Cucumber, Bundled Up and Tread Lightly show the highest heat, cold or spores rate reached in
+    their biome against the limit, as a bar and `max 4% / 10%`. The bar and the figures turn orange
+    from 75% of the limit (8% of 10%).
+  - Foraging, Mycology, Advanced Mycology and Gourmand show every item that counts as a grid of
+    icons: dimmed until eaten this run, then in full colour with a green tick. The item lists are read
+    from the game, and written to `BepInEx/LogOutput.log` the first time a run needs them. Items no
+    spawner, item or luggage of this level can yield move to a fainter row, "Not seen on this map":
+    a hint, since an item could still come from somewhere the mod does not read, so the badge never
+    gets a red cross for it.
   - A green check once earned.
   - A red cross, with the reason, once the badge can no longer be earned this run: its biome is not
     on this map or is behind you, or the clean-run condition broke.
@@ -39,9 +69,18 @@ Tested with PEAK 2.4.c. If a game update breaks the mod, the error shows in `Bep
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `ToggleKey` | `F6` | Shows or hides the tracker during a run. |
+| `ToggleKey` | `<Keyboard>/f6` | Shows or hides the tracker during a run. Set it from the game's Controls menu, in the row "PeakAchiever: show / hide the tracker" at the end of the first column (click it and press a key, or reset it to F6). A key saved by 0.1.0 is converted; one with modifiers falls back to F6. |
 | `MaxPinnedBadges` | `5` | How many badges can be pinned at once (1 to 12). |
 | `PinnedBadges` | empty | The pins, edited from the pause menu. |
+
+On the badges page, a **Statistics** button under the Back button opens the biome times per ascent:
+how many times, median, best, and the whole climb of each map layout. **Erase this ascent** asks for
+a second click within 3 seconds, then removes that ascent's lines from the file. The panel takes
+mouse clicks; it is not reachable with a gamepad yet.
+
+The time of every biome you finish (mini runs excepted, and not the biome you joined a run in) goes
+to `BepInEx/config/Altaks.PeakAchiever.splits.csv`, one line each: run id (the game's, or one the mod
+makes when the game gives none), ascent, place in the run, biome, seconds. Delete the file to reset the ETA.
 
 ## How badges are judged
 
