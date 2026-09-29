@@ -17,7 +17,7 @@ internal sealed class SplitHistoryStore
 
     private readonly string _path;
     private readonly ManualLogSource _log;
-    private bool _warnedNoRunId;
+    private Guid? _runKey;
 
     public SplitHistoryStore(string configDirectory, ManualLogSource log)
     {
@@ -34,18 +34,11 @@ internal sealed class SplitHistoryStore
     /// </summary>
     public void RecordFinished(IReadOnlyList<BiomeSplit> splits, bool runEnded)
     {
-        Guid runId = RunManager.Instance.RunId;
         // A mini run starts in a later biome (RunManager.JumpToMiniRunBiomeWhenReady), so its times
         // are not those of a climb.
         if (RunSettings.isMiniRun)
             return;
-        if (runId == Guid.Empty)
-        {
-            if (!_warnedNoRunId)
-                _log.LogWarning("This run has no id; its biome times are not recorded for the ETA.");
-            _warnedNoRunId = true;
-            return;
-        }
+        Guid runId = RunKey();
         string[] lines = splits
             .Select((split, index) => (split, index))
             .Where(entry => entry.split.IsWhole && (runEnded || !entry.split.IsCurrent))
@@ -63,6 +56,25 @@ internal sealed class SplitHistoryStore
         {
             _log.LogError($"Could not save the biome times to {_path}: {e.Message}");
         }
+    }
+
+    /// <summary>Called when a run begins: its times go under a key of their own.</summary>
+    public void StartRun() => _runKey = null;
+
+    /// <summary>
+    /// The key this run's times are kept under, fixed at its first record: the game's run id
+    /// (RunManager.RunId, shared by the lobby and restored on a rejoin), or, when the game gave none,
+    /// one made for the run. Fixed so a run never splits across two keys if the game's id comes late.
+    /// </summary>
+    private Guid RunKey()
+    {
+        if (_runKey is { } key)
+            return key;
+        Guid fromGame = RunManager.Instance.RunId;
+        if (fromGame == Guid.Empty)
+            _log.LogInfo("The game gave this run no id; its biome times are kept under one made for it.");
+        _runKey = fromGame == Guid.Empty ? Guid.NewGuid() : fromGame;
+        return _runKey.Value;
     }
 
     /// <summary>Erases every biome time of one ascent, in memory and in the file.</summary>
