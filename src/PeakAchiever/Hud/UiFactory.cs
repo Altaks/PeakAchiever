@@ -7,6 +7,10 @@ namespace PeakAchiever.Hud;
 /// <summary>Builds the uGUI objects of the tracker in code, since the mod ships no prefab.</summary>
 internal static class UiFactory
 {
+    private const int ButtonPaddingX = 12;
+    private const int ButtonPaddingY = 6;
+    private const float ButtonFontSize = 14f;
+
     public static GameObject Create(string name, Transform parent)
     {
         var gameObject = new GameObject(name, typeof(RectTransform));
@@ -61,5 +65,37 @@ internal static class UiFactory
         rect.pivot = anchor;
         rect.anchoredPosition = offset;
         rect.sizeDelta = new Vector2(size, size);
+    }
+
+    /// <summary>A clickable label on a rounded background, sized by its text.</summary>
+    public static Button AddButton(Transform parent, string name, HudStyle style, string label, UnityEngine.Events.UnityAction onClick)
+    {
+        GameObject root = Create(name, parent);
+        Image background = AddImage(root, style.RoundedRect, HudStyle.ButtonBackground);
+        background.type = Image.Type.Sliced;
+        background.raycastTarget = true;
+        root.AddComponent<HorizontalLayoutGroup>().padding = new RectOffset(ButtonPaddingX, ButtonPaddingX, ButtonPaddingY, ButtonPaddingY);
+        ContentSizeFitter fitter = root.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        TextMeshProUGUI text = AddText(root.transform, "Label", style.StrongFont, ButtonFontSize, HudStyle.Ink);
+        text.text = label;
+        text.textWrappingMode = TextWrappingModes.NoWrap;
+        Button button = root.AddComponent<Button>();
+        button.targetGraphic = background;
+        button.onClick.AddListener(onClick);
+        return button;
+    }
+
+    /// <summary>
+    /// A pill of this height: half-circle ends at any width, like a CSS border-radius of 50%. The sliced
+    /// borders are scaled to exactly half the height (Image.pixelsPerUnitMultiplier divides them).
+    /// </summary>
+    public static Image AddPill(GameObject target, HudStyle style, Color color, float height)
+    {
+        Image image = AddImage(target, style.Pill, color);
+        image.type = Image.Type.Sliced;
+        image.pixelsPerUnitMultiplier = HudStyle.PillBorder / (height / 2f);
+        return image;
     }
 }

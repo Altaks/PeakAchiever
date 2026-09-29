@@ -8,6 +8,8 @@ internal enum ModTextKey
     StatusHolding,
     StatusAchieved,
     ScopeLifetime,
+    LimitRate,
+    Eta,
     SecretPlaceholder,
     ReasonBiomeAbsent,
     ReasonBiomeLeft,
@@ -24,6 +26,29 @@ internal enum ModTextKey
     HintClickToUnpin,
     RefusalBoardFull,
     RefusalAlreadyEarned,
+    RefusalConflict,
+    HintConflict,
+    HintNotOnTodaysMap,
+    HintNotOnThisMap,
+    ChecklistNotOnMap,
+    HintSuggestedToday,
+    HintSuggestedThisMap,
+    StatsButton,
+    ControlsToggleTracker,
+    ControlsKeySet,
+    StatsTitle,
+    StatsAscentFallback,
+    StatsColumnBiome,
+    StatsColumnTimes,
+    StatsColumnMedian,
+    StatsColumnBest,
+    StatsLayoutTotal,
+    StatsEmpty,
+    StatsErase,
+    StatsEraseConfirm,
+    StatsErased,
+    StatsEraseFailed,
+    StatsClose,
     AchievementsDisabled,
 }
 
@@ -39,13 +64,15 @@ internal static class ModText
         French,
     }
 
-    // French typography: a no-break space (U+00A0) goes before ':' , as the game's own Frenchify does.
+    // French typography: a no-break space (U+00A0) goes before ':' and '%', as the game's own Frenchify does.
     internal static readonly Dictionary<ModTextKey, string[]> Table = new()
     {
         [ModTextKey.StatusAttainable] = ["Doable", "Faisable"],
         [ModTextKey.StatusHolding] = ["Holding so far", "Tenu jusqu'ici"],
         [ModTextKey.StatusAchieved] = ["Earned", "Obtenu"],
         [ModTextKey.ScopeLifetime] = ["LIFETIME", "À VIE"],
+        [ModTextKey.Eta] = ["ETA {0}", "Arrivée estimée : {0}"],
+        [ModTextKey.LimitRate] = ["max {0}% / {1}%", "max {0} % / {1} %"],
         [ModTextKey.SecretPlaceholder] = ["???", "???"],
         [ModTextKey.ReasonBiomeAbsent] = ["Impossible: no {0} this run", "Impossible : pas de {0} dans cette run"],
         [ModTextKey.ReasonBiomeLeft] = ["Impossible: {0} left behind", "Impossible : {0} déjà quitté"],
@@ -66,13 +93,47 @@ internal static class ModText
             "{0} distinctions épinglées au maximum. Retirez-en une, ou augmentez la limite dans la config.",
         ],
         [ModTextKey.RefusalAlreadyEarned] = ["Already earned, nothing left to chase.", "Déjà obtenue, plus rien à viser."],
+        [ModTextKey.RefusalConflict] =
+        [
+            "Can't be earned in the same run as {0}: no map has both their biomes. Unpin it first.",
+            "Impossible dans la même run que {0} : aucune carte n'a leurs deux biomes. Retirez-la d'abord.",
+        ],
+        [ModTextKey.HintConflict] =
+        [
+            "Conflicts with {0}: no map has both their biomes",
+            "Incompatible avec {0} : aucune carte n'a leurs deux biomes",
+        ],
+        [ModTextKey.HintNotOnTodaysMap] = ["Not on today's map ({0})", "Pas sur la carte du jour ({0})"],
+        [ModTextKey.HintNotOnThisMap] = ["Not on this map ({0})", "Pas sur cette carte ({0})"],
+        [ModTextKey.HintSuggestedToday] = ["Suggested: doable on today's map", "Suggéré : faisable sur la carte du jour"],
+        [ModTextKey.HintSuggestedThisMap] = ["Suggested: doable on this map", "Suggéré : faisable sur cette carte"],
+        [ModTextKey.ChecklistNotOnMap] = ["Not seen on this map", "Pas vu sur cette carte"],
+        [ModTextKey.ControlsToggleTracker] = ["PeakAchiever: show / hide the tracker", "PeakAchiever : afficher / masquer le traqueur"],
+        [ModTextKey.ControlsKeySet] = ["Tracker key set to {0}.", "Touche du traqueur : {0}."],
+        [ModTextKey.StatsButton] = ["Statistics", "Statistiques"],
+        [ModTextKey.StatsTitle] = ["STATISTICS", "STATISTIQUES"],
+        [ModTextKey.StatsAscentFallback] = ["Ascent {0}", "Ascension {0}"],
+        [ModTextKey.StatsColumnBiome] = ["Biome", "Biome"],
+        [ModTextKey.StatsColumnTimes] = ["Times", "Fois"],
+        [ModTextKey.StatsColumnMedian] = ["Median", "Médiane"],
+        [ModTextKey.StatsColumnBest] = ["Best", "Meilleur"],
+        [ModTextKey.StatsLayoutTotal] = ["Total ({0})", "Total ({0})"],
+        [ModTextKey.StatsEmpty] = ["No biome finished at this ascent yet.", "Aucun biome terminé à cette ascension pour l'instant."],
+        [ModTextKey.StatsErase] = ["Erase this ascent", "Effacer cette ascension"],
+        [ModTextKey.StatsEraseConfirm] = ["Click again to erase {0}", "Cliquez encore pour effacer {0}"],
+        [ModTextKey.StatsErased] = ["{0}: biome times erased.", "{0} : temps des biomes effacés."],
+        [ModTextKey.StatsEraseFailed] = ["Could not erase the file; see LogOutput.log.", "Impossible d'effacer le fichier : voir LogOutput.log."],
+        [ModTextKey.StatsClose] = ["Close", "Fermer"],
         [ModTextKey.AchievementsDisabled] = ["Achievements are disabled for this run", "Succès désactivés pour cette run"],
     };
 
     public static string Get(ModTextKey key) => Table[key][(int)CurrentLanguage];
 
-    public static string Format(ModTextKey key, object argument) =>
-        string.Format(System.Globalization.CultureInfo.CurrentCulture, Get(key), argument);
+    /// <summary>The string in a given language, for texts handed to the game's own table.</summary>
+    public static string In(ModTextKey key, ModLanguage language) => Table[key][(int)language];
+
+    public static string Format(ModTextKey key, params object[] arguments) =>
+        string.Format(System.Globalization.CultureInfo.CurrentCulture, Get(key), arguments);
 
     private static ModLanguage CurrentLanguage =>
         LocalizedText.CURRENT_LANGUAGE == LocalizedText.Language.French ? ModLanguage.French : ModLanguage.English;

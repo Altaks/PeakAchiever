@@ -18,9 +18,15 @@ internal sealed class HudStyle
     public static readonly Color CardBackground = new(24f / 255, 19f / 255, 15f / 255, 0.74f);
     public static readonly Color MarkBackground = Rgb(0x18, 0x13, 0x0F);
     public static readonly Color BarTrack = new(Ink.r, Ink.g, Ink.b, 0.16f);
+    // A light rim that draws the bar's shape against any background.
+    public static readonly Color BarRim = new(Ink.r, Ink.g, Ink.b, 0.4f);
+    public static readonly Color ButtonBackground = new(Ink.r, Ink.g, Ink.b, 0.14f);
+    public static readonly Color PanelBackground = new(CardBackground.r, CardBackground.g, CardBackground.b, 0.94f);
     public static readonly Color ProgressFill = Rgb(0xF2, 0xC1, 0x4E);
     public static readonly Color Achieved = Rgb(0x8F, 0xD4, 0x6A);
     public static readonly Color Unattainable = Rgb(0xFF, 0x7A, 0x66);
+    // Between the progress yellow and the cross red: a limit close by, not reached.
+    public static readonly Color Caution = Rgb(0xFF, 0x9F, 0x43);
     public static readonly Color LockedIconTint = new(0.45f, 0.45f, 0.45f, 1f);
     public static readonly Color PinMarkerInk = Rgb(0x1D, 0x18, 0x13);
 
@@ -34,6 +40,11 @@ internal sealed class HudStyle
     private const int RoundedTextureSize = 32;
     private const int RoundedCornerRadius = 12;
     private const int CircleTextureSize = 64;
+    private const int StarTextureSize = 64;
+    private const int StarPoints = 5;
+    // Inner radius of a regular five-point star, as a share of the outer one.
+    private const float StarInnerRatio = 0.4f;
+    private const int StarSupersampling = 4;
 
     // Mod assets are embedded under this logical name prefix (see the csproj EmbeddedResource item).
     private const string EmbeddedAssetPrefix = "PeakAchiever.Assets.";
@@ -49,6 +60,8 @@ internal sealed class HudStyle
         StrongFont = FindFont(fonts, StrongFontName, log);
         RoundedRect = CreateRoundedRect();
         Circle = CreateCircle();
+        Pill = CreatePill(Circle.texture);
+        Star = CreateStar();
         Cross = LoadEmbeddedSprite("Cross.png", log);
         Pin = LoadEmbeddedSprite("Pin.png", log);
         Warning = LoadEmbeddedSprite("Warning.png", log);
@@ -70,6 +83,18 @@ internal sealed class HudStyle
     public Sprite RoundedRect { get; }
 
     public Sprite Circle { get; }
+
+    /// <summary>
+    /// The circle cut in nine, its borders the whole radius: stretched, it keeps half-circle ends
+    /// (see <see cref="UiFactory.AddPill"/>).
+    /// </summary>
+    public Sprite Pill { get; }
+
+    /// <summary>The border of <see cref="Pill"/>, in texture pixels.</summary>
+    public const float PillBorder = CircleTextureSize / 2f - 1f;
+
+    /// <summary>A five-point star, drawn in code like <see cref="Circle"/>.</summary>
+    public Sprite Star { get; }
 
     private static TMP_FontAsset FindFont(TMP_FontAsset[] fonts, string name, ManualLogSource log)
     {
@@ -117,6 +142,65 @@ internal sealed class HudStyle
             (x, y) => Coverage(Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(radius, radius)), radius)
         );
         return Sprite.Create(texture, new Rect(0, 0, CircleTextureSize, CircleTextureSize), new Vector2(0.5f, 0.5f));
+    }
+
+    // One texel is left between the borders, for the stretched middle.
+    private static Sprite CreatePill(Texture2D circle) =>
+        Sprite.Create(
+            circle,
+            new Rect(0, 0, CircleTextureSize, CircleTextureSize),
+            new Vector2(0.5f, 0.5f),
+            100f,
+            0,
+            SpriteMeshType.FullRect,
+            new Vector4(PillBorder, PillBorder, PillBorder, PillBorder)
+        );
+
+    private static Sprite CreateStar()
+    {
+        Vector2[] outline = StarOutline(StarTextureSize / 2f);
+        Texture2D texture = CreateMask(StarTextureSize, (x, y) => SupersampledCoverage(x, y, outline));
+        return Sprite.Create(texture, new Rect(0, 0, StarTextureSize, StarTextureSize), new Vector2(0.5f, 0.5f));
+    }
+
+    // Ten points alternating outer and inner radius, the first pointing up.
+    private static Vector2[] StarOutline(float radius)
+    {
+        var points = new Vector2[StarPoints * 2];
+        for (int i = 0; i < points.Length; i++)
+        {
+            float angle = Mathf.PI / 2f + i * Mathf.PI / StarPoints;
+            float distance = i % 2 == 0 ? radius : radius * StarInnerRatio;
+            points[i] = new Vector2(radius + distance * Mathf.Cos(angle), radius + distance * Mathf.Sin(angle));
+        }
+        return points;
+    }
+
+    // The share of a pixel's sub-samples inside the outline, for a smooth edge.
+    private static float SupersampledCoverage(int x, int y, Vector2[] outline)
+    {
+        int inside = 0;
+        for (int sy = 0; sy < StarSupersampling; sy++)
+        for (int sx = 0; sx < StarSupersampling; sx++)
+        {
+            var point = new Vector2(x + (sx + 0.5f) / StarSupersampling, y + (sy + 0.5f) / StarSupersampling);
+            if (InsidePolygon(point, outline))
+                inside++;
+        }
+        return (float)inside / (StarSupersampling * StarSupersampling);
+    }
+
+    // Even-odd ray casting.
+    private static bool InsidePolygon(Vector2 point, Vector2[] polygon)
+    {
+        bool inside = false;
+        for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++)
+        {
+            if ((polygon[i].y > point.y) != (polygon[j].y > point.y)
+                && point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x)
+                inside = !inside;
+        }
+        return inside;
     }
 
     private static Texture2D CreateMask(int size, System.Func<int, int, float> alphaAt)

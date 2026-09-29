@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using PeakAchiever.Game;
 using PeakAchiever.Localization;
 using PeakAchiever.Tracking;
@@ -17,12 +19,26 @@ internal sealed class BadgeCard
     private const float MarkRingWidth = 2f;
     private const float MarkGlyphSize = 14f;
     private const float BarHeight = 8f;
+    private const float BarRimWidth = 1f;
     private const float NameFontSize = 17f;
     private const float DescriptionFontSize = 13f;
     private const float StatusFontSize = 12f;
     private const int Padding = 10;
     private const float Gap = 10f;
     private const float StatusRowGap = 8f;
+    private const float ChecklistIconSize = 26f;
+    private const float ChecklistGap = 4f;
+    private const float ChecklistTickSize = 13f;
+    private const float ChecklistTickGlyphSize = 9f;
+    // As many icons as fit the text column: (Width - 2 * Padding - IconSize - Gap + ChecklistGap) / (ChecklistIconSize + ChecklistGap).
+    private const int ChecklistColumns = 8;
+    private static readonly Color NotOnMapTint = new(HudStyle.LockedIconTint.r, HudStyle.LockedIconTint.g, HudStyle.LockedIconTint.b, 0.4f);
+    private static readonly ClockColors ClockColors = new(
+        Current: ColorUtility.ToHtmlStringRGB(HudStyle.ProgressFill),
+        Slower: ColorUtility.ToHtmlStringRGB(HudStyle.Unattainable),
+        Faster: ColorUtility.ToHtmlStringRGB(HudStyle.Achieved),
+        Caution: ColorUtility.ToHtmlStringRGB(HudStyle.Caution)
+    );
 
     private readonly HudStyle _style;
     private readonly RawImage _icon;
@@ -35,6 +51,10 @@ internal sealed class BadgeCard
     private readonly Image _barFillImage;
     private readonly TextMeshProUGUI _count;
     private readonly TextMeshProUGUI _status;
+    private readonly TextMeshProUGUI _detail;
+    private readonly ChecklistGrid _onMap;
+    private readonly TextMeshProUGUI _notOnMapLabel;
+    private readonly ChecklistGrid _notOnMap;
 
     public BadgeCard(Transform parent, HudStyle style)
     {
@@ -87,26 +107,40 @@ internal sealed class BadgeCard
         statusLayout.childForceExpandWidth = false;
         statusLayout.childForceExpandHeight = false;
 
+        // The rim, then the track inset by the rim's width, then the fill inside the track.
         _bar = UiFactory.Create("Bar", statusRow.transform);
-        UiFactory.AddImage(_bar, style.RoundedRect, HudStyle.BarTrack).type = Image.Type.Sliced;
+        UiFactory.AddPill(_bar, style, HudStyle.BarRim, BarHeight);
         LayoutElement barLayout = _bar.AddComponent<LayoutElement>();
         barLayout.flexibleWidth = 1f;
         barLayout.preferredHeight = BarHeight;
-        GameObject fill = UiFactory.Create("Fill", _bar.transform);
+        float trackHeight = BarHeight - 2 * BarRimWidth;
+        GameObject track = UiFactory.Create("Track", _bar.transform);
+        var trackRect = (RectTransform)track.transform;
+        trackRect.anchorMin = Vector2.zero;
+        trackRect.anchorMax = Vector2.one;
+        trackRect.offsetMin = new Vector2(BarRimWidth, BarRimWidth);
+        trackRect.offsetMax = new Vector2(-BarRimWidth, -BarRimWidth);
+        UiFactory.AddPill(track, style, HudStyle.BarTrack, trackHeight);
+        GameObject fill = UiFactory.Create("Fill", track.transform);
         _barFill = (RectTransform)fill.transform;
         _barFill.anchorMin = Vector2.zero;
         _barFill.offsetMin = Vector2.zero;
         _barFill.offsetMax = Vector2.zero;
-        _barFillImage = UiFactory.AddImage(fill, style.RoundedRect, HudStyle.ProgressFill);
-        _barFillImage.type = Image.Type.Sliced;
+        _barFillImage = UiFactory.AddPill(fill, style, HudStyle.ProgressFill, trackHeight);
 
         _count = UiFactory.AddText(statusRow.transform, "Count", style.StrongFont, StatusFontSize, HudStyle.Ink);
         _status = UiFactory.AddText(statusRow.transform, "Label", style.StrongFont, StatusFontSize, HudStyle.ProgressFill);
+        _detail = UiFactory.AddText(column.transform, "Detail", style.BodyFont, StatusFontSize, HudStyle.InkSoft);
+
+        _onMap = new ChecklistGrid(column.transform, "Checklist", style);
+        _notOnMapLabel = UiFactory.AddText(column.transform, "NotOnMapLabel", style.BodyFont, StatusFontSize, HudStyle.InkMuted);
+        _notOnMapLabel.text = ModText.Get(ModTextKey.ChecklistNotOnMap);
+        _notOnMap = new ChecklistGrid(column.transform, "NotOnMap", style);
     }
 
     public GameObject Root { get; }
 
-    public void Show(BadgePresentation badge, TrackedStatus status)
+    public void Show(BadgePresentation badge, TrackedStatus status, BadgeDetail? detail)
     {
         _icon.texture = badge.Icon;
         bool unattainable = status is TrackedStatus.Unattainable;
@@ -120,30 +154,38 @@ internal sealed class BadgeCard
         {
             case TrackedStatus.Attainable attainable:
                 ShowMark(null, default);
-                ShowProgress(attainable.Progress, HudStyle.ProgressFill);
+                ShowProgress(attainable.Progress, HudStyle.ProgressFill, HudStyle.Ink);
                 if (attainable.Progress is { } progress)
                     ShowLabel(ScopeLabel(progress), HudStyle.InkMuted);
                 else
                     ShowLabel(ModText.Get(ModTextKey.StatusAttainable), HudStyle.ProgressFill);
                 break;
-            case TrackedStatus.Holding:
+            case TrackedStatus.Holding holding:
                 ShowMark(null, default);
-                ShowProgress(null, default);
-                ShowLabel(ModText.Get(ModTextKey.StatusHolding), HudStyle.ProgressFill);
+                // Close to its limit, the bar and its figures turn to the caution colour.
+                bool nearLimit = holding.Progress is { NearLimit: true };
+                ShowProgress(
+                    holding.Progress,
+                    nearLimit ? HudStyle.Caution : HudStyle.ProgressFill,
+                    nearLimit ? HudStyle.Caution : HudStyle.Ink
+                );
+                // A measured limit already says how the condition holds.
+                ShowLabel(holding.Progress is null ? ModText.Get(ModTextKey.StatusHolding) : "", HudStyle.ProgressFill);
                 break;
             case TrackedStatus.Achieved achieved:
                 ShowMark(_style.Check, HudStyle.Achieved);
-                ShowProgress(achieved.Progress, HudStyle.Achieved);
+                ShowProgress(achieved.Progress, HudStyle.Achieved, HudStyle.Ink);
                 ShowLabel(ModText.Get(ModTextKey.StatusAchieved), HudStyle.Achieved);
                 break;
             case TrackedStatus.Unattainable blocked:
                 ShowMark(_style.Cross, HudStyle.Unattainable);
-                ShowProgress(null, default);
+                ShowProgress(null, default, default);
                 ShowLabel(StatusText.Describe(blocked.Reason), HudStyle.Unattainable);
                 break;
             default:
                 throw new System.ArgumentOutOfRangeException(nameof(status), status, "Unhandled tracked status.");
         }
+        ShowDetail(detail, unattainable);
     }
 
     private static string ScopeLabel(Progress progress) =>
@@ -159,7 +201,7 @@ internal sealed class BadgeCard
         _markRing.color = color;
     }
 
-    private void ShowProgress(Progress? progress, Color fillColor)
+    private void ShowProgress(Progress? progress, Color fillColor, Color countColor)
     {
         _bar.SetActive(progress != null);
         _count.gameObject.SetActive(progress != null);
@@ -168,6 +210,40 @@ internal sealed class BadgeCard
         _barFill.anchorMax = new Vector2(shown.Fraction, 1f);
         _barFillImage.color = fillColor;
         _count.text = StatusText.Count(shown);
+        _count.color = countColor;
+    }
+
+    private void ShowDetail(BadgeDetail? detail, bool unattainable)
+    {
+        string text = "";
+        IReadOnlyList<ChecklistItem> items = [];
+        switch (detail)
+        {
+            case null:
+                break;
+            // Once broken the bar is gone, so the elapsed time moves down here.
+            case BadgeDetail.RunClock clock:
+                text = StatusText.RunClock(clock, withElapsed: unattainable, ClockColors);
+                break;
+            case BadgeDetail.Checklist checklist:
+                items = checklist.Items;
+                break;
+            default:
+                throw new System.ArgumentOutOfRangeException(nameof(detail), detail, "Unhandled badge detail.");
+        }
+        _detail.text = text;
+        // The timeline stays empty for the first seconds of a run.
+        _detail.gameObject.SetActive(text.Length > 0);
+        ShowChecklist(items);
+    }
+
+    /// <summary>The items this map yields first, then apart, under their label, those it does not.</summary>
+    private void ShowChecklist(IReadOnlyList<ChecklistItem> items)
+    {
+        ChecklistItem[] notOnMap = items.Where(item => !item.OnMap).ToArray();
+        _onMap.Show(items.Where(item => item.OnMap).ToArray());
+        _notOnMapLabel.gameObject.SetActive(notOnMap.Length > 0);
+        _notOnMap.Show(notOnMap);
     }
 
     private void ShowLabel(string text, Color color)
@@ -175,5 +251,69 @@ internal sealed class BadgeCard
         _status.gameObject.SetActive(text.Length > 0);
         _status.text = text;
         _status.color = color;
+    }
+
+    /// <summary>A grid of checklist items, growing its cells as needed.</summary>
+    private sealed class ChecklistGrid
+    {
+        private readonly GameObject _root;
+        private readonly HudStyle _style;
+        private readonly List<ChecklistCell> _cells = [];
+
+        public ChecklistGrid(Transform parent, string name, HudStyle style)
+        {
+            _style = style;
+            _root = UiFactory.Create(name, parent);
+            GridLayoutGroup grid = _root.AddComponent<GridLayoutGroup>();
+            grid.cellSize = new Vector2(ChecklistIconSize, ChecklistIconSize);
+            grid.spacing = new Vector2(ChecklistGap, ChecklistGap);
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = ChecklistColumns;
+        }
+
+        public void Show(IReadOnlyList<ChecklistItem> items)
+        {
+            _root.SetActive(items.Count > 0);
+            while (_cells.Count < items.Count)
+                _cells.Add(new ChecklistCell(_root.transform, _style));
+            for (int i = 0; i < _cells.Count; i++)
+            {
+                bool used = i < items.Count;
+                _cells[i].Root.SetActive(used);
+                if (used)
+                    _cells[i].Show(items[i]);
+            }
+        }
+    }
+
+    /// <summary>
+    /// One item of a checklist: its icon, dimmed until eaten, then full colour with a green tick;
+    /// faded further when this map does not yield it.
+    /// </summary>
+    private sealed class ChecklistCell
+    {
+        private readonly RawImage _icon;
+        private readonly GameObject _tick;
+
+        public ChecklistCell(Transform parent, HudStyle style)
+        {
+            Root = UiFactory.Create("Item", parent);
+            _icon = Root.AddComponent<RawImage>();
+            _tick = UiFactory.Create("Tick", Root.transform);
+            UiFactory.PinToCorner(_tick, new Vector2(1f, 0f), new Vector2(2f, -2f), ChecklistTickSize);
+            UiFactory.AddImage(_tick, style.Circle, HudStyle.MarkBackground);
+            GameObject glyph = UiFactory.Create("Glyph", _tick.transform);
+            UiFactory.PinToCorner(glyph, new Vector2(0.5f, 0.5f), Vector2.zero, ChecklistTickGlyphSize);
+            UiFactory.AddImage(glyph, style.Check, HudStyle.Achieved).preserveAspect = true;
+        }
+
+        public GameObject Root { get; }
+
+        public void Show(ChecklistItem item)
+        {
+            _icon.texture = ItemCatalog.Icon(item.ItemId);
+            _icon.color = item.Eaten ? Color.white : item.OnMap ? HudStyle.LockedIconTint : NotOnMapTint;
+            _tick.SetActive(item.Eaten);
+        }
     }
 }

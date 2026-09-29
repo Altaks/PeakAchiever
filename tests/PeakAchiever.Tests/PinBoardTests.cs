@@ -1,4 +1,5 @@
 using PeakAchiever.Pinning;
+using PeakAchiever.Tracking;
 
 namespace PeakAchiever.Tests;
 
@@ -11,7 +12,7 @@ public class PinBoardTests
         var board = new PinBoard([ACHIEVEMENTTYPE.CookingBadge], capacity: 5);
 
         // when
-        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.KnotTyingBadge, isEarned: false);
+        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.KnotTyingBadge, isEarned: false, BadgeCompatibility.Unconstrained);
 
         // then
         Assert.Equal(PinToggleOutcome.Pinned, outcome);
@@ -25,7 +26,7 @@ public class PinBoardTests
         var board = new PinBoard([ACHIEVEMENTTYPE.CookingBadge, ACHIEVEMENTTYPE.KnotTyingBadge], capacity: 5);
 
         // when
-        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.CookingBadge, isEarned: false);
+        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.CookingBadge, isEarned: false, BadgeCompatibility.Unconstrained);
 
         // then
         Assert.Equal(PinToggleOutcome.Unpinned, outcome);
@@ -39,7 +40,7 @@ public class PinBoardTests
         var board = new PinBoard([ACHIEVEMENTTYPE.CookingBadge, ACHIEVEMENTTYPE.KnotTyingBadge], capacity: 2);
 
         // when
-        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.BalloonBadge, isEarned: false);
+        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.BalloonBadge, isEarned: false, BadgeCompatibility.Unconstrained);
 
         // then
         Assert.Equal(PinToggleOutcome.RejectedBoardFull, outcome);
@@ -56,7 +57,7 @@ public class PinBoardTests
         };
 
         // when
-        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.KnotTyingBadge, isEarned: false);
+        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.KnotTyingBadge, isEarned: false, BadgeCompatibility.Unconstrained);
 
         // then
         Assert.Equal(PinToggleOutcome.Unpinned, outcome);
@@ -70,7 +71,7 @@ public class PinBoardTests
         var board = new PinBoard([], capacity: 5);
 
         // when
-        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.PeakBadge, isEarned: true);
+        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.PeakBadge, isEarned: true, BadgeCompatibility.Unconstrained);
 
         // then
         Assert.Equal(PinToggleOutcome.RejectedAlreadyEarned, outcome);
@@ -106,5 +107,25 @@ public class PinBoardTests
         // then
         Assert.False(changed);
         Assert.Equal([ACHIEVEMENTTYPE.CookingBadge], board.Pins);
+    }
+
+    [Fact]
+    public void Toggle_rejects_a_badge_no_map_allows_with_a_pinned_one()
+    {
+        // given
+        var board = new PinBoard([ACHIEVEMENTTYPE.TrailblazerBadge], capacity: 5);
+        var twoLayouts = new BadgeCompatibility(
+            [
+                [Biome.BiomeType.Shore, Biome.BiomeType.Tropics, Biome.BiomeType.Alpine, Biome.BiomeType.Volcano],
+                [Biome.BiomeType.Shore, Biome.BiomeType.Roots, Biome.BiomeType.Mesa, Biome.BiomeType.Swamp],
+            ]
+        );
+
+        // when
+        PinToggleOutcome outcome = board.Toggle(ACHIEVEMENTTYPE.ForestryBadge, isEarned: false, twoLayouts);
+
+        // then
+        Assert.Equal(PinToggleOutcome.RejectedConflict, outcome);
+        Assert.Equal([ACHIEVEMENTTYPE.TrailblazerBadge], board.Pins);
     }
 }

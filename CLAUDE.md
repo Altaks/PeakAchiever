@@ -8,7 +8,7 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
 - `src/PeakAchiever/Tracking/`: pure rules, no Unity calls. `BadgeRules.cs` is the single table of how
   each badge is judged; `RunFacts` is the snapshot the rules read.
 - `Game/`: adapters reading the game (`RunFactsReader`, `BadgeCatalog`, `PinnedBadgeTracker`) and the
-  refresh hooks. `Hud/`, `PauseMenu/`, `Inventory/`: UI built in code plus their Harmony hooks.
+  refresh hooks. `Hud/`, `PauseMenu/`, `Inventory/`, `Controls/`: UI plus their Harmony hooks.
 - `Localization/ModText.cs`: every mod string, one row per key, English then French. Badge names and
   descriptions come from the game's own table.
 
@@ -22,8 +22,19 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
 - Game assets (icons, texts, fonts) are read at runtime and never shipped. Only `src/PeakAchiever/Assets/*.png`
   (drawn for the mod) and `icon.png` go into the package.
 
+## UI inside the game's menus
+
+- **Anything placed in one of the game's menus is a copy of that menu's own element**, never a widget built
+  in code: `Instantiate` a sibling (a Controls row, the badges page's Back button), drop its game-bound
+  component, give its `Button` a fresh `onClick` (that also drops the inspector's listeners), and insert it
+  in the menu's own layout. Its label goes through `GameTextTable`, so its `LocalizedText` keeps
+  translating. `UiFactory` widgets are only for the mod's own surfaces (tracker cards, toast, stats panel).
+- Unity objects override the null check: never `?.`, `??` or `is { }` on them, compare with `== null`.
+
 ## Build and tests
 
+- `dotnet` must be the SDK 10 in `$HOME/.dotnet`; the system one is 7.0. In a shell:
+  `export DOTNET_ROOT=$HOME/.dotnet PATH="$HOME/.dotnet:$PATH"`.
 - The gate is `dotnet build` then `dotnet test`. Tests need the game installed: they load its assemblies.
   Paths live in the git-ignored `Config.Build.user.props`.
 - `tests/PeakAchiever.Tests/PeakAchiever.Tests.csproj` declares `IsTestProject` itself: restore evaluates the PolySharp
