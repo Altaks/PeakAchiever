@@ -9,6 +9,9 @@ namespace PeakAchiever.Hud;
 internal static class StatusText
 {
     private const string BiomeNameSeparator = " / ";
+    private const string SplitSeparator = " · ";
+    private const int SecondsPerMinute = 60;
+    private const int SecondsPerHour = 3600;
 
     // Keys of the game's localization table holding each biome's display name (Localized_Text.csv, v2.4.c).
     private static readonly Dictionary<Biome.BiomeType, string> BiomeNameKeys = new()
@@ -47,11 +50,34 @@ internal static class StatusText
             _ => throw new System.ArgumentOutOfRangeException(nameof(reason), reason, "Unhandled unattainable reason."),
         };
 
-    public static string Count(Progress progress) => $"{progress.Current} / {progress.Target}";
+    public static string Count(Progress progress) =>
+        progress.Unit switch
+        {
+            ProgressUnit.Count => $"{progress.Current} / {progress.Target}",
+            ProgressUnit.Duration => $"{Clock(progress.Current)} / {Clock(progress.Target)}",
+            _ => throw new System.ArgumentOutOfRangeException(nameof(progress), progress.Unit, "Unhandled progress unit."),
+        };
 
-    private static string BiomeNames(Biome.BiomeType[] biomes) =>
+    /// <summary>Hours, minutes and seconds, as the game's end screen writes them (EndScreen.GetTimeString, v2.4.c).</summary>
+    public static string Clock(float seconds)
+    {
+        int whole = (int)System.Math.Floor(seconds);
+        return $"{whole / SecondsPerHour}:{whole % SecondsPerHour / SecondsPerMinute:00}:{whole % SecondsPerMinute:00}";
+    }
+
+    /// <summary>Each biome with its time, the one still counting in the progress colour.</summary>
+    public static string Splits(IEnumerable<BiomeSplit> splits, string currentColor) =>
         string.Join(
-            BiomeNameSeparator,
-            biomes.Select(biome => BiomeNameKeys.TryGetValue(biome, out string key) ? LocalizedText.GetText(key) : biome.ToString())
+            SplitSeparator,
+            splits.Select(split =>
+            {
+                string text = $"{BiomeName(split.Biome)} {Clock(split.Seconds)}";
+                return split.IsCurrent ? $"<color=#{currentColor}>{text}</color>" : text;
+            })
         );
+
+    private static string BiomeNames(Biome.BiomeType[] biomes) => string.Join(BiomeNameSeparator, biomes.Select(BiomeName));
+
+    private static string BiomeName(Biome.BiomeType biome) =>
+        BiomeNameKeys.TryGetValue(biome, out string key) ? LocalizedText.GetText(key) : biome.ToString();
 }

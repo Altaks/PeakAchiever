@@ -2,6 +2,13 @@
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Speed Climber card: a bar of the run time against one hour, and the time spent in each biome, the
+  current one in yellow. Past one hour the red cross keeps the run time and the splits below it.
+
 ## [0.1.0]
 
 ### Added

@@ -120,7 +120,7 @@ internal sealed class TrackerHud : MonoBehaviour
             bool used = i < tracked.Count;
             _cards[i].Root.SetActive(used);
             if (used)
-                _cards[i].Show(BadgeCatalog.Present(tracked[i].Badge), tracked[i].Status);
+                _cards[i].Show(BadgeCatalog.Present(tracked[i].Badge), tracked[i].Status, tracked[i].Detail);
         }
     }
 

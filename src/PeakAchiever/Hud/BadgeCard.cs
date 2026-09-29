@@ -23,6 +23,7 @@ internal sealed class BadgeCard
     private const int Padding = 10;
     private const float Gap = 10f;
     private const float StatusRowGap = 8f;
+    private static readonly string CurrentSplitColor = ColorUtility.ToHtmlStringRGB(HudStyle.ProgressFill);
 
     private readonly HudStyle _style;
     private readonly RawImage _icon;
@@ -35,6 +36,7 @@ internal sealed class BadgeCard
     private readonly Image _barFillImage;
     private readonly TextMeshProUGUI _count;
     private readonly TextMeshProUGUI _status;
+    private readonly TextMeshProUGUI _detail;
 
     public BadgeCard(Transform parent, HudStyle style)
     {
@@ -102,11 +104,12 @@ internal sealed class BadgeCard
 
         _count = UiFactory.AddText(statusRow.transform, "Count", style.StrongFont, StatusFontSize, HudStyle.Ink);
         _status = UiFactory.AddText(statusRow.transform, "Label", style.StrongFont, StatusFontSize, HudStyle.ProgressFill);
+        _detail = UiFactory.AddText(column.transform, "Detail", style.BodyFont, StatusFontSize, HudStyle.InkSoft);
     }
 
     public GameObject Root { get; }
 
-    public void Show(BadgePresentation badge, TrackedStatus status)
+    public void Show(BadgePresentation badge, TrackedStatus status, BadgeDetail? detail)
     {
         _icon.texture = badge.Icon;
         bool unattainable = status is TrackedStatus.Unattainable;
@@ -126,10 +129,11 @@ internal sealed class BadgeCard
                 else
                     ShowLabel(ModText.Get(ModTextKey.StatusAttainable), HudStyle.ProgressFill);
                 break;
-            case TrackedStatus.Holding:
+            case TrackedStatus.Holding holding:
                 ShowMark(null, default);
-                ShowProgress(null, default);
-                ShowLabel(ModText.Get(ModTextKey.StatusHolding), HudStyle.ProgressFill);
+                ShowProgress(holding.Progress, HudStyle.ProgressFill);
+                // A measured limit already says how the condition holds.
+                ShowLabel(holding.Progress is null ? ModText.Get(ModTextKey.StatusHolding) : "", HudStyle.ProgressFill);
                 break;
             case TrackedStatus.Achieved achieved:
                 ShowMark(_style.Check, HudStyle.Achieved);
@@ -144,6 +148,7 @@ internal sealed class BadgeCard
             default:
                 throw new System.ArgumentOutOfRangeException(nameof(status), status, "Unhandled tracked status.");
         }
+        ShowDetail(detail, unattainable);
     }
 
     private static string ScopeLabel(Progress progress) =>
@@ -168,6 +173,21 @@ internal sealed class BadgeCard
         _barFill.anchorMax = new Vector2(shown.Fraction, 1f);
         _barFillImage.color = fillColor;
         _count.text = StatusText.Count(shown);
+    }
+
+    private void ShowDetail(BadgeDetail? detail, bool unattainable)
+    {
+        _detail.text = detail switch
+        {
+            null => "",
+            // Once broken the bar is gone, so the elapsed time moves down here.
+            BadgeDetail.RunClock clock when unattainable =>
+                $"{StatusText.Clock(clock.ElapsedSeconds)}\n{StatusText.Splits(clock.Splits, CurrentSplitColor)}",
+            BadgeDetail.RunClock clock => StatusText.Splits(clock.Splits, CurrentSplitColor),
+            _ => throw new System.ArgumentOutOfRangeException(nameof(detail), detail, "Unhandled badge detail."),
+        };
+        // The timeline stays empty for the first seconds of a run.
+        _detail.gameObject.SetActive(_detail.text.Length > 0);
     }
 
     private void ShowLabel(string text, Color color)
