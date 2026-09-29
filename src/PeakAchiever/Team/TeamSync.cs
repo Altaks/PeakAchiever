@@ -30,6 +30,11 @@ internal static class TeamSync
 
     private static readonly HashSet<string> ReportedUnknown = [];
     private static string? _publishedEarned;
+    // The team pins the host sent and the room has not echoed back yet, and when.
+    private static string? _sentPins;
+    private static float _sentAt;
+    // A change the server never confirms stops showing after this long.
+    private const float EchoTimeoutSeconds = 5f;
 
     /// <summary>In a room with other players' machines, not the game's offline solo mode.</summary>
     public static bool InMultiplayer => PhotonNetwork.InRoom && !PhotonNetwork.OfflineMode;
@@ -38,10 +43,21 @@ internal static class TeamSync
     public static bool IsHost => InMultiplayer && PhotonNetwork.IsMasterClient;
 
     /// <summary>The team pins the host set, in the host's order; empty outside multiplayer.</summary>
-    public static IReadOnlyList<ACHIEVEMENTTYPE> TeamPins =>
-        InMultiplayer && PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue(TeamPinsKey, out object value) && value is string text
-            ? Read(text)
-            : [];
+    public static IReadOnlyList<ACHIEVEMENTTYPE> TeamPins
+    {
+        get
+        {
+            if (!InMultiplayer)
+                return [];
+            string? stored = PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue(TeamPinsKey, out object value) ? value as string : null;
+            // The room keeps the old value until the server echoes a change back: until then the host
+            // reads what it just set, so a click shows at once and a quick second one builds on it.
+            if (_sentPins != null && stored != _sentPins && UnityEngine.Time.unscaledTime < _sentAt + EchoTimeoutSeconds)
+                return Read(_sentPins);
+            _sentPins = null;
+            return stored == null ? [] : Read(stored);
+        }
+    }
 
     /// <summary>Every player in the room, their earned badges null when they do not share any.</summary>
     public static IReadOnlyList<Scout> Scouts =>
@@ -72,7 +88,10 @@ internal static class TeamSync
             Plugin.Log.LogWarning("Only the host sets the team pins; the change is left out.");
             return;
         }
-        PhotonNetwork.CurrentRoom.SetCustomProperties(new Hashtable { [TeamPinsKey] = BadgeNames.Join(pins) });
+        string joined = BadgeNames.Join(pins);
+        PhotonNetwork.CurrentRoom.SetCustomProperties(new Hashtable { [TeamPinsKey] = joined });
+        _sentPins = joined;
+        _sentAt = UnityEngine.Time.unscaledTime;
     }
 
     /// <summary>
