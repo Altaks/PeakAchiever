@@ -4,6 +4,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Progress bars have fully round ends and a light rim.
+
 ### Added
 
 - Speed Climber card: a bar of the run time against one hour, and the time spent in each biome, the
