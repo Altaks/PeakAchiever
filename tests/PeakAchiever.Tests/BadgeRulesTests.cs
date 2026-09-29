@@ -200,7 +200,7 @@ public class BadgeRulesTests
 
         // then
         Assert.Equal(
-            new BadgeDetail.Checklist([new ChecklistItem(3, Eaten: true), new ChecklistItem(7, Eaten: false), new ChecklistItem(12, Eaten: true)]),
+            new BadgeDetail.Checklist([new ChecklistItem(3, Eaten: true, OnMap: true), new ChecklistItem(7, Eaten: false, OnMap: true), new ChecklistItem(12, Eaten: true, OnMap: true)]),
             detail
         );
     }
@@ -221,7 +221,7 @@ public class BadgeRulesTests
         BadgeDetail? detail = BadgeRules.For(badge).Detail(facts);
 
         // then
-        Assert.Equal(new BadgeDetail.Checklist([new ChecklistItem(42, Eaten: true)]), detail);
+        Assert.Equal(new BadgeDetail.Checklist([new ChecklistItem(42, Eaten: true, OnMap: true)]), detail);
     }
 
     [Fact]
@@ -291,5 +291,27 @@ public class BadgeRulesTests
 
         // then
         Assert.Equal(over, Assert.IsType<BadgeDetail.RunClock>(detail).EtaOverLimit);
+    }
+
+    [Fact]
+    public void Foraging_tells_apart_the_berries_this_map_does_not_spawn()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder()
+            .WithCandidates(RunCollection.DifferentBerriesEaten, 3, 7, 12)
+            .WithEaten(RunCollection.DifferentBerriesEaten, 12)
+            .WithItemsOnMap(3)
+            .Build();
+
+        // when
+        BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.ForagingBadge).Detail(facts);
+
+        // then: 12 was eaten, so it was on the map whatever the scan saw
+        Assert.Equal(
+            new BadgeDetail.Checklist(
+                [new ChecklistItem(3, Eaten: false, OnMap: true), new ChecklistItem(7, Eaten: false, OnMap: false), new ChecklistItem(12, Eaten: true, OnMap: true)]
+            ),
+            detail
+        );
     }
 }

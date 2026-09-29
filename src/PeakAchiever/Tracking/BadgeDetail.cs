@@ -26,7 +26,10 @@ internal abstract record BadgeDetail
         public override int GetHashCode() => ElapsedSeconds.GetHashCode();
     }
 
-    /// <summary>Every item that counts towards the badge, in the game's id order, ticked once eaten.</summary>
+    /// <summary>
+    /// Every item that counts towards the badge, in the game's id order, ticked once eaten, and told apart
+    /// when this map yields none.
+    /// </summary>
     public sealed record Checklist(IReadOnlyList<ChecklistItem> Items) : BadgeDetail
     {
         public bool Equals(Checklist? other) => other is not null && Items.SequenceEqual(other.Items);
@@ -35,7 +38,8 @@ internal abstract record BadgeDetail
     }
 }
 
-internal readonly record struct ChecklistItem(ushort ItemId, bool Eaten);
+/// <param name="OnMap">False only when the map was read and nothing on it yields the item: a hint, not proof.</param>
+internal readonly record struct ChecklistItem(ushort ItemId, bool Eaten, bool OnMap);
 
 /// <summary>Reads a card's detail from the run.</summary>
 internal interface IDetailSource
@@ -55,7 +59,17 @@ internal sealed class EatenItemsSource(RunCollection collection) : IDetailSource
         IReadOnlyList<ushort> candidates = facts.CollectionCandidates.TryGetValue(collection, out IReadOnlyList<ushort> all)
             ? all
             : [];
-        return new BadgeDetail.Checklist(candidates.Select(item => new ChecklistItem(item, eaten.Contains(item))).ToArray());
+        return new BadgeDetail.Checklist(
+            candidates
+                .Select(item =>
+                {
+                    bool wasEaten = eaten.Contains(item);
+                    // Eaten means it was here, whatever the scan of the map missed.
+                    bool onMap = wasEaten || facts.ItemsOnMap is null || facts.ItemsOnMap.Contains(item);
+                    return new ChecklistItem(item, wasEaten, onMap);
+                })
+                .ToArray()
+        );
     }
 }
 

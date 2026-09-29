@@ -20,6 +20,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Badges that no map allows together can no longer be pinned together: the click is refused with a
   message naming the pinned badge in the way, and the badges page fades them, with the reason in
   their tooltip. The maps come from the game's own level table.
+- Eating checklists: the items this map yields none of move to a separate, fainter row, "Not seen on
+  this map". A hint read from the level's spawners, never a red cross.
 - Badges page: a red cross on the badges today's map cannot hold (the level the airport kiosk sends,
   or the run's own map during a run), with the missing biome in the tooltip. They stay pinnable.
 - Foraging, Mycology, Advanced Mycology and Gourmand cards: a grid of every item that counts, dimmed

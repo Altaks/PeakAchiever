@@ -31,6 +31,7 @@ internal enum ModTextKey
     HintConflict,
     HintNotOnTodaysMap,
     HintNotOnThisMap,
+    ChecklistNotOnMap,
     AchievementsDisabled,
 }
 
@@ -88,6 +89,7 @@ internal static class ModText
         ],
         [ModTextKey.HintNotOnTodaysMap] = ["Not on today's map ({0})", "Pas sur la carte du jour ({0})"],
         [ModTextKey.HintNotOnThisMap] = ["Not on this map ({0})", "Pas sur cette carte ({0})"],
+        [ModTextKey.ChecklistNotOnMap] = ["Not seen on this map", "Pas vu sur cette carte"],
         [ModTextKey.AchievementsDisabled] = ["Achievements are disabled for this run", "Succès désactivés pour cette run"],
     };
 

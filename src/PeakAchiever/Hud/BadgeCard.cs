@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using PeakAchiever.Game;
 using PeakAchiever.Localization;
 using PeakAchiever.Tracking;
@@ -30,6 +31,7 @@ internal sealed class BadgeCard
     private const float ChecklistTickGlyphSize = 9f;
     // As many icons as fit the text column: (Width - 2 * Padding - IconSize - Gap + ChecklistGap) / (ChecklistIconSize + ChecklistGap).
     private const int ChecklistColumns = 8;
+    private static readonly Color NotOnMapTint = new(HudStyle.LockedIconTint.r, HudStyle.LockedIconTint.g, HudStyle.LockedIconTint.b, 0.4f);
     private static readonly ClockColors ClockColors = new(
         Current: ColorUtility.ToHtmlStringRGB(HudStyle.ProgressFill),
         Slower: ColorUtility.ToHtmlStringRGB(HudStyle.Unattainable),
@@ -49,8 +51,9 @@ internal sealed class BadgeCard
     private readonly TextMeshProUGUI _count;
     private readonly TextMeshProUGUI _status;
     private readonly TextMeshProUGUI _detail;
-    private readonly GameObject _checklist;
-    private readonly List<ChecklistCell> _checklistCells = [];
+    private readonly ChecklistGrid _onMap;
+    private readonly TextMeshProUGUI _notOnMapLabel;
+    private readonly ChecklistGrid _notOnMap;
 
     public BadgeCard(Transform parent, HudStyle style)
     {
@@ -120,12 +123,10 @@ internal sealed class BadgeCard
         _status = UiFactory.AddText(statusRow.transform, "Label", style.StrongFont, StatusFontSize, HudStyle.ProgressFill);
         _detail = UiFactory.AddText(column.transform, "Detail", style.BodyFont, StatusFontSize, HudStyle.InkSoft);
 
-        _checklist = UiFactory.Create("Checklist", column.transform);
-        GridLayoutGroup grid = _checklist.AddComponent<GridLayoutGroup>();
-        grid.cellSize = new Vector2(ChecklistIconSize, ChecklistIconSize);
-        grid.spacing = new Vector2(ChecklistGap, ChecklistGap);
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = ChecklistColumns;
+        _onMap = new ChecklistGrid(column.transform, "Checklist", style);
+        _notOnMapLabel = UiFactory.AddText(column.transform, "NotOnMapLabel", style.BodyFont, StatusFontSize, HudStyle.InkMuted);
+        _notOnMapLabel.text = ModText.Get(ModTextKey.ChecklistNotOnMap);
+        _notOnMap = new ChecklistGrid(column.transform, "NotOnMap", style);
     }
 
     public GameObject Root { get; }
@@ -227,18 +228,13 @@ internal sealed class BadgeCard
         ShowChecklist(items);
     }
 
+    /// <summary>The items this map yields first, then apart, under their label, those it does not.</summary>
     private void ShowChecklist(IReadOnlyList<ChecklistItem> items)
     {
-        _checklist.SetActive(items.Count > 0);
-        while (_checklistCells.Count < items.Count)
-            _checklistCells.Add(new ChecklistCell(_checklist.transform, _style));
-        for (int i = 0; i < _checklistCells.Count; i++)
-        {
-            bool used = i < items.Count;
-            _checklistCells[i].Root.SetActive(used);
-            if (used)
-                _checklistCells[i].Show(items[i]);
-        }
+        ChecklistItem[] notOnMap = items.Where(item => !item.OnMap).ToArray();
+        _onMap.Show(items.Where(item => item.OnMap).ToArray());
+        _notOnMapLabel.gameObject.SetActive(notOnMap.Length > 0);
+        _notOnMap.Show(notOnMap);
     }
 
     private void ShowLabel(string text, Color color)
@@ -248,7 +244,43 @@ internal sealed class BadgeCard
         _status.color = color;
     }
 
-    /// <summary>One item of a checklist: its icon, dimmed until eaten, then full colour with a green tick.</summary>
+    /// <summary>A grid of checklist items, growing its cells as needed.</summary>
+    private sealed class ChecklistGrid
+    {
+        private readonly GameObject _root;
+        private readonly HudStyle _style;
+        private readonly List<ChecklistCell> _cells = [];
+
+        public ChecklistGrid(Transform parent, string name, HudStyle style)
+        {
+            _style = style;
+            _root = UiFactory.Create(name, parent);
+            GridLayoutGroup grid = _root.AddComponent<GridLayoutGroup>();
+            grid.cellSize = new Vector2(ChecklistIconSize, ChecklistIconSize);
+            grid.spacing = new Vector2(ChecklistGap, ChecklistGap);
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = ChecklistColumns;
+        }
+
+        public void Show(IReadOnlyList<ChecklistItem> items)
+        {
+            _root.SetActive(items.Count > 0);
+            while (_cells.Count < items.Count)
+                _cells.Add(new ChecklistCell(_root.transform, _style));
+            for (int i = 0; i < _cells.Count; i++)
+            {
+                bool used = i < items.Count;
+                _cells[i].Root.SetActive(used);
+                if (used)
+                    _cells[i].Show(items[i]);
+            }
+        }
+    }
+
+    /// <summary>
+    /// One item of a checklist: its icon, dimmed until eaten, then full colour with a green tick;
+    /// faded further when this map does not yield it.
+    /// </summary>
     private sealed class ChecklistCell
     {
         private readonly RawImage _icon;
@@ -271,7 +303,7 @@ internal sealed class BadgeCard
         public void Show(ChecklistItem item)
         {
             _icon.texture = ItemCatalog.Icon(item.ItemId);
-            _icon.color = item.Eaten ? Color.white : HudStyle.LockedIconTint;
+            _icon.color = item.Eaten ? Color.white : item.OnMap ? HudStyle.LockedIconTint : NotOnMapTint;
             _tick.SetActive(item.Eaten);
         }
     }
