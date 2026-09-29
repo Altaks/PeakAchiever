@@ -2,7 +2,7 @@
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.2.0]
 
 ### Fixed
 
@@ -14,6 +14,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `ToggleKey` in the config is now an Input System path (`<Keyboard>/f6`). A key saved by 0.1.0 is
+  converted; one with modifiers falls back to F6, with a warning in `LogOutput.log`.
 - Progress bars have fully round ends and a light rim.
 
 ### Added
@@ -26,9 +28,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   slower, `(-0:40)` in green when faster; the current biome only once it runs over.
 - The tracker key can be set from the game's Controls menu (pause menu, Controls), in a row like the
   game's own at the end of the first column: click it and press a key on the game's rebinding page,
-  or use its reset button to go back to F6. `ToggleKey` in the config is now an Input System path
-  (`<Keyboard>/f6`); a key saved by 0.1.0 is converted, one with modifiers falls back to F6 with a
-  warning in `LogOutput.log`.
+  or use its reset button to go back to F6.
 - Suggested pins: on the badges page, a yellow star on as many badges as there are free pin slots,
   all doable on today's map (or the run's) and compatible with the pins and each other. Badges tied
   to that map's biomes come first, then clean runs. Locked secret badges are never starred.
