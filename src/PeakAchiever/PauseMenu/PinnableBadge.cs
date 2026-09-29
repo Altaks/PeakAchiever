@@ -1,3 +1,4 @@
+using PeakAchiever.Game;
 using PeakAchiever.Hud;
 using PeakAchiever.Localization;
 using PeakAchiever.Pinning;
@@ -16,9 +17,12 @@ internal sealed class PinnableBadge : MonoBehaviour
     private const float MarkerSize = 22f;
     private const float MarkerGlyphSize = 12f;
     private static readonly Vector2 MarkerOffset = new(4f, 4f);
+    // Faded enough to read as unavailable next to the other locked badges, still legible.
+    private const float ConflictAlpha = 0.35f;
 
     private BadgeUI _badge = null!;
     private GameObject? _marker;
+    private CanvasGroup _fade = null!;
 
     /// <summary>Hooks the badge's own Button, so mouse clicks and gamepad submit both toggle the pin.</summary>
     public static void AttachTo(BadgeUI badge)
@@ -32,10 +36,16 @@ internal sealed class PinnableBadge : MonoBehaviour
             }
             pinnable = badge.gameObject.AddComponent<PinnableBadge>();
             pinnable._badge = badge;
+            // BadgeUI declares a CanvasGroup the game's code never drives (v2.4.c); add one when unset.
+            pinnable._fade = badge.canvasGroup != null ? badge.canvasGroup : badge.gameObject.AddComponent<CanvasGroup>();
             button.onClick.AddListener(pinnable.TogglePin);
         }
-        pinnable.ShowMarker();
+        pinnable.ShowPinState();
     }
+
+    /// <summary>The first pinned badge this one cannot share a run with, if any.</summary>
+    public static ACHIEVEMENTTYPE? ConflictOf(ACHIEVEMENTTYPE badge) =>
+        MapCatalog.Compatibility.FirstConflict(badge, Plugin.Pins.Board.Pins);
 
     private void TogglePin()
     {
@@ -43,14 +53,16 @@ internal sealed class PinnableBadge : MonoBehaviour
         if (data == null)
             return;
         PinnedBadgesStore store = Plugin.Pins;
-        PinToggleOutcome outcome = store.Board.Toggle(data.linkedAchievement, isEarned: !data.IsLocked);
+        PinToggleOutcome outcome = store.Board.Toggle(data.linkedAchievement, isEarned: !data.IsLocked, MapCatalog.Compatibility);
         switch (outcome)
         {
             case PinToggleOutcome.Pinned:
             case PinToggleOutcome.Unpinned:
                 store.Save();
                 Plugin.Hud.RequestRefresh();
-                ShowMarker();
+                // A pin change can fade or restore any badge of the page.
+                foreach (PinnableBadge badge in _badge.manager.GetComponentsInChildren<PinnableBadge>(includeInactive: true))
+                    badge.ShowPinState();
                 // Re-selecting re-runs the game's popup, so the click hint flips between pin and unpin.
                 _badge.manager.selectedBadge = _badge;
                 break;
@@ -60,18 +72,26 @@ internal sealed class PinnableBadge : MonoBehaviour
             case PinToggleOutcome.RejectedAlreadyEarned:
                 Plugin.Hud.ShowToast(ModText.Get(ModTextKey.RefusalAlreadyEarned));
                 break;
+            case PinToggleOutcome.RejectedConflict:
+                ACHIEVEMENTTYPE conflict = ConflictOf(data.linkedAchievement)!.Value;
+                Plugin.Hud.ShowToast(ModText.Format(ModTextKey.RefusalConflict, BadgeCatalog.Present(conflict).Name));
+                break;
             default:
                 throw new System.ArgumentOutOfRangeException(nameof(outcome), outcome, "Unhandled pin outcome.");
         }
     }
 
-    private void ShowMarker()
+    /// <summary>The pin marker on a pinned badge; a fade on one that conflicts with a pin.</summary>
+    private void ShowPinState()
     {
-        bool pinned = _badge.data != null && Plugin.Pins.Board.IsPinned(_badge.data.linkedAchievement);
+        BadgeData? data = _badge.data;
+        bool pinned = data != null && Plugin.Pins.Board.IsPinned(data.linkedAchievement);
         if (pinned && _marker == null && Plugin.Hud.Style is { } style)
             _marker = CreateMarker(style);
         if (_marker != null)
             _marker.SetActive(pinned);
+        bool conflicts = data != null && data.IsLocked && !pinned && ConflictOf(data.linkedAchievement) is not null;
+        _fade.alpha = conflicts ? ConflictAlpha : 1f;
     }
 
     private GameObject CreateMarker(HudStyle style)

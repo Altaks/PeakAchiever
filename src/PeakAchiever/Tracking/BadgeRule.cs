@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PeakAchiever.Tracking;
 
@@ -51,6 +52,10 @@ internal sealed class BadgeRule
     /// <summary>The same rule, with more to show on its card whatever its status.</summary>
     public BadgeRule WithDetail(IDetailSource detailSource) =>
         new(ProgressMeasure, _isCleanRun, _blockers, ForbiddenItems, detailSource);
+
+    /// <summary>For each biome requirement of the badge, the biomes that would meet it.</summary>
+    public IEnumerable<IReadOnlyCollection<Biome.BiomeType>> BiomeRequirements =>
+        _blockers.OfType<IBiomeRequirement>().Select(requirement => requirement.AnyOf);
 
     public BadgeDetail? Detail(RunFacts facts) => _detailSource?.Describe(facts);
 

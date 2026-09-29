@@ -27,6 +27,8 @@ internal enum ModTextKey
     HintClickToUnpin,
     RefusalBoardFull,
     RefusalAlreadyEarned,
+    RefusalConflict,
+    HintConflict,
     AchievementsDisabled,
 }
 
@@ -72,6 +74,16 @@ internal static class ModText
             "{0} distinctions épinglées au maximum. Retirez-en une, ou augmentez la limite dans la config.",
         ],
         [ModTextKey.RefusalAlreadyEarned] = ["Already earned, nothing left to chase.", "Déjà obtenue, plus rien à viser."],
+        [ModTextKey.RefusalConflict] =
+        [
+            "Can't be earned in the same run as {0}: no map has both their biomes. Unpin it first.",
+            "Impossible dans la même run que {0} : aucune carte n'a leurs deux biomes. Retirez-la d'abord.",
+        ],
+        [ModTextKey.HintConflict] =
+        [
+            "Conflicts with {0}: no map has both their biomes",
+            "Incompatible avec {0} : aucune carte n'a leurs deux biomes",
+        ],
         [ModTextKey.AchievementsDisabled] = ["Achievements are disabled for this run", "Succès désactivés pour cette run"],
     };
 

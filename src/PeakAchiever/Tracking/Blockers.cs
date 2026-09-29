@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PeakAchiever.Tracking;
@@ -9,19 +10,29 @@ internal interface IBlocker
     UnattainableReason? FindBlock(RunFacts facts);
 }
 
+/// <summary>A blocker that needs one of these biomes on the map, so two badges can clash over maps.</summary>
+internal interface IBiomeRequirement
+{
+    IReadOnlyCollection<Biome.BiomeType> AnyOf { get; }
+}
+
 /// <summary>
 /// The badge needs this biome on the map, but the game may grant it after the biome is left
 /// (area badges, and clean-biome checks run when the next area is reached).
 /// </summary>
-internal sealed class BiomeOnMap(Biome.BiomeType biome) : IBlocker
+internal sealed class BiomeOnMap(Biome.BiomeType biome) : IBlocker, IBiomeRequirement
 {
+    public IReadOnlyCollection<Biome.BiomeType> AnyOf { get; } = [biome];
+
     public UnattainableReason? FindBlock(RunFacts facts) =>
         facts.PresentBiomes.Contains(biome) ? null : new UnattainableReason.BiomeAbsent(biome);
 }
 
 /// <summary>The badge can only be earned while inside one of these biomes.</summary>
-internal sealed class InBiome(params Biome.BiomeType[] biomes) : IBlocker
+internal sealed class InBiome(params Biome.BiomeType[] biomes) : IBlocker, IBiomeRequirement
 {
+    public IReadOnlyCollection<Biome.BiomeType> AnyOf => biomes;
+
     public UnattainableReason? FindBlock(RunFacts facts)
     {
         Biome.BiomeType[] onMap = biomes.Where(facts.PresentBiomes.Contains).ToArray();
