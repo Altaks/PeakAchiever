@@ -10,6 +10,7 @@ internal static class StatusText
 {
     private const string BiomeNameSeparator = " / ";
     private const string SplitSeparator = " · ";
+    private const string LineBreak = "\n";
     private const int SecondsPerMinute = 60;
     private const int SecondsPerHour = 3600;
 
@@ -64,6 +65,21 @@ internal static class StatusText
     {
         int whole = (int)System.Math.Floor(seconds);
         return $"{whole / SecondsPerHour}:{whole % SecondsPerHour / SecondsPerMinute:00}:{whole % SecondsPerMinute:00}";
+    }
+
+    /// <summary>
+    /// The run clock's lines under the status row: the elapsed time (once the bar is gone) and the ETA,
+    /// then the biome splits. Empty until there is any of them.
+    /// </summary>
+    public static string RunClock(BadgeDetail.RunClock clock, bool withElapsed, string currentColor)
+    {
+        var head = new List<string>();
+        if (withElapsed)
+            head.Add(Clock(clock.ElapsedSeconds));
+        if (clock.EtaSeconds is { } eta)
+            head.Add(ModText.Format(ModTextKey.Eta, Clock(eta)));
+        string[] lines = [string.Join(SplitSeparator, head), Splits(clock.Splits, currentColor)];
+        return string.Join(LineBreak, lines.Where(line => line.Length > 0));
     }
 
     /// <summary>Each biome with its time, the one still counting in the progress colour.</summary>

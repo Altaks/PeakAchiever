@@ -200,11 +200,8 @@ internal sealed class BadgeCard
             case null:
                 break;
             // Once broken the bar is gone, so the elapsed time moves down here.
-            case BadgeDetail.RunClock clock when unattainable:
-                text = $"{StatusText.Clock(clock.ElapsedSeconds)}\n{StatusText.Splits(clock.Splits, CurrentSplitColor)}";
-                break;
             case BadgeDetail.RunClock clock:
-                text = StatusText.Splits(clock.Splits, CurrentSplitColor);
+                text = StatusText.RunClock(clock, withElapsed: unattainable, CurrentSplitColor);
                 break;
             case BadgeDetail.Checklist checklist:
                 items = checklist.Items;

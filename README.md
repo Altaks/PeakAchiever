@@ -12,6 +12,9 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   - "Holding so far" for clean-run badges (no fall damage, no packaged food...) still intact.
   - Speed Climber shows the run time against one hour, and the time spent in each biome so far (the
     current one in yellow). The time and splits stay under the red cross once the hour is over.
+  - Speed Climber also shows an ETA: the run time so far, plus the median time past runs at the same
+    ascent took for the rest of the current biome and for every biome ahead. It shows once each of
+    those biomes has been finished at least once with the mod installed.
   - Cool Cucumber, Bundled Up and Tread Lightly show the highest heat, cold or spores rate reached in
     their biome against the limit, as a bar and `max 4% / 10%`.
   - Foraging, Mycology, Advanced Mycology and Gourmand show every item that counts as a grid of
@@ -49,6 +52,10 @@ Tested with PEAK 2.4.c. If a game update breaks the mod, the error shows in `Bep
 | `ToggleKey` | `F6` | Shows or hides the tracker during a run. |
 | `MaxPinnedBadges` | `5` | How many badges can be pinned at once (1 to 12). |
 | `PinnedBadges` | empty | The pins, edited from the pause menu. |
+
+The time of every biome you finish (mini runs excepted, and not the biome you joined a run in) goes
+to `BepInEx/config/Altaks.PeakAchiever.splits.csv`, one line each: run id, ascent, place in the run,
+biome, seconds. Delete the file to reset the ETA.
 
 ## How badges are judged
 

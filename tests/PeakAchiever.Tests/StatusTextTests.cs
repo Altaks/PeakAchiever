@@ -44,6 +44,32 @@ public class StatusTextTests
         Assert.Equal("max 4% / 10%", text);
     }
 
+    [Fact]
+    public void A_broken_run_clock_leads_with_the_elapsed_time_and_the_eta()
+    {
+        // given
+        var clock = new BadgeDetail.RunClock(3891f, [], EtaSeconds: 5880f);
+
+        // when
+        string text = StatusText.RunClock(clock, withElapsed: true, currentColor: "FFFFFF");
+
+        // then
+        Assert.Equal("1:04:51 \u00B7 ETA 1:38:00", text);
+    }
+
+    [Fact]
+    public void A_run_clock_with_no_eta_and_no_split_yet_says_nothing()
+    {
+        // given
+        var clock = new BadgeDetail.RunClock(2f, [], EtaSeconds: null);
+
+        // when
+        string text = StatusText.RunClock(clock, withElapsed: false, currentColor: "FFFFFF");
+
+        // then
+        Assert.Equal("", text);
+    }
+
     [Theory]
     [InlineData(0f, "0:00:00")]
     [InlineData(59.9f, "0:00:59")]
