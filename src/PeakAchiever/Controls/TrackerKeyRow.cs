@@ -1,91 +1,138 @@
-using PeakAchiever.Hud;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using PeakAchiever.Localization;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Zorro.ControllerSupport;
+using Zorro.Core;
+using Zorro.UI;
+using Object = UnityEngine.Object;
 
 namespace PeakAchiever.Controls;
 
 /// <summary>
-/// A row added to the game's Controls page to set the tracker key: click the key, press another, or
-/// Escape to keep it. Mirrors the rebinding the game runs for its own actions (PauseMenuRebindKeyPage).
+/// The tracker key on the game's Controls page: a clone of one of the page's own rows (its background,
+/// key icon, label and reset button), placed at the end of the first column, that sends the mod's
+/// action through the game's own rebinding page.
 /// </summary>
 internal sealed class TrackerKeyRow : MonoBehaviour
 {
-    // Sizes in reference pixels of the 1920x1080 canvas.
-    private const float RowHeight = 48f;
-    private const float LabelFontSize = 20f;
-    private const int RowPadding = 12;
+    private const string RowName = "PeakAchiever.TrackerKey";
+    // The label goes through the game's localization table, so the cloned LocalizedText keeps
+    // translating it, and PauseMenuRebindKeyPage can show it in its prompt (v2.4.c).
+    private const string LabelKey = "PEAKACHIEVER_TOGGLE_TRACKER";
 
     private TrackerToggleKey _key = null!;
-    private TextMeshProUGUI _keyLabel = null!;
-    private InputActionRebindingExtensions.RebindingOperation? _rebinding;
+    private TMP_Text _icon = null!;
+    private LocalizedText _label = null!;
+    private Color _defaultLabelColor;
+    private Color _changedLabelColor;
 
-    /// <summary>Adds the row once to the page's list of controls.</summary>
+    /// <summary>Adds the row the first time the page opens; afterwards shows the key, saving one just picked.</summary>
     public static void AttachTo(PauseMenuControlsPage page, TrackerToggleKey key)
     {
-        if (page.controlsMenuButtonsParent.GetComponentInChildren<TrackerKeyRow>(includeInactive: true) != null)
+        RegisterLabel();
+        TrackerKeyRow? row = page.controlsMenuButtonsParent.GetComponentsInChildren<TrackerKeyRow>(includeInactive: true).FirstOrDefault();
+        if (row == null)
+            row = Create(page, key);
+        if (row == null)
             return;
-        if (Plugin.Hud.Style is not { } style)
+        // Back from the game's rebinding page with a new key.
+        if (key.SaveIfChanged())
+            Plugin.Hud.ShowToast(ModText.Format(ModTextKey.ControlsKeySet, key.DisplayName));
+        row.ShowKey();
+    }
+
+    private static TrackerKeyRow? Create(PauseMenuControlsPage page, TrackerToggleKey key)
+    {
+        PauseMenuRebindButton? source = LastRowOfFirstColumn(page);
+        if (source == null)
         {
-            Plugin.Log.LogWarning("The Controls page opened before the overlay was built; the tracker key row is left out.");
-            return;
+            Plugin.Log.LogWarning("The Controls page has no rebinding row to copy; the tracker key row is left out.");
+            return null;
         }
-        GameObject root = UiFactory.Create("PeakAchiever.TrackerKey", page.controlsMenuButtonsParent);
-        UiFactory.AddImage(root, style.RoundedRect, HudStyle.CardBackground).type = Image.Type.Sliced;
-        HorizontalLayoutGroup layout = root.AddComponent<HorizontalLayoutGroup>();
-        layout.padding = new RectOffset(RowPadding, RowPadding, RowPadding / 2, RowPadding / 2);
-        layout.childAlignment = TextAnchor.MiddleLeft;
-        layout.childControlWidth = true;
-        layout.childControlHeight = true;
-        layout.childForceExpandWidth = false;
-        layout.childForceExpandHeight = false;
-        UiFactory.SetPreferredSize(root, -1f, RowHeight);
+        GameObject clone = Object.Instantiate(source.gameObject, source.transform.parent);
+        clone.name = RowName;
+        clone.transform.SetSiblingIndex(source.transform.GetSiblingIndex() + 1);
 
-        TextMeshProUGUI label = UiFactory.AddText(root.transform, "Label", style.StrongFont, LabelFontSize, HudStyle.Ink);
-        label.text = ModText.Get(ModTextKey.ControlsToggleTracker);
-        label.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
+        // The copied PauseMenuRebindButton would drive the game's action; keep its parts, drop it.
+        PauseMenuRebindButton copied = clone.GetComponent<PauseMenuRebindButton>();
+        Button rebind = copied.rebindButton;
+        Button reset = copied.resetButton;
+        LocalizedText label = copied.inputDescriptionText;
+        GameObject duplicateWarning = copied.warning;
+        Color defaultColor = copied.defaultTextColor;
+        Color changedColor = copied.overriddenTextColor;
+        Object.DestroyImmediate(copied);
+        InputIcon icon = clone.GetComponentInChildren<InputIcon>(includeInactive: true);
+        TMP_Text iconText = icon.GetComponent<TMP_Text>();
+        // InputIcon shows one of the game's actions; the row writes the mod's key itself.
+        Object.DestroyImmediate(icon);
 
-        TrackerKeyRow row = root.AddComponent<TrackerKeyRow>();
+        // A fresh event drops the copied listeners, the inspector's ones included.
+        rebind.onClick = new Button.ButtonClickedEvent();
+        reset.onClick = new Button.ButtonClickedEvent();
+        duplicateWarning.SetActive(false);
+        label.index = LabelKey;
+        label.tmp.text = LocalizedText.GetText(LabelKey);
+
+        TrackerKeyRow row = clone.AddComponent<TrackerKeyRow>();
         row._key = key;
-        Button button = UiFactory.AddButton(root.transform, "Key", style, key.DisplayName, row.StartRebinding);
-        row._keyLabel = button.GetComponentInChildren<TextMeshProUGUI>();
+        row._icon = iconText;
+        row._label = label;
+        row._defaultLabelColor = defaultColor;
+        row._changedLabelColor = changedColor;
+        rebind.onClick.AddListener(() => row.Rebind(page));
+        reset.onClick.AddListener(row.ResetKey);
+        return row;
     }
 
-    private void StartRebinding()
+    // The rows sit in columns under controlsMenuButtonsParent; the first column ends with room below it.
+    private static PauseMenuRebindButton? LastRowOfFirstColumn(PauseMenuControlsPage page)
     {
-        if (_rebinding != null)
-            return;
-        InputAction action = _key.Action;
-        action.Disable();
-        _keyLabel.text = ModText.Get(ModTextKey.ControlsPressAKey);
-        _rebinding = action
-            .PerformInteractiveRebinding(0)
-            .WithControlsExcluding("<Mouse>")
-            .WithControlsExcluding("<Gamepad>")
-            .WithCancelingThrough("<Keyboard>/escape")
-            .OnComplete(_ => Finish(saved: true))
-            .OnCancel(_ => Finish(saved: false))
-            .Start();
+        PauseMenuRebindButton[] rows = page.controlsMenuButtonsParent.GetComponentsInChildren<PauseMenuRebindButton>(includeInactive: true);
+        if (rows.Length == 0)
+            return null;
+        Transform firstColumn = rows[0].transform.parent;
+        return rows.Where(row => row.transform.parent == firstColumn).OrderBy(row => row.transform.GetSiblingIndex()).Last();
     }
 
-    private void Finish(bool saved)
+    /// <summary>The game's table is rebuilt on a language reload, so the label is put back each time.</summary>
+    private static void RegisterLabel()
     {
-        _rebinding?.Dispose();
-        _rebinding = null;
-        _key.Action.Enable();
-        _keyLabel.text = _key.DisplayName;
-        if (!saved)
-            return;
-        _key.Save();
+        int languages = Enum.GetValues(typeof(LocalizedText.Language)).Length;
+        string english = ModText.In(ModTextKey.ControlsToggleTracker, ModText.ModLanguage.English);
+        var texts = Enumerable.Repeat(english, languages).ToList();
+        texts[(int)LocalizedText.Language.French] = ModText.In(ModTextKey.ControlsToggleTracker, ModText.ModLanguage.French);
+        LocalizedText.mainTable[LabelKey] = texts;
+    }
+
+    // What PauseMenuRebindButton.OnRebindClicked does, with the mod's action and the keyboard forced:
+    // the tracker key has no gamepad binding.
+    private void Rebind(PauseMenuControlsPage page)
+    {
+        PauseMenuRebindKeyPage.inputAction = _key.Action;
+        PauseMenuRebindKeyPage.inputLocIndex = LabelKey;
+        PauseMenuRebindKeyPage.forcedInputScheme = InputScheme.KeyboardMouse;
+        // The page's own handler, found as PauseMenuControlsPage.InitButtons finds it.
+        page.GetComponentInParent<UIPageHandler>().TransistionToPage<PauseMenuRebindKeyPage>();
+    }
+
+    private void ResetKey()
+    {
+        _key.ResetToDefault();
+        ShowKey();
         Plugin.Hud.ShowToast(ModText.Format(ModTextKey.ControlsKeySet, _key.DisplayName));
     }
 
-    // Leaving the page mid-way keeps the key it had.
-    private void OnDisable()
+    private void ShowKey()
     {
-        if (_rebinding != null)
-            _rebinding.Cancel();
+        InputSpriteData sprites = SingletonAsset<InputSpriteData>.Instance;
+        _icon.spriteAsset = sprites.keyboardSprites;
+        _icon.text = sprites.GetSpriteTagFromInputPathKeyboard(_key.Path);
+        // The game marks a row whose key the player changed with another label colour.
+        _label.tmp.color = _key.IsDefault ? _defaultLabelColor : _changedLabelColor;
     }
 }

@@ -8,6 +8,8 @@ namespace PeakAchiever.Controls;
 internal sealed class TrackerToggleKey
 {
     private const string ActionName = "PeakAchiever.ToggleTracker";
+    // The binding group PauseMenuRebindKeyPage looks for to pick the keyboard binding (v2.4.c).
+    private const string KeyboardMouseGroup = "Keyboard&Mouse";
 
     private readonly ConfigEntry<string> _entry;
 
@@ -29,16 +31,33 @@ internal sealed class TrackerToggleKey
         // Rewrites a key saved by an older version in the new form.
         if (path != _entry.Value)
             _entry.Value = path;
-        Action = new InputAction(ActionName, InputActionType.Button, path);
+        Action = new InputAction(ActionName, InputActionType.Button);
+        Action.AddBinding(path).WithGroups(KeyboardMouseGroup);
         Action.Enable();
     }
 
     public InputAction Action { get; }
 
-    /// <summary>The key as the player reads it ("F6").</summary>
-    public string DisplayName =>
-        InputControlPath.ToHumanReadableString(Action.bindings[0].effectivePath, InputControlPath.HumanReadableStringOptions.OmitDevice);
+    public string Path => Action.bindings[0].effectivePath;
 
-    /// <summary>Keeps the key the player just picked.</summary>
-    public void Save() => _entry.Value = Action.bindings[0].effectivePath;
+    public bool IsDefault => Path == ToggleKeyBinding.DefaultPath;
+
+    /// <summary>The key as the player reads it ("F6").</summary>
+    public string DisplayName => InputControlPath.ToHumanReadableString(Path, InputControlPath.HumanReadableStringOptions.OmitDevice);
+
+    /// <summary>Keeps a key picked on the game's rebinding page.</summary>
+    /// <returns>True when the key changed.</returns>
+    public bool SaveIfChanged()
+    {
+        if (Path == _entry.Value)
+            return false;
+        _entry.Value = Path;
+        return true;
+    }
+
+    public void ResetToDefault()
+    {
+        Action.ApplyBindingOverride(0, ToggleKeyBinding.DefaultPath);
+        SaveIfChanged();
+    }
 }

@@ -12,8 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reached in the biome against the game's limit (10%, 20%, 25%).
 - Speed Climber splits compare with the median of past runs at the same ascent: `(+1:20)` in red when
   slower, `(-0:40)` in green when faster; the current biome only once it runs over.
-- The tracker key can be set from the game's Controls menu (pause menu, Controls): click it, press a
-  key, or Escape to keep the current one. `ToggleKey` in the config is now an Input System path
+- The tracker key can be set from the game's Controls menu (pause menu, Controls), in a row like the
+  game's own at the end of the first column: click it and press a key on the game's rebinding page,
+  or use its reset button to go back to F6. `ToggleKey` in the config is now an Input System path
   (`<Keyboard>/f6`); a key saved by 0.1.0 is converted, one with modifiers falls back to F6 with a
   warning in `LogOutput.log`.
 - Suggested pins: on the badges page, a yellow star on as many badges as there are free pin slots,
