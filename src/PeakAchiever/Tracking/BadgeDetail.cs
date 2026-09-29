@@ -12,7 +12,7 @@ internal abstract record BadgeDetail
     /// How long the run has lasted, how that time splits across the biomes climbed, and when past runs
     /// say the summit should be reached (null until they cover every biome left).
     /// </summary>
-    public sealed record RunClock(float ElapsedSeconds, IReadOnlyList<BiomeSplit> Splits, float? EtaSeconds) : BadgeDetail
+    public sealed record RunClock(float ElapsedSeconds, IReadOnlyList<ComparedSplit> Splits, float? EtaSeconds) : BadgeDetail
     {
         public bool Equals(RunClock? other) =>
             other is not null
@@ -59,5 +59,9 @@ internal sealed class EatenItemsSource(RunCollection collection) : IDetailSource
 internal sealed class RunClockSource : IDetailSource
 {
     public BadgeDetail Describe(RunFacts facts) =>
-        new BadgeDetail.RunClock(facts.SecondsSinceRunStarted, facts.BiomeSplits, RunEta.Estimate(facts));
+        new BadgeDetail.RunClock(
+            facts.SecondsSinceRunStarted,
+            facts.BiomeSplits.Select(split => ComparedSplit.Against(split, facts.BiomeMedians)).ToArray(),
+            RunEta.Estimate(facts)
+        );
 }

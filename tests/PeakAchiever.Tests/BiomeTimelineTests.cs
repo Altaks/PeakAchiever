@@ -75,7 +75,10 @@ public class BiomeTimelineTests
 
         // then
         Assert.Equal(
-            [new BiomeSplit(Biome.BiomeType.Alpine, 400f, IsCurrent: false), new BiomeSplit(Biome.BiomeType.Volcano, 100f, IsCurrent: true)],
+            [
+                new BiomeSplit(Biome.BiomeType.Alpine, 400f, IsCurrent: false, IsWhole: false),
+                new BiomeSplit(Biome.BiomeType.Volcano, 100f, IsCurrent: true),
+            ],
             splits
         );
     }

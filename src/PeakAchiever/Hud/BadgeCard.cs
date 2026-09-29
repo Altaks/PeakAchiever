@@ -30,7 +30,11 @@ internal sealed class BadgeCard
     private const float ChecklistTickGlyphSize = 9f;
     // As many icons as fit the text column: (Width - 2 * Padding - IconSize - Gap + ChecklistGap) / (ChecklistIconSize + ChecklistGap).
     private const int ChecklistColumns = 8;
-    private static readonly string CurrentSplitColor = ColorUtility.ToHtmlStringRGB(HudStyle.ProgressFill);
+    private static readonly SplitColors SplitColors = new(
+        Current: ColorUtility.ToHtmlStringRGB(HudStyle.ProgressFill),
+        Slower: ColorUtility.ToHtmlStringRGB(HudStyle.Unattainable),
+        Faster: ColorUtility.ToHtmlStringRGB(HudStyle.Achieved)
+    );
 
     private readonly HudStyle _style;
     private readonly RawImage _icon;
@@ -201,7 +205,7 @@ internal sealed class BadgeCard
                 break;
             // Once broken the bar is gone, so the elapsed time moves down here.
             case BadgeDetail.RunClock clock:
-                text = StatusText.RunClock(clock, withElapsed: unattainable, CurrentSplitColor);
+                text = StatusText.RunClock(clock, withElapsed: unattainable, SplitColors);
                 break;
             case BadgeDetail.Checklist checklist:
                 items = checklist.Items;

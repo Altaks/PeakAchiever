@@ -25,7 +25,7 @@ internal static class RunFactsReader
     /// True when the local scout joined after the first segment: their timeline only starts then
     /// (MountainProgressHandler.JoinedInSegment stays -1 for a scout there from the start, v2.4.c).
     /// </summary>
-    public static bool JoinedMidRun => Singleton<MountainProgressHandler>.Instance.JoinedInSegment >= 0;
+    private static bool JoinedMidRun => Singleton<MountainProgressHandler>.Instance.JoinedInSegment >= 0;
 
     public static RunFacts Read(SplitHistory history)
     {

@@ -71,30 +71,51 @@ internal static class StatusText
     /// The run clock's lines under the status row: the elapsed time (once the bar is gone) and the ETA,
     /// then the biome splits. Empty until there is any of them.
     /// </summary>
-    public static string RunClock(BadgeDetail.RunClock clock, bool withElapsed, string currentColor)
+    public static string RunClock(BadgeDetail.RunClock clock, bool withElapsed, SplitColors colors)
     {
         var head = new List<string>();
         if (withElapsed)
             head.Add(Clock(clock.ElapsedSeconds));
         if (clock.EtaSeconds is { } eta)
             head.Add(ModText.Format(ModTextKey.Eta, Clock(eta)));
-        string[] lines = [string.Join(SplitSeparator, head), Splits(clock.Splits, currentColor)];
+        string[] lines = [string.Join(SplitSeparator, head), Splits(clock.Splits, colors)];
         return string.Join(LineBreak, lines.Where(line => line.Length > 0));
     }
 
-    /// <summary>Each biome with its time, the one still counting in the progress colour.</summary>
-    public static string Splits(IEnumerable<BiomeSplit> splits, string currentColor) =>
+    /// <summary>
+    /// Each biome with its time, the one still counting in the current colour, then its gap to the median
+    /// signed and coloured (the sign carries it without the colour).
+    /// </summary>
+    private static string Splits(IEnumerable<ComparedSplit> splits, SplitColors colors) =>
         string.Join(
             SplitSeparator,
-            splits.Select(split =>
+            splits.Select(compared =>
             {
+                BiomeSplit split = compared.Split;
                 string text = $"{BiomeName(split.Biome)} {Clock(split.Seconds)}";
-                return split.IsCurrent ? $"<color=#{currentColor}>{text}</color>" : text;
+                if (split.IsCurrent)
+                    text = $"<color=#{colors.Current}>{text}</color>";
+                if (compared.DeltaSeconds is { } delta)
+                    text += $" <color=#{(delta > 0f ? colors.Slower : colors.Faster)}>({Delta(delta)})</color>";
+                return text;
             })
         );
+
+    /// <summary>A signed gap: minutes and seconds, hours only from one hour on.</summary>
+    public static string Delta(float seconds)
+    {
+        int whole = (int)System.Math.Floor(System.Math.Abs(seconds));
+        string sign = seconds < 0f ? "-" : "+";
+        int minutes = whole % SecondsPerHour / SecondsPerMinute;
+        int rest = whole % SecondsPerMinute;
+        return whole >= SecondsPerHour ? $"{sign}{whole / SecondsPerHour}:{minutes:00}:{rest:00}" : $"{sign}{minutes}:{rest:00}";
+    }
 
     public static string BiomeNames(Biome.BiomeType[] biomes) => string.Join(BiomeNameSeparator, biomes.Select(BiomeName));
 
     private static string BiomeName(Biome.BiomeType biome) =>
         BiomeNameKeys.TryGetValue(biome, out string key) ? LocalizedText.GetText(key) : biome.ToString();
 }
+
+/// <summary>Rich-text colours of a splits line, as hex RGB.</summary>
+internal readonly record struct SplitColors(string Current, string Slower, string Faster);

@@ -20,6 +20,9 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   - "Holding so far" for clean-run badges (no fall damage, no packaged food...) still intact.
   - Speed Climber shows the run time against one hour, and the time spent in each biome so far (the
     current one in yellow). The time and splits stay under the red cross once the hour is over.
+  - Each biome time is followed by its gap to the median of past runs at the same ascent: `(+1:20)`
+    in red when slower, `(-0:40)` in green when faster. The biome in progress shows a gap only once
+    it runs over its median.
   - Speed Climber also shows an ETA: the run time so far, plus the median time past runs at the same
     ascent took for the rest of the current biome and for every biome ahead. It shows once each of
     those biomes has been finished at least once with the mod installed.
