@@ -28,6 +28,8 @@ internal sealed class BadgeRule
 
     public IProgressMeasure? ProgressMeasure { get; }
 
+    public bool IsCleanRun => _isCleanRun;
+
     /// <summary>Items whose use breaks this badge's clean-run condition.</summary>
     public ItemTraits ForbiddenItems { get; }
 

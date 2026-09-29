@@ -44,6 +44,11 @@ internal static class BadgesPagePatches
             hint = ModText.Format(ModTextKey.HintConflict, BadgeCatalog.Present(conflict).Name);
         else
             hint = ModText.Get(ModTextKey.HintClickToPin);
+        if (PinnableBadge.Suggestions(__instance).Contains(badge) && MapCatalog.CurrentOrToday is { } suggestedFor)
+        {
+            ModTextKey why = suggestedFor.IsToday ? ModTextKey.HintSuggestedToday : ModTextKey.HintSuggestedThisMap;
+            __instance.badgePopupDescription.text += $"\n<size=85%>{ModText.Get(why)}</size>";
+        }
         IReadOnlyCollection<Biome.BiomeType> missing = PinnableBadge.MissingOnKnownMap(badge);
         if (missing.Count > 0 && MapCatalog.CurrentOrToday is { } map)
         {

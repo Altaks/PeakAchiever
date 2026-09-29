@@ -38,6 +38,11 @@ internal sealed class HudStyle
     private const int RoundedTextureSize = 32;
     private const int RoundedCornerRadius = 12;
     private const int CircleTextureSize = 64;
+    private const int StarTextureSize = 64;
+    private const int StarPoints = 5;
+    // Inner radius of a regular five-point star, as a share of the outer one.
+    private const float StarInnerRatio = 0.4f;
+    private const int StarSupersampling = 4;
 
     // Mod assets are embedded under this logical name prefix (see the csproj EmbeddedResource item).
     private const string EmbeddedAssetPrefix = "PeakAchiever.Assets.";
@@ -53,6 +58,7 @@ internal sealed class HudStyle
         StrongFont = FindFont(fonts, StrongFontName, log);
         RoundedRect = CreateRoundedRect();
         Circle = CreateCircle();
+        Star = CreateStar();
         Cross = LoadEmbeddedSprite("Cross.png", log);
         Pin = LoadEmbeddedSprite("Pin.png", log);
         Warning = LoadEmbeddedSprite("Warning.png", log);
@@ -74,6 +80,9 @@ internal sealed class HudStyle
     public Sprite RoundedRect { get; }
 
     public Sprite Circle { get; }
+
+    /// <summary>A five-point star, drawn in code like <see cref="Circle"/>.</summary>
+    public Sprite Star { get; }
 
     private static TMP_FontAsset FindFont(TMP_FontAsset[] fonts, string name, ManualLogSource log)
     {
@@ -121,6 +130,53 @@ internal sealed class HudStyle
             (x, y) => Coverage(Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(radius, radius)), radius)
         );
         return Sprite.Create(texture, new Rect(0, 0, CircleTextureSize, CircleTextureSize), new Vector2(0.5f, 0.5f));
+    }
+
+    private static Sprite CreateStar()
+    {
+        Vector2[] outline = StarOutline(StarTextureSize / 2f);
+        Texture2D texture = CreateMask(StarTextureSize, (x, y) => SupersampledCoverage(x, y, outline));
+        return Sprite.Create(texture, new Rect(0, 0, StarTextureSize, StarTextureSize), new Vector2(0.5f, 0.5f));
+    }
+
+    // Ten points alternating outer and inner radius, the first pointing up.
+    private static Vector2[] StarOutline(float radius)
+    {
+        var points = new Vector2[StarPoints * 2];
+        for (int i = 0; i < points.Length; i++)
+        {
+            float angle = Mathf.PI / 2f + i * Mathf.PI / StarPoints;
+            float distance = i % 2 == 0 ? radius : radius * StarInnerRatio;
+            points[i] = new Vector2(radius + distance * Mathf.Cos(angle), radius + distance * Mathf.Sin(angle));
+        }
+        return points;
+    }
+
+    // The share of a pixel's sub-samples inside the outline, for a smooth edge.
+    private static float SupersampledCoverage(int x, int y, Vector2[] outline)
+    {
+        int inside = 0;
+        for (int sy = 0; sy < StarSupersampling; sy++)
+        for (int sx = 0; sx < StarSupersampling; sx++)
+        {
+            var point = new Vector2(x + (sx + 0.5f) / StarSupersampling, y + (sy + 0.5f) / StarSupersampling);
+            if (InsidePolygon(point, outline))
+                inside++;
+        }
+        return (float)inside / (StarSupersampling * StarSupersampling);
+    }
+
+    // Even-odd ray casting.
+    private static bool InsidePolygon(Vector2 point, Vector2[] polygon)
+    {
+        bool inside = false;
+        for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++)
+        {
+            if ((polygon[i].y > point.y) != (polygon[j].y > point.y)
+                && point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x)
+                inside = !inside;
+        }
+        return inside;
     }
 
     private static Texture2D CreateMask(int size, System.Func<int, int, float> alphaAt)

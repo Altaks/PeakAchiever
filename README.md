@@ -8,6 +8,10 @@ Pin the badges you want to chase, and see during your run which ones you can sti
 - **Today's map.** In the airport, badges today's map cannot hold carry a red cross on the badges
   page, and their tooltip names the missing biome ("Not on today's map (Roots)"). During a run the
   same mark reads the run's own map. They can still be pinned, for another day.
+- **Suggested pins.** The badges page stars as many badges as there are free pin slots: all doable
+  on today's map (or the run's), and compatible with your pins and with each other. Badges tied to
+  that map's biomes come first (the map alternates, so they wait otherwise), then clean runs. A locked
+  secret badge is never starred.
 - **No incompatible pins.** A map has either Tropics, Alpine and Caldera, or Roots, Mesa and the Gloom
   (read from the game's level table). A badge that needs a biome no map shares with a pinned badge is
   faded on the badges page, its tooltip names the pin in the way, and clicking it is refused. Only

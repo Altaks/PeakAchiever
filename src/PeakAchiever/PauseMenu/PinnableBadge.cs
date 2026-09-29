@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using PeakAchiever.Tracking;
 using PeakAchiever.Game;
 using PeakAchiever.Hud;
 using PeakAchiever.Localization;
@@ -20,12 +22,16 @@ internal sealed class PinnableBadge : MonoBehaviour
     private const float MarkerGlyphSize = 12f;
     private static readonly Vector2 MarkerOffset = new(4f, 4f);
     private static readonly Vector2 NotOnMapOffset = new(4f, -4f);
+    private static readonly Vector2 SuggestedOffset = new(-4f, 4f);
+    private static int _suggestionsFrame = -1;
+    private static IReadOnlyList<ACHIEVEMENTTYPE> _suggestions = [];
     // Faded enough to read as unavailable next to the other locked badges, still legible.
     private const float ConflictAlpha = 0.35f;
 
     private BadgeUI _badge = null!;
     private GameObject? _marker;
     private GameObject? _notOnMap;
+    private GameObject? _suggested;
     private CanvasGroup _fade = null!;
 
     /// <summary>Hooks the badge's own Button, so mouse clicks and gamepad submit both toggle the pin.</summary>
@@ -50,6 +56,29 @@ internal sealed class PinnableBadge : MonoBehaviour
     /// <summary>The first pinned badge this one cannot share a run with, if any.</summary>
     public static ACHIEVEMENTTYPE? ConflictOf(ACHIEVEMENTTYPE badge) =>
         MapCatalog.Compatibility.FirstConflict(badge, Plugin.Pins.Board.Pins);
+
+    /// <summary>
+    /// The badges to star on the page: as many as there are free pin slots, allowed by the known map and
+    /// compatible with the pins and each other (<see cref="PinSuggestions"/>). A locked secret badge is
+    /// never starred, since that would tell what it is. Worked out once per frame for the whole page.
+    /// </summary>
+    public static IReadOnlyList<ACHIEVEMENTTYPE> Suggestions(BadgeManager manager)
+    {
+        if (_suggestionsFrame == Time.frameCount)
+            return _suggestions;
+        _suggestionsFrame = Time.frameCount;
+        PinBoard board = Plugin.Pins.Board;
+        _suggestions = MapCatalog.CurrentOrToday is { } map
+            ? PinSuggestions.For(
+                manager.badgeData.Where(data => data != null && data.IsLocked && !data.secret).Select(data => data.linkedAchievement),
+                board.Pins.ToArray(),
+                board.Capacity - board.Pins.Count,
+                map.Biomes,
+                MapCatalog.Compatibility
+            )
+            : [];
+        return _suggestions;
+    }
 
     /// <summary>The biomes the run's map, or today's in the airport, lacks for this badge; empty when it has them.</summary>
     public static IReadOnlyCollection<Biome.BiomeType> MissingOnKnownMap(ACHIEVEMENTTYPE badge) =>
@@ -90,8 +119,8 @@ internal sealed class PinnableBadge : MonoBehaviour
     }
 
     /// <summary>
-    /// The pin marker on a pinned badge, a red cross on one the map cannot hold, and a fade on one that
-    /// conflicts with a pin.
+    /// The pin marker on a pinned badge, a red cross on one the map cannot hold, a star on a suggested
+    /// one, and a fade on one that conflicts with a pin.
     /// </summary>
     private void ShowPinState()
     {
@@ -106,6 +135,11 @@ internal sealed class PinnableBadge : MonoBehaviour
             _notOnMap = CreateMarker(crossStyle, "NotOnMap", new Vector2(1f, 0f), NotOnMapOffset, HudStyle.Unattainable, crossStyle.Cross);
         if (_notOnMap != null)
             _notOnMap.SetActive(notOnMap);
+        bool suggested = data != null && Suggestions(_badge.manager).Contains(data.linkedAchievement);
+        if (suggested && _suggested == null && Plugin.Hud.Style is { } starStyle)
+            _suggested = CreateMarker(starStyle, "Suggested", Vector2.up, SuggestedOffset, HudStyle.ProgressFill, starStyle.Star);
+        if (_suggested != null)
+            _suggested.SetActive(suggested);
         bool conflicts = data != null && data.IsLocked && !pinned && ConflictOf(data.linkedAchievement) is not null;
         _fade.alpha = conflicts ? ConflictAlpha : 1f;
     }
