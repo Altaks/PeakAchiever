@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PeakAchiever.Team;
 
 namespace PeakAchiever.Pinning;
 
@@ -10,7 +11,7 @@ namespace PeakAchiever.Pinning;
 /// </summary>
 internal sealed record PinList(IReadOnlyList<ACHIEVEMENTTYPE> Pins, IReadOnlyList<ACHIEVEMENTTYPE> ForAllies, IReadOnlyList<string> Unknown)
 {
-    private const char Separator = ',';
+    private const char Separator = BadgeNames.Separator;
     private const char AllyMark = '+';
 
     public static string Write(PinBoard board) =>
@@ -26,7 +27,7 @@ internal sealed record PinList(IReadOnlyList<ACHIEVEMENTTYPE> Pins, IReadOnlyLis
         {
             bool forAlly = entry.StartsWith(AllyMark.ToString(), StringComparison.Ordinal);
             string name = entry.TrimStart(AllyMark);
-            if (!Enum.TryParse(name, out ACHIEVEMENTTYPE badge) || !Enum.IsDefined(typeof(ACHIEVEMENTTYPE), badge) || badge == ACHIEVEMENTTYPE.NONE)
+            if (!BadgeNames.TryParse(name, out ACHIEVEMENTTYPE badge))
             {
                 unknown.Add(name);
                 continue;

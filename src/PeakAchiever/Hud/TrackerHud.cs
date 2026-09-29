@@ -5,6 +5,7 @@ using PeakAchiever.Controls;
 using PeakAchiever.Game;
 using PeakAchiever.Localization;
 using PeakAchiever.PauseMenu;
+using PeakAchiever.Team;
 using PeakAchiever.Tracking;
 using TMPro;
 using UnityEngine;
@@ -117,6 +118,8 @@ internal sealed class TrackerHud : MonoBehaviour
         // Recorded whatever is pinned, so the ETA has past runs to go by once Speed Climber is.
         if (facts != null)
             Plugin.Splits.RecordFinished(facts.BiomeSplits, runEnded: false);
+        // Kept current for the team, on the same cadence as the tracker.
+        TeamSync.PublishEarned();
         _tracker.Evaluate(facts);
         ScheduleTears();
         _cardsStale = true;

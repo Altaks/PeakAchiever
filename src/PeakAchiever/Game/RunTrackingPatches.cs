@@ -1,5 +1,6 @@
 using System;
 using HarmonyLib;
+using PeakAchiever.Team;
 using Zorro.Core;
 
 namespace PeakAchiever.Game;
@@ -63,6 +64,7 @@ internal static class RunTrackingPatches
             Plugin.Pins.Save();
         Plugin.Splits.StartRun();
         RunOutcome.RunStarted();
+        TeamSync.DropEarnedByAll();
         Plugin.Hud.RequestRefresh();
     }
 }
