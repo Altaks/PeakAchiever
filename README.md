@@ -55,8 +55,13 @@ Pin the badges you want to chase, and see during your run which ones you can sti
 - **Help an ally.** A badge you already earned can be pinned too, as a reminder of what a friend is
   chasing in a multiplayer run: its card shows it earned, and it stays pinned from one run to the next
   until you unpin it.
+- **Scouts, for the host.** In a multiplayer game, the host's badges page has a **Scouts** button: it
+  lists the badges worth pinning for the team, those nobody has first, then those some scouts still
+  miss. Scouts with the mod share which badges they earned; the others show as unknown. The team pins
+  stay when the host leaves (the next host with the mod takes over), and those every scout has earned
+  are dropped at the next run start. They do not show on the trackers yet.
 - Secret badges keep their `???` until earned. The tracker hides while the pause menu is open.
-- Client-side only: other players do not need the mod.
+- Other players do not need the mod: the mod only shares data under its own keys, which the game ignores.
 
 ## Installation
 
@@ -76,9 +81,10 @@ Tested with PEAK 2.4.c. If a game update breaks the mod, the error shows in `Bep
 | --- | --- | --- |
 | `ToggleKey` | `<Keyboard>/f6` | Shows or hides the tracker during a run. Set it from the game's Controls menu, in the row "PeakAchiever: show / hide the tracker" at the end of the first column (click it and press a key, or reset it to F6). A key saved by 0.1.0 is converted; one with modifiers falls back to F6. |
 | `MaxPinnedBadges` | `5` | How many badges can be pinned at once (1 to 12). |
+| `MaxTeamPins` | `5` | How many badges the host can pin for the whole team in a multiplayer game, on top of their own (1 to 12). |
 | `PinnedBadges` | empty | The pins, edited from the pause menu. |
 
-On the badges page, a **Statistics** button under the Back button opens the biome times per ascent:
+On the badges page, a **Statistics** button next to the Back button opens the biome times per ascent:
 how many times, median, best, and the whole climb of each map layout. **Erase this ascent** asks for
 a second click within 3 seconds, then removes that ascent's lines from the file. The panel takes
 mouse clicks; it is not reachable with a gamepad yet.

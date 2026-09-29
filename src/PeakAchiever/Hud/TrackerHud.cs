@@ -5,6 +5,7 @@ using PeakAchiever.Controls;
 using PeakAchiever.Game;
 using PeakAchiever.Localization;
 using PeakAchiever.PauseMenu;
+using PeakAchiever.Team;
 using PeakAchiever.Tracking;
 using TMPro;
 using UnityEngine;
@@ -44,6 +45,7 @@ internal sealed class TrackerHud : MonoBehaviour
     private TrackerToggleKey _toggleKey = null!;
     private HudStyle? _style;
     private StatsPanel? _stats;
+    private TeamPanel? _team;
     private GameObject _panel = null!;
     private GameObject _banner = null!;
     private GameObject _toast = null!;
@@ -59,6 +61,9 @@ internal sealed class TrackerHud : MonoBehaviour
 
     /// <summary>Null until the game's GUI has loaded, like <see cref="Style"/>.</summary>
     public StatsPanel? Stats => _stats;
+
+    /// <summary>Null until the game's GUI has loaded, like <see cref="Style"/>.</summary>
+    public TeamPanel? Team => _team;
 
     public void Init(PinnedBadgeTracker tracker, TrackerToggleKey toggleKey)
     {
@@ -97,6 +102,7 @@ internal sealed class TrackerHud : MonoBehaviour
         if (_toast.activeSelf && Time.unscaledTime >= _toastHideTime)
             _toast.SetActive(false);
         _stats!.Tick();
+        _team!.Tick();
 
         // Evaluated even while the cards are hidden: the inventory marks depend on it too.
         if (_refreshRequested || Time.unscaledTime >= _nextPeriodicRefresh)
@@ -117,6 +123,8 @@ internal sealed class TrackerHud : MonoBehaviour
         // Recorded whatever is pinned, so the ETA has past runs to go by once Speed Climber is.
         if (facts != null)
             Plugin.Splits.RecordFinished(facts.BiomeSplits, runEnded: false);
+        // Kept current for the team, on the same cadence as the tracker.
+        TeamSync.PublishEarned();
         _tracker.Evaluate(facts);
         ScheduleTears();
         _cardsStale = true;
@@ -208,6 +216,7 @@ internal sealed class TrackerHud : MonoBehaviour
         scaler.referenceResolution = ReferenceResolution;
         scaler.matchWidthOrHeight = 0.5f;
         _stats = new StatsPanel(Plugin.Splits);
+        _team = new TeamPanel();
 
         _panel = UiFactory.Create("PinnedBadges", transform);
         var panelRect = (RectTransform)_panel.transform;

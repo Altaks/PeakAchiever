@@ -26,6 +26,7 @@ internal static class BadgesPagePatches
             return;
         PinnableBadge.AttachTo(__instance);
         Plugin.Hud.Stats?.Watch(page);
+        Plugin.Hud.Team?.Watch(page);
     }
 
     /// <summary>Adds the click hint under the game's own description of a badge; an earned one pins for an ally.</summary>

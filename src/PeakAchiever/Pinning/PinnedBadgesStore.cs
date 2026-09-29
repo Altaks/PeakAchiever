@@ -9,9 +9,11 @@ internal sealed class PinnedBadgesStore
     private const string Section = "Tracker";
     private const int DefaultCapacity = 5;
     private const int MaxCapacity = 12;
+    private const int DefaultTeamCapacity = 5;
 
     private readonly ConfigEntry<string> _pins;
     private readonly ConfigEntry<int> _capacity;
+    private readonly ConfigEntry<int> _teamCapacity;
     private readonly ManualLogSource _log;
 
     public PinnedBadgesStore(ConfigFile config, ManualLogSource log)
@@ -33,6 +35,15 @@ internal sealed class PinnedBadgesStore
                 new AcceptableValueRange<int>(1, MaxCapacity)
             )
         );
+        _teamCapacity = config.Bind(
+            Section,
+            "MaxTeamPins",
+            DefaultTeamCapacity,
+            new ConfigDescription(
+                "How many badges the host can pin for the whole team in a multiplayer game, on top of their own.",
+                new AcceptableValueRange<int>(1, MaxCapacity)
+            )
+        );
         PinList stored = PinList.Read(_pins.Value);
         foreach (string name in stored.Unknown)
             _log.LogWarning($"Ignoring unknown pinned badge '{name}' in the config.");
@@ -41,6 +52,9 @@ internal sealed class PinnedBadgesStore
     }
 
     public PinBoard Board { get; }
+
+    /// <summary>How many badges the host can pin for the team (the MaxTeamPins setting).</summary>
+    public int TeamCapacity => _teamCapacity.Value;
 
     public void Save() => _pins.Value = PinList.Write(Board);
 }
