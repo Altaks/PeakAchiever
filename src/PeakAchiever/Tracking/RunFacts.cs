@@ -10,7 +10,8 @@ internal sealed class RunFacts
 {
     public RunFacts(
         IReadOnlyDictionary<RUNBASEDVALUETYPE, float> runValues,
-        IReadOnlyDictionary<RunCollection, int> collectionCounts,
+        IReadOnlyDictionary<RunCollection, IReadOnlyCollection<ushort>> eatenItems,
+        IReadOnlyDictionary<RunCollection, IReadOnlyList<ushort>> collectionCandidates,
         IReadOnlyDictionary<STEAMSTATTYPE, int> lifetimeStats,
         IReadOnlyList<Biome.BiomeType> segmentBiomes,
         IReadOnlyCollection<Biome.BiomeType> presentBiomes,
@@ -21,7 +22,8 @@ internal sealed class RunFacts
     )
     {
         RunValues = runValues;
-        CollectionCounts = collectionCounts;
+        EatenItems = eatenItems;
+        CollectionCandidates = collectionCandidates;
         LifetimeStats = lifetimeStats;
         SegmentBiomes = segmentBiomes;
         PresentBiomes = presentBiomes;
@@ -34,7 +36,11 @@ internal sealed class RunFacts
     /// <summary>Run counters, the higher of the game's int and float tables for each key.</summary>
     public IReadOnlyDictionary<RUNBASEDVALUETYPE, float> RunValues { get; }
 
-    public IReadOnlyDictionary<RunCollection, int> CollectionCounts { get; }
+    /// <summary>The distinct item ids of each list eaten this run.</summary>
+    public IReadOnlyDictionary<RunCollection, IReadOnlyCollection<ushort>> EatenItems { get; }
+
+    /// <summary>Every item id of the game that eating would add to each list.</summary>
+    public IReadOnlyDictionary<RunCollection, IReadOnlyList<ushort>> CollectionCandidates { get; }
 
     public IReadOnlyDictionary<STEAMSTATTYPE, int> LifetimeStats { get; }
 
@@ -56,7 +62,7 @@ internal sealed class RunFacts
         RunValues.TryGetValue(type, out float value) ? value : 0f;
 
     public int CollectionCount(RunCollection collection) =>
-        CollectionCounts.TryGetValue(collection, out int count) ? count : 0;
+        EatenItems.TryGetValue(collection, out IReadOnlyCollection<ushort> eaten) ? eaten.Count : 0;
 
     public int LifetimeStat(STEAMSTATTYPE stat) =>
         LifetimeStats.TryGetValue(stat, out int value) ? value : 0;

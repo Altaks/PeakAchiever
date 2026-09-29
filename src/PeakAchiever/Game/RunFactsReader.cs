@@ -29,7 +29,8 @@ internal static class RunFactsReader
         float secondsSinceRunStarted = RunManager.Instance.TimeSinceRunStarted;
         return new RunFacts(
             ReadRunValues(run),
-            ReadCollectionCounts(run),
+            ReadEatenItems(run),
+            ItemCatalog.CollectionCandidates,
             ReadLifetimeStats(achievements),
             map.segments.Select(segment => segment.biome).ToArray(),
             map.biomes.ToArray(),
@@ -58,13 +59,14 @@ internal static class RunFactsReader
     private static (Biome.BiomeType, float)[] ReadTimeline() =>
         Character.localCharacter.refs.stats.timelineInfo.Select(sample => (sample.biome, sample.time)).ToArray();
 
-    private static Dictionary<RunCollection, int> ReadCollectionCounts(SerializableRunBasedValues run) =>
+    // Copied: the game keeps adding to these lists while the snapshot is read.
+    private static Dictionary<RunCollection, IReadOnlyCollection<ushort>> ReadEatenItems(SerializableRunBasedValues run) =>
         new()
         {
-            [RunCollection.DifferentBerriesEaten] = run.runBasedFruitsEaten.Count,
-            [RunCollection.DifferentShroomBerriesEaten] = run.shroomBerriesEaten.Count,
-            [RunCollection.DifferentNonToxicMushroomsEaten] = run.nonToxicMushroomsEaten.Count,
-            [RunCollection.GourmandDishesEaten] = run.gourmandRequirementsEaten.Count,
+            [RunCollection.DifferentBerriesEaten] = run.runBasedFruitsEaten.ToHashSet(),
+            [RunCollection.DifferentShroomBerriesEaten] = run.shroomBerriesEaten.ToHashSet(),
+            [RunCollection.DifferentNonToxicMushroomsEaten] = run.nonToxicMushroomsEaten.ToHashSet(),
+            [RunCollection.GourmandDishesEaten] = run.gourmandRequirementsEaten.ToHashSet(),
         };
 
     private static Dictionary<STEAMSTATTYPE, int> ReadLifetimeStats(AchievementManager achievements)
