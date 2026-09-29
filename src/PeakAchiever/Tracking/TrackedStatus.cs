@@ -12,6 +12,8 @@ internal enum ProgressUnit
     Count,
     /// <summary>Whole seconds, shown as a clock.</summary>
     Duration,
+    /// <summary>Whole percent of the highest rate reached, against the most the game allows.</summary>
+    Percent,
 }
 
 internal readonly record struct Progress(int Current, int Target, ProgressScope Scope, ProgressUnit Unit = ProgressUnit.Count)
