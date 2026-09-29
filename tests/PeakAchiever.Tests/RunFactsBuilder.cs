@@ -23,6 +23,7 @@ internal sealed class RunFactsBuilder
     private int _scouts = 1;
     private BiomeSplit[] _biomeSplits = [];
     private IReadOnlyDictionary<Biome.BiomeType, float> _biomeMedians = new Dictionary<Biome.BiomeType, float>();
+    private IReadOnlyCollection<ushort>? _itemsOnMap;
 
     public RunFactsBuilder WithRunValue(RUNBASEDVALUETYPE type, float value)
     {
@@ -88,6 +89,12 @@ internal sealed class RunFactsBuilder
         return this;
     }
 
+    public RunFactsBuilder WithItemsOnMap(params ushort[] items)
+    {
+        _itemsOnMap = items;
+        return this;
+    }
+
     public RunFacts Build() =>
         new(
             _runValues,
@@ -100,6 +107,7 @@ internal sealed class RunFactsBuilder
             _seconds,
             _biomeSplits,
             _biomeMedians,
+            _itemsOnMap,
             _scouts
         );
 }

@@ -32,7 +32,10 @@ Pin the badges you want to chase, and see during your run which ones you can sti
     from 75% of the limit (8% of 10%).
   - Foraging, Mycology, Advanced Mycology and Gourmand show every item that counts as a grid of
     icons: dimmed until eaten this run, then in full colour with a green tick. The item lists are read
-    from the game, and written to `BepInEx/LogOutput.log` the first time a run needs them.
+    from the game, and written to `BepInEx/LogOutput.log` the first time a run needs them. Items no
+    spawner, item or luggage of this level can yield move to a fainter row, "Not seen on this map":
+    a hint, since an item could still come from somewhere the mod does not read, so the badge never
+    gets a red cross for it.
   - A green check once earned.
   - A red cross, with the reason, once the badge can no longer be earned this run: its biome is not
     on this map or is behind you, or the clean-run condition broke.

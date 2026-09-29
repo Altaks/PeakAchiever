@@ -19,6 +19,7 @@ internal sealed class RunFacts
         float secondsSinceRunStarted,
         IReadOnlyList<BiomeSplit> biomeSplits,
         IReadOnlyDictionary<Biome.BiomeType, float> biomeMedians,
+        IReadOnlyCollection<ushort>? itemsOnMap,
         int scoutCount
     )
     {
@@ -32,6 +33,7 @@ internal sealed class RunFacts
         SecondsSinceRunStarted = secondsSinceRunStarted;
         BiomeSplits = biomeSplits;
         BiomeMedians = biomeMedians;
+        ItemsOnMap = itemsOnMap;
         ScoutCount = scoutCount;
     }
 
@@ -60,6 +62,9 @@ internal sealed class RunFacts
 
     /// <summary>The median time past runs at this run's ascent took to finish each biome.</summary>
     public IReadOnlyDictionary<Biome.BiomeType, float> BiomeMedians { get; }
+
+    /// <summary>Every item id this map can yield, or null when the map could not be read.</summary>
+    public IReadOnlyCollection<ushort>? ItemsOnMap { get; }
 
     public int ScoutCount { get; }
 
