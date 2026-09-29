@@ -2,6 +2,12 @@
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- Lone Wolf no longer shows a red cross when other scouts are in the run: the game only counts scouts at the summit, and they can leave before.
+
 ## [0.1.0]
 
 ### Added

@@ -193,19 +193,4 @@ public class BlockerTests
         // then
         Assert.Equal(blocked ? new UnattainableReason.ConditionBroken(BrokenCondition.RunTooLong) : null, reason);
     }
-
-    [Theory]
-    [InlineData(1, false)]
-    [InlineData(2, true)]
-    public void SoloOnly_blocks_as_soon_as_another_scout_is_in_the_run(int scouts, bool blocked)
-    {
-        // given
-        RunFacts facts = new RunFactsBuilder().WithScouts(scouts).Build();
-
-        // when
-        UnattainableReason? reason = new SoloOnly().FindBlock(facts);
-
-        // then
-        Assert.Equal(blocked ? new UnattainableReason.ConditionBroken(BrokenCondition.NotSolo) : null, reason);
-    }
 }

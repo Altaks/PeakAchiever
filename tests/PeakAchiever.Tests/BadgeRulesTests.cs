@@ -45,7 +45,7 @@ public class BadgeRulesTests
     public void Unknown_badge_stays_doable_without_counter()
     {
         // given the NONE placeholder has no rule
-        RunFacts facts = new RunFactsBuilder().AtSegment(5).WithScouts(4).AfterSeconds(9999f).Build();
+        RunFacts facts = new RunFactsBuilder().AtSegment(5).AfterSeconds(9999f).Build();
 
         // when
         TrackedStatus status = BadgeRules.For(ACHIEVEMENTTYPE.NONE).Evaluate(facts, isUnlocked: false);
@@ -100,5 +100,17 @@ public class BadgeRulesTests
             new TrackedStatus.Unattainable(new UnattainableReason.ConditionBroken(BrokenCondition.RunTooLong)),
             status
         );
+    }
+    [Fact]
+    public void Lone_wolf_holds_until_the_summit_whoever_climbs_along()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder().Build();
+
+        // when
+        TrackedStatus status = BadgeRules.For(ACHIEVEMENTTYPE.LoneWolfBadge).Evaluate(facts, isUnlocked: false);
+
+        // then
+        Assert.Equal(new TrackedStatus.Holding(), status);
     }
 }

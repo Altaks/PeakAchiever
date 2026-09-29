@@ -48,9 +48,3 @@ internal sealed class RunDurationCeiling(float maxSeconds) : IBlocker
             ? new UnattainableReason.ConditionBroken(BrokenCondition.RunTooLong)
             : null;
 }
-
-internal sealed class SoloOnly : IBlocker
-{
-    public UnattainableReason? FindBlock(RunFacts facts) =>
-        facts.ScoutCount > 1 ? new UnattainableReason.ConditionBroken(BrokenCondition.NotSolo) : null;
-}

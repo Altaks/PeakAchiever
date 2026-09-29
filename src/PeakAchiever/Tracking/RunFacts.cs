@@ -15,8 +15,7 @@ internal sealed class RunFacts
         IReadOnlyList<Biome.BiomeType> segmentBiomes,
         IReadOnlyCollection<Biome.BiomeType> presentBiomes,
         int currentSegmentIndex,
-        float secondsSinceRunStarted,
-        int scoutCount
+        float secondsSinceRunStarted
     )
     {
         RunValues = runValues;
@@ -26,7 +25,6 @@ internal sealed class RunFacts
         PresentBiomes = presentBiomes;
         CurrentSegmentIndex = currentSegmentIndex;
         SecondsSinceRunStarted = secondsSinceRunStarted;
-        ScoutCount = scoutCount;
     }
 
     /// <summary>Run counters, the higher of the game's int and float tables for each key.</summary>
@@ -44,8 +42,6 @@ internal sealed class RunFacts
     public int CurrentSegmentIndex { get; }
 
     public float SecondsSinceRunStarted { get; }
-
-    public int ScoutCount { get; }
 
     public float RunValue(RUNBASEDVALUETYPE type) =>
         RunValues.TryGetValue(type, out float value) ? value : 0f;

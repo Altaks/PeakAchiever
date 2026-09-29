@@ -31,7 +31,6 @@ internal static class StatusText
         [BrokenCondition.PassedOut] = ModTextKey.ReasonPassedOut,
         [BrokenCondition.PlacedPermanentItem] = ModTextKey.ReasonPlacedPermanentItem,
         [BrokenCondition.RunTooLong] = ModTextKey.ReasonRunTooLong,
-        [BrokenCondition.NotSolo] = ModTextKey.ReasonNotSolo,
         [BrokenCondition.TooMuchHeat] = ModTextKey.ReasonTooMuchHeat,
         [BrokenCondition.TooMuchCold] = ModTextKey.ReasonTooMuchCold,
         [BrokenCondition.TooManySpores] = ModTextKey.ReasonTooManySpores,

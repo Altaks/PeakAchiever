@@ -33,8 +33,7 @@ internal static class RunFactsReader
             map.segments.Select(segment => segment.biome).ToArray(),
             map.biomes.ToArray(),
             (int)map.GetCurrentSegment(),
-            RunManager.Instance.TimeSinceRunStarted,
-            Character.AllCharacters.Count
+            RunManager.Instance.TimeSinceRunStarted
         );
     }
 

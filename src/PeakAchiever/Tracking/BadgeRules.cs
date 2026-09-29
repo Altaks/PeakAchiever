@@ -62,7 +62,9 @@ internal static class BadgeRules
             ItemTraits.PlacesPermanentObject,
             new RunValueCeiling(RUNBASEDVALUETYPE.PermanentItemsPlaced, 0f, BrokenCondition.PlacedPermanentItem)
         ),
-        [ACHIEVEMENTTYPE.LoneWolfBadge] = BadgeRule.CleanRun(new SoloOnly()),
+        // TestWonRun counts the scouts only at the summit, and a scout who leaves drops out of
+        // Character.AllCharacters (Character.OnDestroy): company along the way rules nothing out.
+        [ACHIEVEMENTTYPE.LoneWolfBadge] = BadgeRule.CleanRun(),
         [ACHIEVEMENTTYPE.SpeedClimberBadge] = BadgeRule.CleanRun(new RunDurationCeiling(AchievementManager.ONE_HOUR_IN_SECONDS)),
 
         // Clean biomes, checked once the next area is reached (MountainProgressHandler.CheckAreaAchievement).
