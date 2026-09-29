@@ -65,6 +65,23 @@ internal sealed class SplitHistoryStore
         }
     }
 
+    /// <summary>Erases every biome time of one ascent, in memory and in the file.</summary>
+    /// <returns>False when the file could not be rewritten; the times are then gone only until a restart.</returns>
+    public bool EraseAscent(int ascent)
+    {
+        History.RemoveAscent(ascent);
+        try
+        {
+            File.WriteAllLines(_path, History.Splits.Select(split => split.ToLine()));
+            return true;
+        }
+        catch (IOException e)
+        {
+            _log.LogError($"Could not erase ascent {ascent} from {_path}: {e.Message}");
+            return false;
+        }
+    }
+
     private IEnumerable<PastSplit> Load()
     {
         if (!File.Exists(_path))

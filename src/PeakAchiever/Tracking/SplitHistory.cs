@@ -60,12 +60,39 @@ internal sealed class SplitHistory
         return true;
     }
 
+    public IEnumerable<PastSplit> Splits => _splits.Values;
+
+    /// <summary>The ascents with at least one biome finished, lowest first.</summary>
+    public IReadOnlyList<int> Ascents => _splits.Values.Select(split => split.Ascent).Distinct().OrderBy(ascent => ascent).ToArray();
+
     /// <summary>The median time of each biome finished at this ascent.</summary>
     public IReadOnlyDictionary<Biome.BiomeType, float> MediansAt(int ascent) =>
         _splits
             .Values.Where(split => split.Ascent == ascent)
             .GroupBy(split => split.Biome)
             .ToDictionary(biome => biome.Key, biome => Median(biome.Select(split => split.Seconds).ToArray()));
+
+    /// <summary>Each biome finished at this ascent, in the order runs usually reach it.</summary>
+    public IReadOnlyList<BiomeStats> StatsAt(int ascent) =>
+        _splits
+            .Values.Where(split => split.Ascent == ascent)
+            .GroupBy(split => split.Biome)
+            .OrderBy(biome => biome.Average(split => split.Index))
+            .Select(biome =>
+            {
+                float[] seconds = biome.Select(split => split.Seconds).ToArray();
+                return new BiomeStats(biome.Key, seconds.Length, Median(seconds), seconds.Min());
+            })
+            .ToArray();
+
+    /// <returns>How many splits were erased.</returns>
+    public int RemoveAscent(int ascent)
+    {
+        (Guid, int)[] keys = _splits.Where(entry => entry.Value.Ascent == ascent).Select(entry => entry.Key).ToArray();
+        foreach ((Guid, int) key in keys)
+            _splits.Remove(key);
+        return keys.Length;
+    }
 
     private static float Median(float[] values)
     {

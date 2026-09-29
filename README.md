@@ -69,6 +69,11 @@ Tested with PEAK 2.4.c. If a game update breaks the mod, the error shows in `Bep
 | `MaxPinnedBadges` | `5` | How many badges can be pinned at once (1 to 12). |
 | `PinnedBadges` | empty | The pins, edited from the pause menu. |
 
+On the badges page, a **Statistics** button under the Back button opens the biome times per ascent:
+how many times, median, best, and the whole climb of each map layout. **Erase this ascent** asks for
+a second click within 3 seconds, then removes that ascent's lines from the file. The panel takes
+mouse clicks; it is not reachable with a gamepad yet.
+
 The time of every biome you finish (mini runs excepted, and not the biome you joined a run in) goes
 to `BepInEx/config/Altaks.PeakAchiever.splits.csv`, one line each: run id, ascent, place in the run,
 biome, seconds. Delete the file to reset the ETA.

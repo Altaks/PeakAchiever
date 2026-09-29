@@ -116,7 +116,7 @@ internal static class StatusText
 
     public static string BiomeNames(Biome.BiomeType[] biomes) => string.Join(BiomeNameSeparator, biomes.Select(BiomeName));
 
-    private static string BiomeName(Biome.BiomeType biome) =>
+    public static string BiomeName(Biome.BiomeType biome) =>
         BiomeNameKeys.TryGetValue(biome, out string key) ? LocalizedText.GetText(key) : biome.ToString();
 }
 

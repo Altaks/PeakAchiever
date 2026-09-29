@@ -32,6 +32,20 @@ internal enum ModTextKey
     HintNotOnTodaysMap,
     HintNotOnThisMap,
     ChecklistNotOnMap,
+    StatsButton,
+    StatsTitle,
+    StatsAscentFallback,
+    StatsColumnBiome,
+    StatsColumnTimes,
+    StatsColumnMedian,
+    StatsColumnBest,
+    StatsLayoutTotal,
+    StatsEmpty,
+    StatsErase,
+    StatsEraseConfirm,
+    StatsErased,
+    StatsEraseFailed,
+    StatsClose,
     AchievementsDisabled,
 }
 
@@ -90,10 +104,27 @@ internal static class ModText
         [ModTextKey.HintNotOnTodaysMap] = ["Not on today's map ({0})", "Pas sur la carte du jour ({0})"],
         [ModTextKey.HintNotOnThisMap] = ["Not on this map ({0})", "Pas sur cette carte ({0})"],
         [ModTextKey.ChecklistNotOnMap] = ["Not seen on this map", "Pas vu sur cette carte"],
+        [ModTextKey.StatsButton] = ["Statistics", "Statistiques"],
+        [ModTextKey.StatsTitle] = ["STATISTICS", "STATISTIQUES"],
+        [ModTextKey.StatsAscentFallback] = ["Ascent {0}", "Ascension {0}"],
+        [ModTextKey.StatsColumnBiome] = ["Biome", "Biome"],
+        [ModTextKey.StatsColumnTimes] = ["Times", "Fois"],
+        [ModTextKey.StatsColumnMedian] = ["Median", "Médiane"],
+        [ModTextKey.StatsColumnBest] = ["Best", "Meilleur"],
+        [ModTextKey.StatsLayoutTotal] = ["Total ({0})", "Total ({0})"],
+        [ModTextKey.StatsEmpty] = ["No biome finished at this ascent yet.", "Aucun biome terminé à cette ascension pour l'instant."],
+        [ModTextKey.StatsErase] = ["Erase this ascent", "Effacer cette ascension"],
+        [ModTextKey.StatsEraseConfirm] = ["Click again to erase {0}", "Cliquez encore pour effacer {0}"],
+        [ModTextKey.StatsErased] = ["{0}: biome times erased.", "{0} : temps des biomes effacés."],
+        [ModTextKey.StatsEraseFailed] = ["Could not erase the file; see LogOutput.log.", "Impossible d'effacer le fichier : voir LogOutput.log."],
+        [ModTextKey.StatsClose] = ["Close", "Fermer"],
         [ModTextKey.AchievementsDisabled] = ["Achievements are disabled for this run", "Succès désactivés pour cette run"],
     };
 
     public static string Get(ModTextKey key) => Table[key][(int)CurrentLanguage];
+
+    /// <summary>The string in a given language, for texts handed to the game's own table.</summary>
+    public static string In(ModTextKey key, ModLanguage language) => Table[key][(int)language];
 
     public static string Format(ModTextKey key, params object[] arguments) =>
         string.Format(System.Globalization.CultureInfo.CurrentCulture, Get(key), arguments);
