@@ -67,6 +67,7 @@ internal sealed class StatsPanel
         _kit = kit;
         Build(page);
         PaperKit.OpenButton(page, page.backButton.transform, OpenButtonName, OpenButtonLabelKey, Open);
+        PaperKit.ArrangeButtons(page);
     }
 
     /// <summary>Called every frame by the overlay.</summary>

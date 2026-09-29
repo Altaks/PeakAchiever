@@ -24,6 +24,9 @@ internal sealed class PaperKit
     public const int SheetTopPadding = 60;
     public const float Gap = 6f;
     private const float ColumnGap = 18f;
+    private const float ButtonGap = 18f;
+    // The mod's buttons in the page's Back column all carry this name prefix.
+    private const string ModButtonPrefix = "PeakAchiever.";
     private const float DotsHeight = 7f;
     // Space left on each side of a ribbon's label, inside the ribbon's notched ends.
     private const float RibbonSideMargin = 30f;
@@ -220,6 +223,26 @@ internal sealed class PaperKit
             label.tmp.text = LocalizedText.GetText(labelKey);
         }
         return copy;
+    }
+
+    /// <summary>
+    /// Lines up the page's Back button and the mod's copies of it, the active ones, side by side and centred
+    /// where Back sits. The sash that holds them has no layout (v2.4.c): a copy left alone covers Back.
+    /// </summary>
+    public static void ArrangeButtons(PauseMenuAccoladesPage page)
+    {
+        var back = (RectTransform)page.backButton.transform;
+        RectTransform[] row = Enumerable.Range(0, back.parent.childCount)
+            .Select(i => (RectTransform)back.parent.GetChild(i))
+            .Where(child => child == back || (child.name.StartsWith(ModButtonPrefix, System.StringComparison.Ordinal) && child.gameObject.activeSelf))
+            .ToArray();
+        float width = row.Sum(button => button.rect.width) + ButtonGap * (row.Length - 1);
+        float x = -width / 2f;
+        foreach (RectTransform button in row)
+        {
+            button.anchoredPosition = new Vector2(x + button.rect.width * button.pivot.x, back.anchoredPosition.y);
+            x += button.rect.width + ButtonGap;
+        }
     }
 
     /// <summary>A dotted rule, the badge popup's own separator.</summary>
