@@ -8,6 +8,7 @@ internal enum ModTextKey
     StatusHolding,
     StatusAchieved,
     ScopeLifetime,
+    LimitRate,
     SecretPlaceholder,
     ReasonBiomeAbsent,
     ReasonBiomeLeft,
@@ -40,13 +41,14 @@ internal static class ModText
         French,
     }
 
-    // French typography: a no-break space (U+00A0) goes before ':' , as the game's own Frenchify does.
+    // French typography: a no-break space (U+00A0) goes before ':' and '%', as the game's own Frenchify does.
     internal static readonly Dictionary<ModTextKey, string[]> Table = new()
     {
         [ModTextKey.StatusAttainable] = ["Doable", "Faisable"],
         [ModTextKey.StatusHolding] = ["Holding so far", "Tenu jusqu'ici"],
         [ModTextKey.StatusAchieved] = ["Earned", "Obtenu"],
         [ModTextKey.ScopeLifetime] = ["LIFETIME", "À VIE"],
+        [ModTextKey.LimitRate] = ["max {0}% / {1}%", "max {0} % / {1} %"],
         [ModTextKey.SecretPlaceholder] = ["???", "???"],
         [ModTextKey.ReasonBiomeAbsent] = ["Impossible: no {0} this run", "Impossible : pas de {0} dans cette run"],
         [ModTextKey.ReasonBiomeLeft] = ["Impossible: {0} left behind", "Impossible : {0} déjà quitté"],
@@ -73,8 +75,8 @@ internal static class ModText
 
     public static string Get(ModTextKey key) => Table[key][(int)CurrentLanguage];
 
-    public static string Format(ModTextKey key, object argument) =>
-        string.Format(System.Globalization.CultureInfo.CurrentCulture, Get(key), argument);
+    public static string Format(ModTextKey key, params object[] arguments) =>
+        string.Format(System.Globalization.CultureInfo.CurrentCulture, Get(key), arguments);
 
     private static ModLanguage CurrentLanguage =>
         LocalizedText.CURRENT_LANGUAGE == LocalizedText.Language.French ? ModLanguage.French : ModLanguage.English;
