@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using PeakAchiever.Game;
+using PeakAchiever.Hud;
 using PeakAchiever.Localization;
 
 namespace PeakAchiever.PauseMenu;
@@ -37,6 +40,12 @@ internal static class BadgesPagePatches
             hint = ModText.Format(ModTextKey.HintConflict, BadgeCatalog.Present(conflict).Name);
         else
             hint = ModText.Get(ModTextKey.HintClickToPin);
+        IReadOnlyCollection<Biome.BiomeType> missing = PinnableBadge.MissingOnKnownMap(badge);
+        if (missing.Count > 0 && MapCatalog.CurrentOrToday is { } map)
+        {
+            ModTextKey where = map.IsToday ? ModTextKey.HintNotOnTodaysMap : ModTextKey.HintNotOnThisMap;
+            __instance.badgePopupDescription.text += $"\n<size=85%>{ModText.Format(where, StatusText.BiomeNames(missing.ToArray()))}</size>";
+        }
         __instance.badgePopupDescription.text += $"\n<size=85%><b>{hint}</b></size>";
     }
 }
