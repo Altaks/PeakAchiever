@@ -21,6 +21,12 @@ internal static class RunFactsReader
         && RunManager.Instance != null
         && AchievementManager.Initialized;
 
+    /// <summary>
+    /// True when the local scout joined after the first segment: their timeline only starts then
+    /// (MountainProgressHandler.JoinedInSegment stays -1 for a scout there from the start, v2.4.c).
+    /// </summary>
+    public static bool JoinedMidRun => Singleton<MountainProgressHandler>.Instance.JoinedInSegment >= 0;
+
     public static RunFacts Read()
     {
         AchievementManager achievements = Singleton<AchievementManager>.Instance;
@@ -36,7 +42,7 @@ internal static class RunFactsReader
             map.biomes.ToArray(),
             (int)map.GetCurrentSegment(),
             secondsSinceRunStarted,
-            BiomeTimeline.Split(ReadTimeline(), secondsSinceRunStarted),
+            BiomeTimeline.Split(ReadTimeline(), secondsSinceRunStarted, JoinedMidRun),
             Character.AllCharacters.Count
         );
     }

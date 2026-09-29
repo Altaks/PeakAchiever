@@ -8,19 +8,20 @@ internal readonly record struct BiomeSplit(Biome.BiomeType Biome, float Seconds,
 internal static class BiomeTimeline
 {
     /// <summary>
-    /// Cuts the run into consecutive biome stretches. The first starts at the run's start, each later one
-    /// at its first sample, and the last runs to now.
+    /// Cuts the run into consecutive biome stretches. The first starts at the run's start (or on arrival,
+    /// for a scout who joined mid-run), each later one at its first sample, and the last runs to now.
     /// </summary>
     public static IReadOnlyList<BiomeSplit> Split(
         IReadOnlyList<(Biome.BiomeType Biome, float Seconds)> samples,
-        float secondsSinceRunStarted
+        float secondsSinceRunStarted,
+        bool joinedMidRun
     )
     {
         var splits = new List<BiomeSplit>();
         if (samples.Count == 0)
             return splits;
         Biome.BiomeType biome = samples[0].Biome;
-        float start = 0f;
+        float start = joinedMidRun ? samples[0].Seconds : 0f;
         foreach ((Biome.BiomeType sampleBiome, float seconds) in samples)
         {
             if (sampleBiome == biome)
