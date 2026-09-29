@@ -10,6 +10,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   current one in yellow. Past one hour the red cross keeps the run time and the splits below it.
 - Cool Cucumber, Bundled Up and Tread Lightly cards: a bar of the highest heat, cold or spores rate
   reached in the biome against the game's limit (10%, 20%, 25%).
+- Speed Climber splits compare with the median of past runs at the same ascent: `(+1:20)` in red when
+  slower, `(-0:40)` in green when faster; the current biome only once it runs over.
 - Speed Climber ETA: when the summit should be reached, from the median time of each biome in past
   runs at the same ascent. The times of every biome finished are saved to
   `BepInEx/config/Altaks.PeakAchiever.splits.csv`, mini runs excepted.

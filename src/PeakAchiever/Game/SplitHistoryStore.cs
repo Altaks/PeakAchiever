@@ -46,11 +46,9 @@ internal sealed class SplitHistoryStore
             _warnedNoRunId = true;
             return;
         }
-        // A scout who joined mid-run saw only the end of their first biome.
-        int firstWhole = RunFactsReader.JoinedMidRun ? 1 : 0;
         string[] lines = splits
             .Select((split, index) => (split, index))
-            .Where(entry => entry.index >= firstWhole && (runEnded || !entry.split.IsCurrent))
+            .Where(entry => entry.split.IsWhole && (runEnded || !entry.split.IsCurrent))
             .Select(entry => new PastSplit(runId, Ascents.currentAscent, entry.index, entry.split.Biome, entry.split.Seconds))
             .Where(History.Add)
             .Select(split => split.ToLine())

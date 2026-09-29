@@ -5,6 +5,8 @@ namespace PeakAchiever.Tests;
 
 public class StatusTextTests
 {
+    private static readonly SplitColors AnyColors = new(Current: "FFFF00", Slower: "FF0000", Faster: "00FF00");
+
     [Fact]
     public void A_counter_reads_current_over_target()
     {
@@ -51,7 +53,7 @@ public class StatusTextTests
         var clock = new BadgeDetail.RunClock(3891f, [], EtaSeconds: 5880f);
 
         // when
-        string text = StatusText.RunClock(clock, withElapsed: true, currentColor: "FFFFFF");
+        string text = StatusText.RunClock(clock, withElapsed: true, AnyColors);
 
         // then
         Assert.Equal("1:04:51 \u00B7 ETA 1:38:00", text);
@@ -64,7 +66,7 @@ public class StatusTextTests
         var clock = new BadgeDetail.RunClock(2f, [], EtaSeconds: null);
 
         // when
-        string text = StatusText.RunClock(clock, withElapsed: false, currentColor: "FFFFFF");
+        string text = StatusText.RunClock(clock, withElapsed: false, AnyColors);
 
         // then
         Assert.Equal("", text);
@@ -78,6 +80,20 @@ public class StatusTextTests
     {
         // when
         string text = StatusText.Clock(seconds);
+
+        // then
+        Assert.Equal(expected, text);
+    }
+
+    [Theory]
+    [InlineData(80f, "+1:20")]
+    [InlineData(-40.6f, "-0:40")]
+    [InlineData(3733f, "+1:02:13")]
+    [InlineData(0f, "+0:00")]
+    public void A_delta_reads_signed_with_hours_only_when_needed(float seconds, string expected)
+    {
+        // when
+        string text = StatusText.Delta(seconds);
 
         // then
         Assert.Equal(expected, text);

@@ -130,7 +130,7 @@ public class BadgeRulesTests
         BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.SpeedClimberBadge).Detail(facts);
 
         // then
-        Assert.Equal(new BadgeDetail.RunClock(1533.7f, splits, EtaSeconds: null), detail);
+        Assert.Equal(new BadgeDetail.RunClock(1533.7f, [new(splits[0], null), new(splits[1], null)], EtaSeconds: null), detail);
     }
 
     [Fact]
@@ -253,5 +253,23 @@ public class BadgeRulesTests
 
         // then
         Assert.Equal(590f, Assert.IsType<BadgeDetail.RunClock>(detail).EtaSeconds);
+    }
+
+    [Fact]
+    public void Speed_climber_compares_each_biome_with_its_median()
+    {
+        // given
+        var shore = new BiomeSplit(Biome.BiomeType.Shore, 460f, IsCurrent: false);
+        RunFacts facts = new RunFactsBuilder()
+            .AfterSeconds(600f)
+            .WithBiomeSplits(shore, new BiomeSplit(Biome.BiomeType.Tropics, 140f, IsCurrent: true))
+            .WithBiomeMedians(new Dictionary<Biome.BiomeType, float> { [Biome.BiomeType.Shore] = 500f })
+            .Build();
+
+        // when
+        BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.SpeedClimberBadge).Detail(facts);
+
+        // then
+        Assert.Equal(new ComparedSplit(shore, -40f), Assert.IsType<BadgeDetail.RunClock>(detail).Splits[0]);
     }
 }
