@@ -42,6 +42,17 @@ internal static class RunTrackingPatches
         Plugin.Splits.RecordFinished(RunFactsReader.Read(Plugin.Splits.History).BiomeSplits, runEnded: true);
     }
 
+    // The end screen opens once the run is over, won or lost (EndScreen.Start, v2.4.c).
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(EndScreen), "Start")]
+    private static void AfterRunEnded()
+    {
+        if (Character.localCharacter == null)
+            return;
+        RunOutcome.RunEnded();
+        Plugin.Hud.RequestRefresh();
+    }
+
     // CharacterSpawner resets the run-based values through this overload when a run begins.
     [HarmonyPostfix]
     [HarmonyPatch(typeof(AchievementManager), nameof(AchievementManager.InitRunBasedValues), typeof(SerializableRunBasedValues))]
@@ -51,6 +62,7 @@ internal static class RunTrackingPatches
         if (Plugin.Pins.Board.DropEarned(achievements.IsAchievementUnlocked))
             Plugin.Pins.Save();
         Plugin.Splits.StartRun();
+        RunOutcome.RunStarted();
         Plugin.Hud.RequestRefresh();
     }
 }

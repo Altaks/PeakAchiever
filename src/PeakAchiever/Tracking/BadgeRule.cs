@@ -72,6 +72,9 @@ internal sealed class BadgeRule
             if (reason is not null)
                 return new TrackedStatus.Unattainable(reason);
         }
+        // After the blockers, so a badge broken earlier keeps its own reason.
+        if (facts.RunLost)
+            return new TrackedStatus.Unattainable(new UnattainableReason.ConditionBroken(BrokenCondition.RunLost));
         return _isCleanRun ? new TrackedStatus.Holding(progress) : new TrackedStatus.Attainable(progress);
     }
 }

@@ -42,7 +42,9 @@ Pin the badges you want to chase, and see during your run which ones you can sti
     gets a red cross for it.
   - A green check once earned.
   - A red cross, with the reason, once the badge can no longer be earned this run: its biome is not
-    on this map or is behind you, or the clean-run condition broke.
+    on this map or is behind you, the clean-run condition broke, or the run was lost (the end screen
+    opened with nobody at the summit). The card tears in two and falls to the end of the tracker,
+    where it stays torn.
 - **Forbidden items marked in the inventory.** While a pinned Naturalist or Leave No Trace badge is
   still holding, a red cross sits in the bottom-right corner of every hotbar slot holding an item that
   would break it (packaged food; pitons, rope spools, the rope cannon, the chain launcher and other

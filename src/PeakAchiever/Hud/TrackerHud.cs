@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using PeakAchiever.Controls;
 using PeakAchiever.Game;
 using PeakAchiever.Localization;
@@ -31,7 +33,13 @@ internal sealed class TrackerHud : MonoBehaviour
     private const int ToastPadding = 12;
     private static readonly Vector2 ToastOutline = new(1.5f, -1.5f);
 
-    private readonly List<BadgeCard> _cards = [];
+    // Cards of a lost run tear one after the other, this far apart.
+    private const float TearStaggerSeconds = 0.18f;
+
+    private readonly Dictionary<ACHIEVEMENTTYPE, CardSlot> _slots = [];
+    private readonly TornCards _tornCards = new();
+    // Torn cards in the order they tore; they sit at the end of the column in that order.
+    private readonly List<ACHIEVEMENTTYPE> _tornOrder = [];
     private PinnedBadgeTracker _tracker = null!;
     private TrackerToggleKey _toggleKey = null!;
     private HudStyle? _style;
@@ -110,6 +118,7 @@ internal sealed class TrackerHud : MonoBehaviour
         if (facts != null)
             Plugin.Splits.RecordFinished(facts.BiomeSplits, runEnded: false);
         _tracker.Evaluate(facts);
+        ScheduleTears();
         _cardsStale = true;
         // The inventory marks are drawn when the game fills its slots, so have it refill them.
         if (_tracker.ForbiddenItems != forbiddenBefore)
@@ -123,16 +132,71 @@ internal sealed class TrackerHud : MonoBehaviour
         _cardsStale = false;
         _banner.SetActive(RunSettings.blockingAchievements);
         IReadOnlyList<TrackedBadge> tracked = _tracker.Tracked;
-        while (_cards.Count < tracked.Count)
-            _cards.Add(new BadgeCard(_panel.transform, style));
-        for (int i = 0; i < _cards.Count; i++)
+        foreach (CardSlot slot in _slots.Values)
+            slot.Root.SetActive(false);
+        // The banner stays first.
+        int place = _banner.transform.GetSiblingIndex() + 1;
+        foreach (TrackedBadge badge in TornCards.Arrange(tracked, _tornOrder))
         {
-            bool used = i < tracked.Count;
-            _cards[i].Root.SetActive(used);
-            if (used)
-                _cards[i].Show(BadgeCatalog.Present(tracked[i].Badge), tracked[i].Status, tracked[i].Detail);
+            if (!_slots.TryGetValue(badge.Badge, out CardSlot slot))
+                _slots[badge.Badge] = slot = new CardSlot(_panel.transform, style);
+            slot.Root.SetActive(true);
+            slot.Root.transform.SetSiblingIndex(place++);
+            if (slot.Torn != _tornOrder.Contains(badge.Badge))
+                slot.SetTorn(!slot.Torn);
+            slot.Show(BadgeCatalog.Present(badge.Badge), badge.Status, badge.Detail);
         }
     }
+
+    /// <summary>
+    /// Keeps the torn list in step with the statuses: a card already impossible when first seen goes
+    /// torn at once; one that just turned impossible tears on screen, after the ones before it.
+    /// </summary>
+    private void ScheduleTears()
+    {
+        IReadOnlyList<TrackedBadge> tracked = _tracker.Tracked;
+        IReadOnlyList<ACHIEVEMENTTYPE> tearing = _tornCards.Update(tracked);
+        _tornOrder.RemoveAll(torn => !tracked.Any(badge => badge.Badge == torn && badge.Status is TrackedStatus.Unattainable));
+        foreach (TrackedBadge badge in tracked)
+        {
+            if (badge.Status is TrackedStatus.Unattainable && !_tornOrder.Contains(badge.Badge) && !tearing.Contains(badge.Badge))
+                _tornOrder.Add(badge.Badge);
+        }
+        for (int i = 0; i < tearing.Count; i++)
+            StartCoroutine(TearLater(tearing[i], i * TearStaggerSeconds));
+    }
+
+    private IEnumerator TearLater(ACHIEVEMENTTYPE badge, float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSecondsRealtime(delay);
+        if (_tornOrder.Contains(badge) || _style == null)
+            yield break;
+        // Hidden, it simply goes torn and last; on screen, every card moves from where it was.
+        if (!_panel.activeInHierarchy || !_slots.TryGetValue(badge, out CardSlot torn))
+        {
+            _tornOrder.Add(badge);
+            _cardsStale = true;
+            yield break;
+        }
+        Dictionary<CardSlot, float> before = _slots.Values.Where(slot => slot.Root.activeSelf).ToDictionary(slot => slot, Height);
+        _tornOrder.Add(badge);
+        _cardsStale = true;
+        ShowCards(_style);
+        torn.SetTorn(false);
+        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_panel.transform);
+        foreach (KeyValuePair<CardSlot, float> slot in before)
+        {
+            float shift = slot.Value - Height(slot.Key);
+            if (slot.Key == torn)
+                slot.Key.Motion.TearAndFall(shift);
+            else if (shift != 0f)
+                slot.Key.Motion.HoldThenSlide(shift);
+        }
+    }
+
+    // In the column's own units, those the slot's body is shifted in.
+    private static float Height(CardSlot slot) => slot.Root.transform.localPosition.y;
 
     private void Build(HudStyle style)
     {

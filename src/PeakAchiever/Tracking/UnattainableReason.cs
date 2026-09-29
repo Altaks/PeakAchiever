@@ -38,4 +38,6 @@ internal enum BrokenCondition
     TooMuchCold,
     TooManySpores,
     HitByTrap,
+    /// <summary>The run ended with nobody at the summit: nothing more can be earned in it.</summary>
+    RunLost,
 }
