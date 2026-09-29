@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Speed Climber no longer shows its red cross during the last second of the hour, which the game still counts.
+- Lone Wolf no longer shows a red cross when other scouts are in the run: the game only counts scouts at the summit, and they can leave before.
 - Biome times are now recorded in runs the game gives no id to (a solo run, among others): the mod
   makes one for the run.
 - The Foraging checklist no longer lists Clusterberry_UNUSED, an item the game no longer uses.

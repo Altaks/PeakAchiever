@@ -91,7 +91,8 @@ game can rule a badge out, the tracker never shows a red cross for it.
 | --- | --- | --- |
 | Run counter | Knot Tying, Clutch, Plunderer, First Aid, Jester, Archery, Foraging, Mycology, Advanced Mycology, Gourmand | never |
 | Lifetime counter | Cooking, Happy Camper, Bouldering, Toxicology, Ascender, Bookworm, Calcium Intake | never |
-| Clean run | Balloon, Naturalist, Survivalist, Leave No Trace, Lone Wolf, Speed Climber | the condition breaks |
+| Clean run | Balloon, Naturalist, Survivalist, Leave No Trace, Speed Climber | the condition breaks |
+| Alone at the summit | Lone Wolf | never: the game counts scouts only at the summit, and others can leave before |
 | Clean biome | Cool Cucumber, Bundled Up, Tread Lightly, Medieval History | the biome is not on the map, or the condition breaks |
 | Area reached | Beachcomber, Trailblazer, Alpinist, Volcanology, Nomad, Forestry, Wanderer | the biome is not on the map |
 | Found in a biome | Astronomy, Megaentomology, Daredevil (Mesa); Web Security (Roots); Bellringer (Gloom); Animal Serenading (Alpine or Mesa); Arborist (Tropics or Roots) | none of those biomes is on the map, or all are behind you |

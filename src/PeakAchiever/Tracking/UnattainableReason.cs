@@ -34,7 +34,6 @@ internal enum BrokenCondition
     PassedOut,
     PlacedPermanentItem,
     RunTooLong,
-    NotSolo,
     TooMuchHeat,
     TooMuchCold,
     TooManySpores,

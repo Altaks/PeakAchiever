@@ -19,8 +19,7 @@ internal sealed class RunFacts
         float secondsSinceRunStarted,
         IReadOnlyList<BiomeSplit> biomeSplits,
         IReadOnlyDictionary<Biome.BiomeType, float> biomeMedians,
-        IReadOnlyCollection<ushort>? itemsOnMap,
-        int scoutCount
+        IReadOnlyCollection<ushort>? itemsOnMap
     )
     {
         RunValues = runValues;
@@ -34,7 +33,6 @@ internal sealed class RunFacts
         BiomeSplits = biomeSplits;
         BiomeMedians = biomeMedians;
         ItemsOnMap = itemsOnMap;
-        ScoutCount = scoutCount;
     }
 
     /// <summary>Run counters, the higher of the game's int and float tables for each key.</summary>
@@ -65,8 +63,6 @@ internal sealed class RunFacts
 
     /// <summary>Every item id this map can yield, or null when the map could not be read.</summary>
     public IReadOnlyCollection<ushort>? ItemsOnMap { get; }
-
-    public int ScoutCount { get; }
 
     public float RunValue(RUNBASEDVALUETYPE type) =>
         RunValues.TryGetValue(type, out float value) ? value : 0f;

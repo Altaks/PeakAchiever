@@ -20,7 +20,6 @@ internal sealed class RunFactsBuilder
     ];
     private int _currentSegment;
     private float _seconds;
-    private int _scouts = 1;
     private BiomeSplit[] _biomeSplits = [];
     private IReadOnlyDictionary<Biome.BiomeType, float> _biomeMedians = new Dictionary<Biome.BiomeType, float>();
     private IReadOnlyCollection<ushort>? _itemsOnMap;
@@ -71,12 +70,6 @@ internal sealed class RunFactsBuilder
         return this;
     }
 
-    public RunFactsBuilder WithScouts(int scouts)
-    {
-        _scouts = scouts;
-        return this;
-    }
-
     public RunFactsBuilder WithBiomeSplits(params BiomeSplit[] splits)
     {
         _biomeSplits = splits;
@@ -107,7 +100,6 @@ internal sealed class RunFactsBuilder
             _seconds,
             _biomeSplits,
             _biomeMedians,
-            _itemsOnMap,
-            _scouts
+            _itemsOnMap
         );
 }

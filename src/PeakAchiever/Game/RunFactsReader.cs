@@ -44,8 +44,7 @@ internal static class RunFactsReader
             secondsSinceRunStarted,
             BiomeTimeline.Split(ReadTimeline(), secondsSinceRunStarted, JoinedMidRun),
             history.MediansAt(Ascents.currentAscent),
-            MapItemScanner.ItemsOnMap,
-            Character.AllCharacters.Count
+            MapItemScanner.ItemsOnMap
         );
     }
 
