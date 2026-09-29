@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using BepInEx.Configuration;
+using PeakAchiever.Controls;
 using PeakAchiever.Game;
 using PeakAchiever.Localization;
 using PeakAchiever.PauseMenu;
@@ -33,7 +33,7 @@ internal sealed class TrackerHud : MonoBehaviour
 
     private readonly List<BadgeCard> _cards = [];
     private PinnedBadgeTracker _tracker = null!;
-    private ConfigEntry<KeyboardShortcut> _toggleKey = null!;
+    private TrackerToggleKey _toggleKey = null!;
     private HudStyle? _style;
     private StatsPanel? _stats;
     private GameObject _panel = null!;
@@ -52,7 +52,7 @@ internal sealed class TrackerHud : MonoBehaviour
     /// <summary>Null until the game's GUI has loaded, like <see cref="Style"/>.</summary>
     public StatsPanel? Stats => _stats;
 
-    public void Init(PinnedBadgeTracker tracker, ConfigEntry<KeyboardShortcut> toggleKey)
+    public void Init(PinnedBadgeTracker tracker, TrackerToggleKey toggleKey)
     {
         _tracker = tracker;
         _toggleKey = toggleKey;
@@ -75,7 +75,7 @@ internal sealed class TrackerHud : MonoBehaviour
 
     private void Update()
     {
-        if (_toggleKey.Value.IsDown())
+        if (_toggleKey.Action.WasPressedThisFrame())
             _hiddenByPlayer = !_hiddenByPlayer;
         if (_style == null)
         {

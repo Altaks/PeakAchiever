@@ -69,7 +69,7 @@ Tested with PEAK 2.4.c. If a game update breaks the mod, the error shows in `Bep
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `ToggleKey` | `F6` | Shows or hides the tracker during a run. |
+| `ToggleKey` | `<Keyboard>/f6` | Shows or hides the tracker during a run. Set it from the game's Controls menu, in the row "PeakAchiever: show / hide the tracker" (click it, press a key, Escape to keep the current one). A key saved by 0.1.0 is converted; one with modifiers falls back to F6. |
 | `MaxPinnedBadges` | `5` | How many badges can be pinned at once (1 to 12). |
 | `PinnedBadges` | empty | The pins, edited from the pause menu. |
 
