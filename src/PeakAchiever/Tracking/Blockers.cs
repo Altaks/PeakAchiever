@@ -54,8 +54,9 @@ internal sealed class RunValueCeiling(RUNBASEDVALUETYPE value, float ceiling, Br
 
 internal sealed class RunDurationCeiling(float maxSeconds) : IBlocker
 {
+    // AchievementManager.TestTimeAchievements floors the run time before comparing it (v2.4.c).
     public UnattainableReason? FindBlock(RunFacts facts) =>
-        facts.SecondsSinceRunStarted > maxSeconds
+        System.Math.Floor(facts.SecondsSinceRunStarted) > maxSeconds
             ? new UnattainableReason.ConditionBroken(BrokenCondition.RunTooLong)
             : null;
 }
