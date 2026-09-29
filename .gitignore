@@ -229,3 +229,6 @@ Config.Build.user.props
 # /src/UnityProject/Assets/*
 # !/src/UnityProject/Assets/
 # !/src/UnityProject/Assets/_Mod/
+
+# JetBrains Rider project files
+.idea/
