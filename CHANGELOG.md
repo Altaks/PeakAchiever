@@ -4,6 +4,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Biome times are now recorded in runs the game gives no id to (a solo run, among others): the mod
+  makes one for the run.
+- The Foraging checklist no longer lists Clusterberry_UNUSED, an item the game no longer uses.
+
 ### Changed
 
 - Progress bars have fully round ends and a light rim.

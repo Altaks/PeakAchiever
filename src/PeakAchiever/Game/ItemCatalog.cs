@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using PeakAchiever.Tracking;
@@ -9,6 +10,9 @@ namespace PeakAchiever.Game;
 /// <summary>The game's items as the eating badges see them, read from its item database.</summary>
 internal static class ItemCatalog
 {
+    // The game marks items it left in the database but no longer uses so (Clusterberry_UNUSED, v2.4.c).
+    private const string UnusedItemSuffix = "_UNUSED";
+
     private static readonly IReadOnlyDictionary<RunCollection, IReadOnlyList<ushort>> NoCandidates =
         new Dictionary<RunCollection, IReadOnlyList<ushort>>();
     private static IReadOnlyDictionary<RunCollection, IReadOnlyList<ushort>>? _candidates;
@@ -39,6 +43,8 @@ internal static class ItemCatalog
         var candidates = new Dictionary<RunCollection, List<ushort>>();
         foreach (KeyValuePair<ushort, Item> entry in SingletonAsset<ItemDatabase>.Instance.itemLookup.OrderBy(entry => entry.Key))
         {
+            if (entry.Value.name.EndsWith(UnusedItemSuffix, StringComparison.Ordinal))
+                continue;
             // AchievementManager.TestItemConsumed tells a poisonous mushroom by this action on its prefab (v2.4.c).
             bool poisons = entry.Value.GetComponent<Action_InflictPoison>() != null;
             foreach (RunCollection collection in RunCollections.CountingItem(entry.Value.itemTags, poisons))
