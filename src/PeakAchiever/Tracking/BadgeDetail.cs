@@ -10,15 +10,18 @@ internal abstract record BadgeDetail
 
     /// <summary>
     /// How long the run has lasted, how that time splits across the biomes climbed, and when past runs
-    /// say the summit should be reached (null until they cover every biome left).
+    /// say the summit should be reached (null until they cover every biome left), flagged when that is
+    /// past the time limit.
     /// </summary>
-    public sealed record RunClock(float ElapsedSeconds, IReadOnlyList<ComparedSplit> Splits, float? EtaSeconds) : BadgeDetail
+    public sealed record RunClock(float ElapsedSeconds, IReadOnlyList<ComparedSplit> Splits, float? EtaSeconds, bool EtaOverLimit)
+        : BadgeDetail
     {
         public bool Equals(RunClock? other) =>
             other is not null
             && ElapsedSeconds.Equals(other.ElapsedSeconds)
             && Splits.SequenceEqual(other.Splits)
-            && EtaSeconds.Equals(other.EtaSeconds);
+            && EtaSeconds.Equals(other.EtaSeconds)
+            && EtaOverLimit == other.EtaOverLimit;
 
         public override int GetHashCode() => ElapsedSeconds.GetHashCode();
     }
@@ -56,12 +59,16 @@ internal sealed class EatenItemsSource(RunCollection collection) : IDetailSource
     }
 }
 
-internal sealed class RunClockSource : IDetailSource
+internal sealed class RunClockSource(float limitSeconds) : IDetailSource
 {
-    public BadgeDetail Describe(RunFacts facts) =>
-        new BadgeDetail.RunClock(
+    public BadgeDetail Describe(RunFacts facts)
+    {
+        float? eta = RunEta.Estimate(facts);
+        return new BadgeDetail.RunClock(
             facts.SecondsSinceRunStarted,
             facts.BiomeSplits.Select(split => ComparedSplit.Against(split, facts.BiomeMedians)).ToArray(),
-            RunEta.Estimate(facts)
+            eta,
+            EtaOverLimit: eta > limitSeconds
         );
+    }
 }

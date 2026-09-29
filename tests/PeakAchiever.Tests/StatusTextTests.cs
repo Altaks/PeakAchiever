@@ -5,7 +5,7 @@ namespace PeakAchiever.Tests;
 
 public class StatusTextTests
 {
-    private static readonly SplitColors AnyColors = new(Current: "FFFF00", Slower: "FF0000", Faster: "00FF00");
+    private static readonly ClockColors AnyColors = new(Current: "FFFF00", Slower: "FF0000", Faster: "00FF00", Caution: "FF9900");
 
     [Fact]
     public void A_counter_reads_current_over_target()
@@ -50,7 +50,7 @@ public class StatusTextTests
     public void A_broken_run_clock_leads_with_the_elapsed_time_and_the_eta()
     {
         // given
-        var clock = new BadgeDetail.RunClock(3891f, [], EtaSeconds: 5880f);
+        var clock = new BadgeDetail.RunClock(3891f, [], EtaSeconds: 5880f, EtaOverLimit: false);
 
         // when
         string text = StatusText.RunClock(clock, withElapsed: true, AnyColors);
@@ -63,7 +63,7 @@ public class StatusTextTests
     public void A_run_clock_with_no_eta_and_no_split_yet_says_nothing()
     {
         // given
-        var clock = new BadgeDetail.RunClock(2f, [], EtaSeconds: null);
+        var clock = new BadgeDetail.RunClock(2f, [], EtaSeconds: null, EtaOverLimit: false);
 
         // when
         string text = StatusText.RunClock(clock, withElapsed: false, AnyColors);
@@ -97,5 +97,18 @@ public class StatusTextTests
 
         // then
         Assert.Equal(expected, text);
+    }
+
+    [Fact]
+    public void An_eta_past_the_hour_reads_in_the_caution_colour()
+    {
+        // given
+        var clock = new BadgeDetail.RunClock(1200f, [], EtaSeconds: 3900f, EtaOverLimit: true);
+
+        // when
+        string text = StatusText.RunClock(clock, withElapsed: false, AnyColors);
+
+        // then
+        Assert.Equal("<color=#FF9900>ETA 1:05:00</color>", text);
     }
 }

@@ -71,13 +71,16 @@ internal static class StatusText
     /// The run clock's lines under the status row: the elapsed time (once the bar is gone) and the ETA,
     /// then the biome splits. Empty until there is any of them.
     /// </summary>
-    public static string RunClock(BadgeDetail.RunClock clock, bool withElapsed, SplitColors colors)
+    public static string RunClock(BadgeDetail.RunClock clock, bool withElapsed, ClockColors colors)
     {
         var head = new List<string>();
         if (withElapsed)
             head.Add(Clock(clock.ElapsedSeconds));
         if (clock.EtaSeconds is { } eta)
-            head.Add(ModText.Format(ModTextKey.Eta, Clock(eta)));
+        {
+            string text = ModText.Format(ModTextKey.Eta, Clock(eta));
+            head.Add(clock.EtaOverLimit ? $"<color=#{colors.Caution}>{text}</color>" : text);
+        }
         string[] lines = [string.Join(SplitSeparator, head), Splits(clock.Splits, colors)];
         return string.Join(LineBreak, lines.Where(line => line.Length > 0));
     }
@@ -86,7 +89,7 @@ internal static class StatusText
     /// Each biome with its time, the one still counting in the current colour, then its gap to the median
     /// signed and coloured (the sign carries it without the colour).
     /// </summary>
-    private static string Splits(IEnumerable<ComparedSplit> splits, SplitColors colors) =>
+    private static string Splits(IEnumerable<ComparedSplit> splits, ClockColors colors) =>
         string.Join(
             SplitSeparator,
             splits.Select(compared =>
@@ -117,5 +120,5 @@ internal static class StatusText
         BiomeNameKeys.TryGetValue(biome, out string key) ? LocalizedText.GetText(key) : biome.ToString();
 }
 
-/// <summary>Rich-text colours of a splits line, as hex RGB.</summary>
-internal readonly record struct SplitColors(string Current, string Slower, string Faster);
+/// <summary>Rich-text colours of the run clock lines, as hex RGB.</summary>
+internal readonly record struct ClockColors(string Current, string Slower, string Faster, string Caution);

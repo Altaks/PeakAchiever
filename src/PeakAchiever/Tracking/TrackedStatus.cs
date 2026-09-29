@@ -18,7 +18,13 @@ internal enum ProgressUnit
 
 internal readonly record struct Progress(int Current, int Target, ProgressScope Scope, ProgressUnit Unit = ProgressUnit.Count)
 {
+    // Warned about from three quarters of the limit on.
+    private const float NearLimitShare = 0.75f;
+
     public float Fraction => Target <= 0 ? 1f : System.Math.Min(1f, (float)Current / Target);
+
+    /// <summary>A rate close enough to the most the game allows to warn about.</summary>
+    public bool NearLimit => Unit == ProgressUnit.Percent && Current >= NearLimitShare * Target;
 }
 
 /// <summary>What a pinned badge shows on the tracker.</summary>
