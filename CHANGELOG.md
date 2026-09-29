@@ -2,6 +2,16 @@
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- The heat, cold and spores bars are drawn like the matching segment of PEAK's stamina bar (its hatched
+  fill, outline and icon), and the Speed Climber time like the arrow segment. Near the limit the outline
+  blinks instead of the bar turning orange.
+- The statistics panel is made of PEAK's own parts: the badge popup's paper over a dark veil, the game's
+  ribbons as buttons. The ascent arrows turn grey, with a hint, when no other ascent has times.
+
 ## [0.2.0]
 
 ### Fixed

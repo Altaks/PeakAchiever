@@ -22,7 +22,7 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   - A yellow bar and `current / total` for badges with a counter. `LIFETIME` marks counters the game
     keeps across all runs (meals cooked, height climbed...).
   - "Holding so far" for clean-run badges (no fall damage, no packaged food...) still intact.
-  - Speed Climber shows the run time against one hour, and the time spent in each biome so far (the
+  - Speed Climber shows the run time against one hour, on a bar drawn like the stamina bar's arrow segment, and the time spent in each biome so far (the
     current one in yellow). The time and splits stay under the red cross once the hour is over.
   - Each biome time is followed by its gap to the median of past runs at the same ascent: `(+1:20)`
     in red when slower, `(-0:40)` in green when faster. The biome in progress shows a gap only once
@@ -32,8 +32,8 @@ Pin the badges you want to chase, and see during your run which ones you can sti
     those biomes has been finished at least once with the mod installed. It turns orange once it is
     past one hour.
   - Cool Cucumber, Bundled Up and Tread Lightly show the highest heat, cold or spores rate reached in
-    their biome against the limit, as a bar and `max 4% / 10%`. The bar and the figures turn orange
-    from 75% of the limit (8% of 10%).
+    their biome against the limit, as `max 4% / 10%` and a bar drawn like that affliction's segment of
+    the stamina bar. From 75% of the limit (8% of 10%) the bar's outline blinks.
   - Foraging, Mycology, Advanced Mycology and Gourmand show every item that counts as a grid of
     icons: dimmed until eaten this run, then in full colour with a green tick. The item lists are read
     from the game, and written to `BepInEx/LogOutput.log` the first time a run needs them. Items no

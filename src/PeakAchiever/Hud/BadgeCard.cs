@@ -47,6 +47,7 @@ internal sealed class BadgeCard
     private readonly TextMeshProUGUI _name;
     private readonly TextMeshProUGUI _description;
     private readonly GameObject _bar;
+    private readonly AfflictionBar _afflictionBar;
     private readonly RectTransform _barFill;
     private readonly Image _barFillImage;
     private readonly TextMeshProUGUI _count;
@@ -128,6 +129,7 @@ internal sealed class BadgeCard
         _barFill.offsetMax = Vector2.zero;
         _barFillImage = UiFactory.AddPill(fill, style, HudStyle.ProgressFill, trackHeight);
 
+        _afflictionBar = new AfflictionBar(statusRow.transform);
         _count = UiFactory.AddText(statusRow.transform, "Count", style.StrongFont, StatusFontSize, HudStyle.Ink);
         _status = UiFactory.AddText(statusRow.transform, "Label", style.StrongFont, StatusFontSize, HudStyle.ProgressFill);
         _detail = UiFactory.AddText(column.transform, "Detail", style.BodyFont, StatusFontSize, HudStyle.InkSoft);
@@ -154,7 +156,7 @@ internal sealed class BadgeCard
         {
             case TrackedStatus.Attainable attainable:
                 ShowMark(null, default);
-                ShowProgress(attainable.Progress, HudStyle.ProgressFill, HudStyle.Ink);
+                ShowProgress(attainable.Progress, HudStyle.ProgressFill, warn: false);
                 if (attainable.Progress is { } progress)
                     ShowLabel(ScopeLabel(progress), HudStyle.InkMuted);
                 else
@@ -162,24 +164,18 @@ internal sealed class BadgeCard
                 break;
             case TrackedStatus.Holding holding:
                 ShowMark(null, default);
-                // Close to its limit, the bar and its figures turn to the caution colour.
-                bool nearLimit = holding.Progress is { NearLimit: true };
-                ShowProgress(
-                    holding.Progress,
-                    nearLimit ? HudStyle.Caution : HudStyle.ProgressFill,
-                    nearLimit ? HudStyle.Caution : HudStyle.Ink
-                );
-                // A measured limit already says how the condition holds.
+                // Close to its limit, an affliction bar's outline blinks.
+                ShowProgress(holding.Progress, HudStyle.ProgressFill, warn: holding.Progress is { NearLimit: true });                // A measured limit already says how the condition holds.
                 ShowLabel(holding.Progress is null ? ModText.Get(ModTextKey.StatusHolding) : "", HudStyle.ProgressFill);
                 break;
             case TrackedStatus.Achieved achieved:
                 ShowMark(_style.Check, HudStyle.Achieved);
-                ShowProgress(achieved.Progress, HudStyle.Achieved, HudStyle.Ink);
+                ShowProgress(achieved.Progress, HudStyle.Achieved, warn: false);
                 ShowLabel(ModText.Get(ModTextKey.StatusAchieved), HudStyle.Achieved);
                 break;
             case TrackedStatus.Unattainable blocked:
                 ShowMark(_style.Cross, HudStyle.Unattainable);
-                ShowProgress(null, default, default);
+                ShowProgress(null, default, warn: false);
                 ShowLabel(StatusText.Describe(blocked.Reason), HudStyle.Unattainable);
                 break;
             default:
@@ -201,16 +197,27 @@ internal sealed class BadgeCard
         _markRing.color = color;
     }
 
-    private void ShowProgress(Progress? progress, Color fillColor, Color countColor)
+    /// <summary>
+    /// The bar and figures of a progress: drawn as its affliction's segment when it has one, else as the
+    /// card's yellow bar in <paramref name="fillColor"/>.
+    /// </summary>
+    private void ShowProgress(Progress? progress, Color fillColor, bool warn)
     {
-        _bar.SetActive(progress != null);
         _count.gameObject.SetActive(progress != null);
         if (progress is not { } shown)
+        {
+            _bar.SetActive(false);
+            _afflictionBar.Hide();
             return;
+        }
+        _count.text = StatusText.Count(shown);
+        bool asAffliction = AfflictionBar.LookOf(shown) is { } look && _afflictionBar.Show(look, shown.Fraction, warn);
+        _bar.SetActive(!asAffliction);
+        if (asAffliction)
+            return;
+        _afflictionBar.Hide();
         _barFill.anchorMax = new Vector2(shown.Fraction, 1f);
         _barFillImage.color = fillColor;
-        _count.text = StatusText.Count(shown);
-        _count.color = countColor;
     }
 
     private void ShowDetail(BadgeDetail? detail, bool unattainable)

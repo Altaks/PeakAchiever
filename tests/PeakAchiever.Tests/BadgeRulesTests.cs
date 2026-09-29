@@ -162,15 +162,16 @@ public class BadgeRulesTests
     }
 
     [Theory]
-    [InlineData(ACHIEVEMENTTYPE.CoolCucumberBadge, RUNBASEDVALUETYPE.MaxHeatTakenInMesa, 0.04f, 4, 10)]
-    [InlineData(ACHIEVEMENTTYPE.BundledUpBadge, RUNBASEDVALUETYPE.MaxColdTakenInAlpine, 0.2f, 20, 20)]
-    [InlineData(ACHIEVEMENTTYPE.TreadLightlyBadge, RUNBASEDVALUETYPE.MaxSporesTakenInRoots, 0.126f, 13, 25)]
+    [InlineData(ACHIEVEMENTTYPE.CoolCucumberBadge, RUNBASEDVALUETYPE.MaxHeatTakenInMesa, 0.04f, 4, 10, CharacterAfflictions.STATUSTYPE.Hot)]
+    [InlineData(ACHIEVEMENTTYPE.BundledUpBadge, RUNBASEDVALUETYPE.MaxColdTakenInAlpine, 0.2f, 20, 20, CharacterAfflictions.STATUSTYPE.Cold)]
+    [InlineData(ACHIEVEMENTTYPE.TreadLightlyBadge, RUNBASEDVALUETYPE.MaxSporesTakenInRoots, 0.126f, 13, 25, CharacterAfflictions.STATUSTYPE.Spores)]
     public void Biome_rate_badges_hold_with_the_highest_rate_against_the_limit(
         ACHIEVEMENTTYPE badge,
         RUNBASEDVALUETYPE rate,
         float highest,
         int percent,
-        int limitPercent
+        int limitPercent,
+        CharacterAfflictions.STATUSTYPE affliction
     )
     {
         // given
@@ -183,7 +184,10 @@ public class BadgeRulesTests
         TrackedStatus status = BadgeRules.For(badge).Evaluate(facts, isUnlocked: false);
 
         // then
-        Assert.Equal(new TrackedStatus.Holding(new Progress(percent, limitPercent, ProgressScope.ThisRun, ProgressUnit.Percent)), status);
+        Assert.Equal(
+            new TrackedStatus.Holding(new Progress(percent, limitPercent, ProgressScope.ThisRun, ProgressUnit.Percent, affliction)),
+            status
+        );
     }
 
     [Fact]
