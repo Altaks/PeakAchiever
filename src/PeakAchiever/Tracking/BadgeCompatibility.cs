@@ -4,8 +4,9 @@ using System.Linq;
 namespace PeakAchiever.Tracking;
 
 /// <summary>
-/// Which badges can be earned in the same run, going by the biomes of every map the game can pick.
-/// Only a proven clash counts: a biome the table never lists, or an empty table, rules nothing out.
+/// Which badges a map allows, and which can be earned in the same run, going by the biomes of every map
+/// the game can pick. Only a proven clash counts: a biome the table never lists, or an empty table,
+/// rules nothing out.
 /// </summary>
 internal sealed class BadgeCompatibility
 {
@@ -25,11 +26,7 @@ internal sealed class BadgeCompatibility
     {
         if (_maps.Count == 0)
             return true;
-        IReadOnlyCollection<Biome.BiomeType>[] requirements = BadgeRules
-            .For(first)
-            .BiomeRequirements.Concat(BadgeRules.For(second).BiomeRequirements)
-            .Where(anyOf => anyOf.All(_listedBiomes.Contains))
-            .ToArray();
+        IReadOnlyCollection<Biome.BiomeType>[] requirements = ProvenRequirements(first).Concat(ProvenRequirements(second)).ToArray();
         return _maps.Any(map => requirements.All(anyOf => anyOf.Any(map.Contains)));
     }
 
@@ -43,4 +40,12 @@ internal sealed class BadgeCompatibility
         }
         return null;
     }
+
+    /// <returns>The biomes of the first requirement of <paramref name="badge"/> this map cannot meet; empty when it meets them all.</returns>
+    public IReadOnlyCollection<Biome.BiomeType> MissingOn(ACHIEVEMENTTYPE badge, IReadOnlyCollection<Biome.BiomeType> map) =>
+        ProvenRequirements(badge).FirstOrDefault(anyOf => !anyOf.Any(map.Contains)) ?? [];
+
+    // A requirement naming a biome the table never lists could be met by a map it does not know of.
+    private IEnumerable<IReadOnlyCollection<Biome.BiomeType>> ProvenRequirements(ACHIEVEMENTTYPE badge) =>
+        BadgeRules.For(badge).BiomeRequirements.Where(anyOf => anyOf.All(_listedBiomes.Contains));
 }

@@ -108,6 +108,7 @@ public class PinBoardTests
         Assert.False(changed);
         Assert.Equal([ACHIEVEMENTTYPE.CookingBadge], board.Pins);
     }
+
     [Fact]
     public void Toggle_rejects_a_badge_no_map_allows_with_a_pinned_one()
     {

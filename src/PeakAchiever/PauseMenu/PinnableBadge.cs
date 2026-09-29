@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using PeakAchiever.Game;
 using PeakAchiever.Hud;
 using PeakAchiever.Localization;
@@ -13,15 +14,18 @@ namespace PeakAchiever.PauseMenu;
 /// </summary>
 internal sealed class PinnableBadge : MonoBehaviour
 {
-    // Mockup: a 22 px marker overlapping the badge's top-right edge by 4 px.
+    // Mockup: a 22 px marker overlapping the badge's top-right edge by 4 px; the map cross mirrors it
+    // on the bottom-right edge.
     private const float MarkerSize = 22f;
     private const float MarkerGlyphSize = 12f;
     private static readonly Vector2 MarkerOffset = new(4f, 4f);
+    private static readonly Vector2 NotOnMapOffset = new(4f, -4f);
     // Faded enough to read as unavailable next to the other locked badges, still legible.
     private const float ConflictAlpha = 0.35f;
 
     private BadgeUI _badge = null!;
     private GameObject? _marker;
+    private GameObject? _notOnMap;
     private CanvasGroup _fade = null!;
 
     /// <summary>Hooks the badge's own Button, so mouse clicks and gamepad submit both toggle the pin.</summary>
@@ -46,6 +50,10 @@ internal sealed class PinnableBadge : MonoBehaviour
     /// <summary>The first pinned badge this one cannot share a run with, if any.</summary>
     public static ACHIEVEMENTTYPE? ConflictOf(ACHIEVEMENTTYPE badge) =>
         MapCatalog.Compatibility.FirstConflict(badge, Plugin.Pins.Board.Pins);
+
+    /// <summary>The biomes the run's map, or today's in the airport, lacks for this badge; empty when it has them.</summary>
+    public static IReadOnlyCollection<Biome.BiomeType> MissingOnKnownMap(ACHIEVEMENTTYPE badge) =>
+        MapCatalog.CurrentOrToday is { } map ? MapCatalog.Compatibility.MissingOn(badge, map.Biomes) : [];
 
     private void TogglePin()
     {
@@ -81,27 +89,35 @@ internal sealed class PinnableBadge : MonoBehaviour
         }
     }
 
-    /// <summary>The pin marker on a pinned badge; a fade on one that conflicts with a pin.</summary>
+    /// <summary>
+    /// The pin marker on a pinned badge, a red cross on one the map cannot hold, and a fade on one that
+    /// conflicts with a pin.
+    /// </summary>
     private void ShowPinState()
     {
         BadgeData? data = _badge.data;
         bool pinned = data != null && Plugin.Pins.Board.IsPinned(data.linkedAchievement);
         if (pinned && _marker == null && Plugin.Hud.Style is { } style)
-            _marker = CreateMarker(style);
+            _marker = CreateMarker(style, "PinMarker", Vector2.one, MarkerOffset, HudStyle.ProgressFill, style.Pin);
         if (_marker != null)
             _marker.SetActive(pinned);
+        bool notOnMap = data != null && data.IsLocked && MissingOnKnownMap(data.linkedAchievement).Count > 0;
+        if (notOnMap && _notOnMap == null && Plugin.Hud.Style is { } crossStyle)
+            _notOnMap = CreateMarker(crossStyle, "NotOnMap", new Vector2(1f, 0f), NotOnMapOffset, HudStyle.Unattainable, crossStyle.Cross);
+        if (_notOnMap != null)
+            _notOnMap.SetActive(notOnMap);
         bool conflicts = data != null && data.IsLocked && !pinned && ConflictOf(data.linkedAchievement) is not null;
         _fade.alpha = conflicts ? ConflictAlpha : 1f;
     }
 
-    private GameObject CreateMarker(HudStyle style)
+    private GameObject CreateMarker(HudStyle style, string name, Vector2 corner, Vector2 offset, Color fill, Sprite glyphSprite)
     {
-        GameObject marker = UiFactory.Create("PinMarker", transform);
-        UiFactory.PinToCorner(marker, Vector2.one, MarkerOffset, MarkerSize);
-        UiFactory.AddImage(marker, style.Circle, HudStyle.ProgressFill);
+        GameObject marker = UiFactory.Create(name, transform);
+        UiFactory.PinToCorner(marker, corner, offset, MarkerSize);
+        UiFactory.AddImage(marker, style.Circle, fill);
         GameObject glyph = UiFactory.Create("Glyph", marker.transform);
         UiFactory.PinToCorner(glyph, new Vector2(0.5f, 0.5f), Vector2.zero, MarkerGlyphSize);
-        UiFactory.AddImage(glyph, style.Pin, HudStyle.PinMarkerInk).preserveAspect = true;
+        UiFactory.AddImage(glyph, glyphSprite, HudStyle.PinMarkerInk).preserveAspect = true;
         return marker;
     }
 }

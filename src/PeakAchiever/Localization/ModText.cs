@@ -29,6 +29,8 @@ internal enum ModTextKey
     RefusalAlreadyEarned,
     RefusalConflict,
     HintConflict,
+    HintNotOnTodaysMap,
+    HintNotOnThisMap,
     AchievementsDisabled,
 }
 
@@ -84,6 +86,8 @@ internal static class ModText
             "Conflicts with {0}: no map has both their biomes",
             "Incompatible avec {0} : aucune carte n'a leurs deux biomes",
         ],
+        [ModTextKey.HintNotOnTodaysMap] = ["Not on today's map ({0})", "Pas sur la carte du jour ({0})"],
+        [ModTextKey.HintNotOnThisMap] = ["Not on this map ({0})", "Pas sur cette carte ({0})"],
         [ModTextKey.AchievementsDisabled] = ["Achievements are disabled for this run", "Succès désactivés pour cette run"],
     };
 

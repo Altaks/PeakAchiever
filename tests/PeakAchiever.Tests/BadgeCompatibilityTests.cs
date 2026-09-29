@@ -91,4 +91,61 @@ public class BadgeCompatibilityTests
         // then
         Assert.Null(conflict);
     }
+    private static readonly Biome.BiomeType[] TropicsMap =
+    [
+        Biome.BiomeType.Shore,
+        Biome.BiomeType.Tropics,
+        Biome.BiomeType.Alpine,
+        Biome.BiomeType.Volcano,
+        Biome.BiomeType.Peak,
+    ];
+
+    [Fact]
+    public void A_badge_needing_a_biome_the_map_lacks_names_that_biome()
+    {
+        // when
+        IReadOnlyCollection<Biome.BiomeType> missing = TwoLayouts.MissingOn(ACHIEVEMENTTYPE.ForestryBadge, TropicsMap);
+
+        // then
+        Assert.Equal([Biome.BiomeType.Roots], missing);
+    }
+
+    [Fact]
+    public void A_badge_that_accepts_either_biome_names_both_when_the_map_has_neither()
+    {
+        // given
+        Biome.BiomeType[] shoreOnly = [Biome.BiomeType.Shore];
+
+        // when
+        IReadOnlyCollection<Biome.BiomeType> missing = TwoLayouts.MissingOn(ACHIEVEMENTTYPE.ArboristBadge, shoreOnly);
+
+        // then
+        Assert.Equal([Biome.BiomeType.Tropics, Biome.BiomeType.Roots], missing);
+    }
+
+    [Theory]
+    [InlineData(ACHIEVEMENTTYPE.TrailblazerBadge)]
+    [InlineData(ACHIEVEMENTTYPE.ArboristBadge)]
+    [InlineData(ACHIEVEMENTTYPE.BalloonBadge)]
+    public void A_badge_the_map_allows_misses_nothing(ACHIEVEMENTTYPE badge)
+    {
+        // when
+        IReadOnlyCollection<Biome.BiomeType> missing = TwoLayouts.MissingOn(badge, TropicsMap);
+
+        // then
+        Assert.Empty(missing);
+    }
+
+    [Fact]
+    public void A_biome_the_level_table_never_lists_is_never_missing()
+    {
+        // given
+        var withoutSwamp = new BadgeCompatibility([[Biome.BiomeType.Shore, Biome.BiomeType.Tropics]]);
+
+        // when
+        IReadOnlyCollection<Biome.BiomeType> missing = withoutSwamp.MissingOn(ACHIEVEMENTTYPE.WandererBadge, TropicsMap);
+
+        // then
+        Assert.Empty(missing);
+    }
 }
