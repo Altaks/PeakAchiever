@@ -16,6 +16,7 @@ internal sealed class RunFacts
         IReadOnlyCollection<Biome.BiomeType> presentBiomes,
         int currentSegmentIndex,
         float secondsSinceRunStarted,
+        IReadOnlyList<BiomeSplit> biomeSplits,
         int scoutCount
     )
     {
@@ -26,6 +27,7 @@ internal sealed class RunFacts
         PresentBiomes = presentBiomes;
         CurrentSegmentIndex = currentSegmentIndex;
         SecondsSinceRunStarted = secondsSinceRunStarted;
+        BiomeSplits = biomeSplits;
         ScoutCount = scoutCount;
     }
 
@@ -44,6 +46,9 @@ internal sealed class RunFacts
     public int CurrentSegmentIndex { get; }
 
     public float SecondsSinceRunStarted { get; }
+
+    /// <summary>Time spent in each biome so far, in climbing order.</summary>
+    public IReadOnlyList<BiomeSplit> BiomeSplits { get; }
 
     public int ScoutCount { get; }
 

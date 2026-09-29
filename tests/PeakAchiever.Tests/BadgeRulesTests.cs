@@ -101,4 +101,62 @@ public class BadgeRulesTests
             status
         );
     }
+    [Fact]
+    public void Speed_climber_holds_with_the_run_time_against_one_hour()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder().AfterSeconds(2533.7f).Build();
+
+        // when
+        TrackedStatus status = BadgeRules.For(ACHIEVEMENTTYPE.SpeedClimberBadge).Evaluate(facts, isUnlocked: false);
+
+        // then
+        Assert.Equal(new TrackedStatus.Holding(new Progress(2533, 3600, ProgressScope.ThisRun, ProgressUnit.Duration)), status);
+    }
+
+    [Fact]
+    public void Speed_climber_details_the_run_clock_with_its_biome_splits()
+    {
+        // given
+        BiomeSplit[] splits =
+        [
+            new(Biome.BiomeType.Shore, 492f, IsCurrent: false),
+            new(Biome.BiomeType.Tropics, 1041.7f, IsCurrent: true),
+        ];
+        RunFacts facts = new RunFactsBuilder().AfterSeconds(1533.7f).WithBiomeSplits(splits).Build();
+
+        // when
+        BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.SpeedClimberBadge).Detail(facts);
+
+        // then
+        Assert.Equal(new BadgeDetail.RunClock(1533.7f, splits), detail);
+    }
+
+    [Fact]
+    public void Speed_climber_keeps_its_run_clock_once_broken()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder().AfterSeconds(3891f).Build();
+        BadgeRule rule = BadgeRules.For(ACHIEVEMENTTYPE.SpeedClimberBadge);
+
+        // when
+        BadgeDetail? detail = rule.Detail(facts);
+
+        // then
+        Assert.IsType<TrackedStatus.Unattainable>(rule.Evaluate(facts, isUnlocked: false));
+        Assert.Equal(new BadgeDetail.RunClock(3891f, []), detail);
+    }
+
+    [Fact]
+    public void A_badge_with_no_detail_describes_nothing()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder().AfterSeconds(100f).Build();
+
+        // when
+        BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.BalloonBadge).Detail(facts);
+
+        // then
+        Assert.Null(detail);
+    }
 }

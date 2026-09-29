@@ -5,7 +5,7 @@ namespace PeakAchiever.Tests;
 public class ItemRestrictionsTests
 {
     private static TrackedBadge Tracked(ACHIEVEMENTTYPE badge, TrackedStatus status) =>
-        new(badge, BadgeRules.For(badge), status);
+        new(badge, BadgeRules.For(badge), status, Detail: null);
 
     [Fact]
     public void Holding_naturalist_forbids_packaged_food()

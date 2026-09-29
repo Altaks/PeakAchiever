@@ -20,6 +20,7 @@ internal sealed class RunFactsBuilder
     private int _currentSegment;
     private float _seconds;
     private int _scouts = 1;
+    private BiomeSplit[] _biomeSplits = [];
 
     public RunFactsBuilder WithRunValue(RUNBASEDVALUETYPE type, float value)
     {
@@ -63,6 +64,12 @@ internal sealed class RunFactsBuilder
         return this;
     }
 
+    public RunFactsBuilder WithBiomeSplits(params BiomeSplit[] splits)
+    {
+        _biomeSplits = splits;
+        return this;
+    }
+
     public RunFacts Build() =>
         new(
             _runValues,
@@ -72,6 +79,7 @@ internal sealed class RunFactsBuilder
             _segmentBiomes.Distinct().ToArray(),
             _currentSegment,
             _seconds,
+            _biomeSplits,
             _scouts
         );
 }

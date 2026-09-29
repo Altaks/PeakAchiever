@@ -10,6 +10,8 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   - A yellow bar and `current / total` for badges with a counter. `LIFETIME` marks counters the game
     keeps across all runs (meals cooked, height climbed...).
   - "Holding so far" for clean-run badges (no fall damage, no packaged food...) still intact.
+  - Speed Climber shows the run time against one hour, and the time spent in each biome so far (the
+    current one in yellow). The time and splits stay under the red cross once the hour is over.
   - A green check once earned.
   - A red cross, with the reason, once the badge can no longer be earned this run: its biome is not
     on this map or is behind you, or the clean-run condition broke.

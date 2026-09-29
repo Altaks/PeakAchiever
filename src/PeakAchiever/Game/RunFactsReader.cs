@@ -26,6 +26,7 @@ internal static class RunFactsReader
         AchievementManager achievements = Singleton<AchievementManager>.Instance;
         MapHandler map = Singleton<MapHandler>.Instance;
         SerializableRunBasedValues run = achievements.runBasedValueData;
+        float secondsSinceRunStarted = RunManager.Instance.TimeSinceRunStarted;
         return new RunFacts(
             ReadRunValues(run),
             ReadCollectionCounts(run),
@@ -33,7 +34,8 @@ internal static class RunFactsReader
             map.segments.Select(segment => segment.biome).ToArray(),
             map.biomes.ToArray(),
             (int)map.GetCurrentSegment(),
-            RunManager.Instance.TimeSinceRunStarted,
+            secondsSinceRunStarted,
+            BiomeTimeline.Split(ReadTimeline(), secondsSinceRunStarted),
             Character.AllCharacters.Count
         );
     }
@@ -50,6 +52,11 @@ internal static class RunFactsReader
             values[entry.Key] = values.TryGetValue(entry.Key, out float fromInt) ? Math.Max(fromInt, entry.Value) : entry.Value;
         return values;
     }
+
+    // CharacterStats.Record samples the local scout's biome (the current segment's) and the run time, in
+    // whole seconds, about once a second for the end screen; ReconnectData restores it on a rejoin (v2.4.c).
+    private static (Biome.BiomeType, float)[] ReadTimeline() =>
+        Character.localCharacter.refs.stats.timelineInfo.Select(sample => (sample.biome, sample.time)).ToArray();
 
     private static Dictionary<RunCollection, int> ReadCollectionCounts(SerializableRunBasedValues run) =>
         new()

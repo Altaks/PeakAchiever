@@ -18,6 +18,13 @@ internal sealed class RunCollectionTarget(RunCollection collection, int target) 
         new(facts.CollectionCount(collection), target, ProgressScope.ThisRun);
 }
 
+/// <summary>The run's elapsed time against the most a clean run may take.</summary>
+internal sealed class RunDurationTarget(float maxSeconds) : IProgressMeasure
+{
+    public Progress Measure(RunFacts facts) =>
+        new((int)facts.SecondsSinceRunStarted, (int)maxSeconds, ProgressScope.ThisRun, ProgressUnit.Duration);
+}
+
 internal sealed class LifetimeStatTarget(STEAMSTATTYPE stat, int target) : IProgressMeasure
 {
     public STEAMSTATTYPE Stat => stat;

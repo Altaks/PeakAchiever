@@ -6,7 +6,15 @@ internal enum ProgressScope
     Lifetime,
 }
 
-internal readonly record struct Progress(int Current, int Target, ProgressScope Scope)
+/// <summary>What <see cref="Progress.Current"/> and <see cref="Progress.Target"/> count.</summary>
+internal enum ProgressUnit
+{
+    Count,
+    /// <summary>Whole seconds, shown as a clock.</summary>
+    Duration,
+}
+
+internal readonly record struct Progress(int Current, int Target, ProgressScope Scope, ProgressUnit Unit = ProgressUnit.Count)
 {
     public float Fraction => Target <= 0 ? 1f : System.Math.Min(1f, (float)Current / Target);
 }
@@ -19,8 +27,11 @@ internal abstract record TrackedStatus
     /// <summary>Still doable this run; <see cref="Progress"/> is null when the game keeps no counter.</summary>
     public sealed record Attainable(Progress? Progress) : TrackedStatus;
 
-    /// <summary>A clean-run condition, intact so far and only validated by the game at the summit.</summary>
-    public sealed record Holding : TrackedStatus;
+    /// <summary>
+    /// A clean-run condition, intact so far and only validated by the game at the summit;
+    /// <see cref="Progress"/> is how close it is to its limit, when it has one.
+    /// </summary>
+    public sealed record Holding(Progress? Progress = null) : TrackedStatus;
 
     public sealed record Achieved(Progress? Progress) : TrackedStatus;
 
