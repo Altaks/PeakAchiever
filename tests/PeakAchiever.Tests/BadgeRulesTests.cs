@@ -129,7 +129,7 @@ public class BadgeRulesTests
         BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.SpeedClimberBadge).Detail(facts);
 
         // then
-        Assert.Equal(new BadgeDetail.RunClock(1533.7f, splits), detail);
+        Assert.Equal(new BadgeDetail.RunClock(1533.7f, splits, EtaSeconds: null), detail);
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public class BadgeRulesTests
 
         // then
         Assert.IsType<TrackedStatus.Unattainable>(rule.Evaluate(facts, isUnlocked: false));
-        Assert.Equal(new BadgeDetail.RunClock(3891f, []), detail);
+        Assert.Equal(new BadgeDetail.RunClock(3891f, [], EtaSeconds: null), detail);
     }
 
     [Fact]
@@ -232,5 +232,22 @@ public class BadgeRulesTests
 
         // then
         Assert.Equal(new TrackedStatus.Attainable(new Progress(2, 4, ProgressScope.ThisRun)), status);
+    }
+    [Fact]
+    public void Speed_climber_forecasts_the_finish_from_past_runs()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder()
+            .WithSegments(Biome.BiomeType.Shore, Biome.BiomeType.Peak)
+            .AfterSeconds(300f)
+            .WithBiomeSplits(new BiomeSplit(Biome.BiomeType.Shore, 300f, IsCurrent: true))
+            .WithBiomeMedians(new Dictionary<Biome.BiomeType, float> { [Biome.BiomeType.Shore] = 500f, [Biome.BiomeType.Peak] = 90f })
+            .Build();
+
+        // when
+        BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.SpeedClimberBadge).Detail(facts);
+
+        // then
+        Assert.Equal(590f, Assert.IsType<BadgeDetail.RunClock>(detail).EtaSeconds);
     }
 }

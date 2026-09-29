@@ -22,6 +22,7 @@ internal sealed class RunFactsBuilder
     private float _seconds;
     private int _scouts = 1;
     private BiomeSplit[] _biomeSplits = [];
+    private IReadOnlyDictionary<Biome.BiomeType, float> _biomeMedians = new Dictionary<Biome.BiomeType, float>();
 
     public RunFactsBuilder WithRunValue(RUNBASEDVALUETYPE type, float value)
     {
@@ -81,6 +82,12 @@ internal sealed class RunFactsBuilder
         return this;
     }
 
+    public RunFactsBuilder WithBiomeMedians(IReadOnlyDictionary<Biome.BiomeType, float> medians)
+    {
+        _biomeMedians = medians;
+        return this;
+    }
+
     public RunFacts Build() =>
         new(
             _runValues,
@@ -92,6 +99,7 @@ internal sealed class RunFactsBuilder
             _currentSegment,
             _seconds,
             _biomeSplits,
+            _biomeMedians,
             _scouts
         );
 }

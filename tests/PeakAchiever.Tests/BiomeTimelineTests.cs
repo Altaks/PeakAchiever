@@ -11,7 +11,7 @@ public class BiomeTimelineTests
         (Biome.BiomeType, float)[] samples = [];
 
         // when
-        IReadOnlyList<BiomeSplit> splits = BiomeTimeline.Split(samples, secondsSinceRunStarted: 12f);
+        IReadOnlyList<BiomeSplit> splits = BiomeTimeline.Split(samples, secondsSinceRunStarted: 12f, joinedMidRun: false);
 
         // then
         Assert.Empty(splits);
@@ -30,7 +30,7 @@ public class BiomeTimelineTests
         ];
 
         // when
-        IReadOnlyList<BiomeSplit> splits = BiomeTimeline.Split(samples, secondsSinceRunStarted: 800f);
+        IReadOnlyList<BiomeSplit> splits = BiomeTimeline.Split(samples, secondsSinceRunStarted: 800f, joinedMidRun: false);
 
         // then
         Assert.Equal(
@@ -51,7 +51,7 @@ public class BiomeTimelineTests
         ];
 
         // when
-        IReadOnlyList<BiomeSplit> splits = BiomeTimeline.Split(samples, secondsSinceRunStarted: 60f);
+        IReadOnlyList<BiomeSplit> splits = BiomeTimeline.Split(samples, secondsSinceRunStarted: 60f, joinedMidRun: false);
 
         // then
         Assert.Equal(
@@ -60,6 +60,22 @@ public class BiomeTimelineTests
                 new BiomeSplit(Biome.BiomeType.Void, 30f, IsCurrent: false),
                 new BiomeSplit(Biome.BiomeType.Peak, 10f, IsCurrent: true),
             ],
+            splits
+        );
+    }
+
+    [Fact]
+    public void A_scout_who_joined_mid_run_starts_the_clock_of_their_first_biome_on_arrival()
+    {
+        // given
+        (Biome.BiomeType, float)[] samples = [(Biome.BiomeType.Alpine, 1500f), (Biome.BiomeType.Volcano, 1900f)];
+
+        // when
+        IReadOnlyList<BiomeSplit> splits = BiomeTimeline.Split(samples, secondsSinceRunStarted: 2000f, joinedMidRun: true);
+
+        // then
+        Assert.Equal(
+            [new BiomeSplit(Biome.BiomeType.Alpine, 400f, IsCurrent: false), new BiomeSplit(Biome.BiomeType.Volcano, 100f, IsCurrent: true)],
             splits
         );
     }
