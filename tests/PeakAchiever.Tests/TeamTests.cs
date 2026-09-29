@@ -100,3 +100,75 @@ public class ScoutsTests
         Assert.False(all);
     }
 }
+
+public class TeamRankingTests
+{
+    private static Scout With(string name, params ACHIEVEMENTTYPE[] earned) => new(name, IsLocal: false, earned.ToHashSet());
+
+    private static readonly Scout[] Team =
+    [
+        With("Altaks", ACHIEVEMENTTYPE.CoolCucumberBadge, ACHIEVEMENTTYPE.NaturalistBadge, ACHIEVEMENTTYPE.PeakBadge),
+        With("Mika", ACHIEVEMENTTYPE.NaturalistBadge, ACHIEVEMENTTYPE.PeakBadge),
+        With("Jo", ACHIEVEMENTTYPE.PeakBadge),
+        new("Tom", IsLocal: false, Earned: null),
+    ];
+
+    [Fact]
+    public void Badges_nobody_has_come_first_then_the_most_missing()
+    {
+        // given, in the game's badge order
+        ACHIEVEMENTTYPE[] candidates =
+        [
+            ACHIEVEMENTTYPE.NaturalistBadge,
+            ACHIEVEMENTTYPE.BellringerBadge,
+            ACHIEVEMENTTYPE.CoolCucumberBadge,
+            ACHIEVEMENTTYPE.WebSecurityBadge,
+        ];
+
+        // when
+        IReadOnlyList<TeamRow> rows = TeamRanking.Rank(candidates, Team);
+
+        // then
+        Assert.Equal(
+            [ACHIEVEMENTTYPE.BellringerBadge, ACHIEVEMENTTYPE.WebSecurityBadge, ACHIEVEMENTTYPE.CoolCucumberBadge, ACHIEVEMENTTYPE.NaturalistBadge],
+            rows.Select(row => row.Badge)
+        );
+    }
+
+    [Fact]
+    public void A_row_names_who_misses_it_and_counts_only_the_scouts_known()
+    {
+        // when
+        TeamRow row = TeamRanking.Rank([ACHIEVEMENTTYPE.NaturalistBadge], Team).Single();
+
+        // then
+        Assert.Equal(2, row.EarnedBy);
+        Assert.Equal(3, row.Known);
+        Assert.Equal(["Jo"], row.MissingFor);
+        Assert.False(row.NobodyHasIt);
+    }
+
+    [Fact]
+    public void A_badge_every_known_scout_has_is_left_out()
+    {
+        // when
+        IReadOnlyList<TeamRow> rows = TeamRanking.Rank([ACHIEVEMENTTYPE.PeakBadge, ACHIEVEMENTTYPE.BellringerBadge], Team);
+
+        // then
+        Assert.Equal([ACHIEVEMENTTYPE.BellringerBadge], rows.Select(row => row.Badge));
+    }
+
+    [Fact]
+    public void With_nobody_known_every_badge_is_listed_as_nobody_has_it()
+    {
+        // given
+        Scout[] unknown = [new("Tom", IsLocal: false, Earned: null)];
+
+        // when
+        IReadOnlyList<TeamRow> rows = TeamRanking.Rank([ACHIEVEMENTTYPE.PeakBadge], unknown);
+
+        // then
+        Assert.True(rows.Single().NobodyHasIt);
+    }
+}
+
