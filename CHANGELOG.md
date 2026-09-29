@@ -12,6 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reached in the biome against the game's limit (10%, 20%, 25%).
 - Speed Climber splits compare with the median of past runs at the same ascent: `(+1:20)` in red when
   slower, `(-0:40)` in green when faster; the current biome only once it runs over.
+- Suggested pins: on the badges page, a yellow star on as many badges as there are free pin slots,
+  all doable on today's map (or the run's) and compatible with the pins and each other. Badges tied
+  to that map's biomes come first, then clean runs. Locked secret badges are never starred.
 - Statistics panel, opened from a Statistics button under the Back button of the pause menu's badges page:
   per ascent, each biome's times, median and best, the whole climb of each map layout, and a
   two-click erase of the ascent shown.
