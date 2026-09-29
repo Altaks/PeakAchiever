@@ -79,8 +79,8 @@ a second click within 3 seconds, then removes that ascent's lines from the file.
 mouse clicks; it is not reachable with a gamepad yet.
 
 The time of every biome you finish (mini runs excepted, and not the biome you joined a run in) goes
-to `BepInEx/config/Altaks.PeakAchiever.splits.csv`, one line each: run id, ascent, place in the run,
-biome, seconds. Delete the file to reset the ETA.
+to `BepInEx/config/Altaks.PeakAchiever.splits.csv`, one line each: run id (the game's, or one the mod
+makes when the game gives none), ascent, place in the run, biome, seconds. Delete the file to reset the ETA.
 
 ## How badges are judged
 

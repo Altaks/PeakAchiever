@@ -50,6 +50,7 @@ internal static class RunTrackingPatches
         AchievementManager achievements = Singleton<AchievementManager>.Instance;
         if (Plugin.Pins.Board.DropEarned(achievements.IsAchievementUnlocked))
             Plugin.Pins.Save();
+        Plugin.Splits.StartRun();
         Plugin.Hud.RequestRefresh();
     }
 }
