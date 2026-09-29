@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using PeakAchiever.Localization;
 using TMPro;
@@ -33,7 +31,7 @@ internal sealed class TrackerKeyRow : MonoBehaviour
     /// <summary>Adds the row the first time the page opens; afterwards shows the key, saving one just picked.</summary>
     public static void AttachTo(PauseMenuControlsPage page, TrackerToggleKey key)
     {
-        RegisterLabel();
+        GameTextTable.Register(LabelKey, ModTextKey.ControlsToggleTracker);
         TrackerKeyRow? row = page.controlsMenuButtonsParent.GetComponentsInChildren<TrackerKeyRow>(includeInactive: true).FirstOrDefault();
         if (row == null)
             row = Create(page, key);
@@ -97,16 +95,6 @@ internal sealed class TrackerKeyRow : MonoBehaviour
             return null;
         Transform firstColumn = rows[0].transform.parent;
         return rows.Where(row => row.transform.parent == firstColumn).OrderBy(row => row.transform.GetSiblingIndex()).Last();
-    }
-
-    /// <summary>The game's table is rebuilt on a language reload, so the label is put back each time.</summary>
-    private static void RegisterLabel()
-    {
-        int languages = Enum.GetValues(typeof(LocalizedText.Language)).Length;
-        string english = ModText.In(ModTextKey.ControlsToggleTracker, ModText.ModLanguage.English);
-        var texts = Enumerable.Repeat(english, languages).ToList();
-        texts[(int)LocalizedText.Language.French] = ModText.In(ModTextKey.ControlsToggleTracker, ModText.ModLanguage.French);
-        LocalizedText.mainTable[LabelKey] = texts;
     }
 
     // What PauseMenuRebindButton.OnRebindClicked does, with the mod's action and the keyboard forced:
