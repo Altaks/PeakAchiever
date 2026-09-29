@@ -101,6 +101,7 @@ public class BadgeRulesTests
             status
         );
     }
+
     [Fact]
     public void Speed_climber_holds_with_the_run_time_against_one_hour()
     {
@@ -159,6 +160,7 @@ public class BadgeRulesTests
         // then
         Assert.Null(detail);
     }
+
     [Theory]
     [InlineData(ACHIEVEMENTTYPE.CoolCucumberBadge, RUNBASEDVALUETYPE.MaxHeatTakenInMesa, 0.04f, 4, 10)]
     [InlineData(ACHIEVEMENTTYPE.BundledUpBadge, RUNBASEDVALUETYPE.MaxColdTakenInAlpine, 0.2f, 20, 20)]
@@ -183,6 +185,7 @@ public class BadgeRulesTests
         // then
         Assert.Equal(new TrackedStatus.Holding(new Progress(percent, limitPercent, ProgressScope.ThisRun, ProgressUnit.Percent)), status);
     }
+
     [Fact]
     public void Foraging_checks_off_the_berries_eaten_among_every_berry_of_the_game()
     {
@@ -233,6 +236,7 @@ public class BadgeRulesTests
         // then
         Assert.Equal(new TrackedStatus.Attainable(new Progress(2, 4, ProgressScope.ThisRun)), status);
     }
+
     [Fact]
     public void Speed_climber_forecasts_the_finish_from_past_runs()
     {
