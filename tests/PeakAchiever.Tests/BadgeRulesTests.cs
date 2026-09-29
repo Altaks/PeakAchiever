@@ -130,7 +130,7 @@ public class BadgeRulesTests
         BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.SpeedClimberBadge).Detail(facts);
 
         // then
-        Assert.Equal(new BadgeDetail.RunClock(1533.7f, [new(splits[0], null), new(splits[1], null)], EtaSeconds: null), detail);
+        Assert.Equal(new BadgeDetail.RunClock(1533.7f, [new(splits[0], null), new(splits[1], null)], EtaSeconds: null, EtaOverLimit: false), detail);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public class BadgeRulesTests
 
         // then
         Assert.IsType<TrackedStatus.Unattainable>(rule.Evaluate(facts, isUnlocked: false));
-        Assert.Equal(new BadgeDetail.RunClock(3891f, [], EtaSeconds: null), detail);
+        Assert.Equal(new BadgeDetail.RunClock(3891f, [], EtaSeconds: null, EtaOverLimit: false), detail);
     }
 
     [Fact]
@@ -271,5 +271,25 @@ public class BadgeRulesTests
 
         // then
         Assert.Equal(new ComparedSplit(shore, -40f), Assert.IsType<BadgeDetail.RunClock>(detail).Splits[0]);
+    }
+
+    [Theory]
+    [InlineData(3500f, false)]
+    [InlineData(3700f, true)]
+    public void Speed_climber_flags_an_eta_past_the_hour(float peakMedian, bool over)
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder()
+            .WithSegments(Biome.BiomeType.Shore, Biome.BiomeType.Peak)
+            .AfterSeconds(50f)
+            .WithBiomeSplits(new BiomeSplit(Biome.BiomeType.Shore, 50f, IsCurrent: true))
+            .WithBiomeMedians(new Dictionary<Biome.BiomeType, float> { [Biome.BiomeType.Shore] = 100f, [Biome.BiomeType.Peak] = peakMedian })
+            .Build();
+
+        // when
+        BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.SpeedClimberBadge).Detail(facts);
+
+        // then
+        Assert.Equal(over, Assert.IsType<BadgeDetail.RunClock>(detail).EtaOverLimit);
     }
 }

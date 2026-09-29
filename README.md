@@ -25,9 +25,11 @@ Pin the badges you want to chase, and see during your run which ones you can sti
     it runs over its median.
   - Speed Climber also shows an ETA: the run time so far, plus the median time past runs at the same
     ascent took for the rest of the current biome and for every biome ahead. It shows once each of
-    those biomes has been finished at least once with the mod installed.
+    those biomes has been finished at least once with the mod installed. It turns orange once it is
+    past one hour.
   - Cool Cucumber, Bundled Up and Tread Lightly show the highest heat, cold or spores rate reached in
-    their biome against the limit, as a bar and `max 4% / 10%`.
+    their biome against the limit, as a bar and `max 4% / 10%`. The bar and the figures turn orange
+    from 75% of the limit (8% of 10%).
   - Foraging, Mycology, Advanced Mycology and Gourmand show every item that counts as a grid of
     icons: dimmed until eaten this run, then in full colour with a green tick. The item lists are read
     from the game, and written to `BepInEx/LogOutput.log` the first time a run needs them.

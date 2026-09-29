@@ -76,7 +76,7 @@ internal static class BadgeRules
                 new RunDurationTarget(AchievementManager.ONE_HOUR_IN_SECONDS),
                 new RunDurationCeiling(AchievementManager.ONE_HOUR_IN_SECONDS)
             )
-            .WithDetail(new RunClockSource()),
+            .WithDetail(new RunClockSource(AchievementManager.ONE_HOUR_IN_SECONDS)),
 
         // Clean biomes, checked once the next area is reached (MountainProgressHandler.CheckAreaAchievement).
         // The rates are the highest bar fraction reached while in that biome (CharacterAfflictions.AddStatus).

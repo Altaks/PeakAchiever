@@ -21,6 +21,8 @@ internal sealed class HudStyle
     public static readonly Color ProgressFill = Rgb(0xF2, 0xC1, 0x4E);
     public static readonly Color Achieved = Rgb(0x8F, 0xD4, 0x6A);
     public static readonly Color Unattainable = Rgb(0xFF, 0x7A, 0x66);
+    // Between the progress yellow and the cross red: a limit close by, not reached.
+    public static readonly Color Caution = Rgb(0xFF, 0x9F, 0x43);
     public static readonly Color LockedIconTint = new(0.45f, 0.45f, 0.45f, 1f);
     public static readonly Color PinMarkerInk = Rgb(0x1D, 0x18, 0x13);
 

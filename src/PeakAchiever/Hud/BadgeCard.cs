@@ -30,10 +30,11 @@ internal sealed class BadgeCard
     private const float ChecklistTickGlyphSize = 9f;
     // As many icons as fit the text column: (Width - 2 * Padding - IconSize - Gap + ChecklistGap) / (ChecklistIconSize + ChecklistGap).
     private const int ChecklistColumns = 8;
-    private static readonly SplitColors SplitColors = new(
+    private static readonly ClockColors ClockColors = new(
         Current: ColorUtility.ToHtmlStringRGB(HudStyle.ProgressFill),
         Slower: ColorUtility.ToHtmlStringRGB(HudStyle.Unattainable),
-        Faster: ColorUtility.ToHtmlStringRGB(HudStyle.Achieved)
+        Faster: ColorUtility.ToHtmlStringRGB(HudStyle.Achieved),
+        Caution: ColorUtility.ToHtmlStringRGB(HudStyle.Caution)
     );
 
     private readonly HudStyle _style;
@@ -143,7 +144,7 @@ internal sealed class BadgeCard
         {
             case TrackedStatus.Attainable attainable:
                 ShowMark(null, default);
-                ShowProgress(attainable.Progress, HudStyle.ProgressFill);
+                ShowProgress(attainable.Progress, HudStyle.ProgressFill, HudStyle.Ink);
                 if (attainable.Progress is { } progress)
                     ShowLabel(ScopeLabel(progress), HudStyle.InkMuted);
                 else
@@ -151,18 +152,24 @@ internal sealed class BadgeCard
                 break;
             case TrackedStatus.Holding holding:
                 ShowMark(null, default);
-                ShowProgress(holding.Progress, HudStyle.ProgressFill);
+                // Close to its limit, the bar and its figures turn to the caution colour.
+                bool nearLimit = holding.Progress is { NearLimit: true };
+                ShowProgress(
+                    holding.Progress,
+                    nearLimit ? HudStyle.Caution : HudStyle.ProgressFill,
+                    nearLimit ? HudStyle.Caution : HudStyle.Ink
+                );
                 // A measured limit already says how the condition holds.
                 ShowLabel(holding.Progress is null ? ModText.Get(ModTextKey.StatusHolding) : "", HudStyle.ProgressFill);
                 break;
             case TrackedStatus.Achieved achieved:
                 ShowMark(_style.Check, HudStyle.Achieved);
-                ShowProgress(achieved.Progress, HudStyle.Achieved);
+                ShowProgress(achieved.Progress, HudStyle.Achieved, HudStyle.Ink);
                 ShowLabel(ModText.Get(ModTextKey.StatusAchieved), HudStyle.Achieved);
                 break;
             case TrackedStatus.Unattainable blocked:
                 ShowMark(_style.Cross, HudStyle.Unattainable);
-                ShowProgress(null, default);
+                ShowProgress(null, default, default);
                 ShowLabel(StatusText.Describe(blocked.Reason), HudStyle.Unattainable);
                 break;
             default:
@@ -184,7 +191,7 @@ internal sealed class BadgeCard
         _markRing.color = color;
     }
 
-    private void ShowProgress(Progress? progress, Color fillColor)
+    private void ShowProgress(Progress? progress, Color fillColor, Color countColor)
     {
         _bar.SetActive(progress != null);
         _count.gameObject.SetActive(progress != null);
@@ -193,6 +200,7 @@ internal sealed class BadgeCard
         _barFill.anchorMax = new Vector2(shown.Fraction, 1f);
         _barFillImage.color = fillColor;
         _count.text = StatusText.Count(shown);
+        _count.color = countColor;
     }
 
     private void ShowDetail(BadgeDetail? detail, bool unattainable)
@@ -205,7 +213,7 @@ internal sealed class BadgeCard
                 break;
             // Once broken the bar is gone, so the elapsed time moves down here.
             case BadgeDetail.RunClock clock:
-                text = StatusText.RunClock(clock, withElapsed: unattainable, SplitColors);
+                text = StatusText.RunClock(clock, withElapsed: unattainable, ClockColors);
                 break;
             case BadgeDetail.Checklist checklist:
                 items = checklist.Items;
