@@ -5,6 +5,11 @@ Pin the badges you want to chase, and see during your run which ones you can sti
 - **Pin from the pause menu.** Open the badges page of the pause menu and click a badge you have not
   earned yet: a yellow pin marks it, and the badge's tooltip says whether a click pins or unpins it.
   Works in the airport too, so you can pick your targets before take-off.
+- **No incompatible pins.** A map has either Tropics, Alpine and Caldera, or Roots, Mesa and the Gloom
+  (read from the game's level table). A badge that needs a biome no map shares with a pinned badge is
+  faded on the badges page, its tooltip names the pin in the way, and clicking it is refused. Only
+  proven clashes count: Lone Wolf, for instance, stays pinnable with Clutch, since other scouts can
+  leave before the summit.
 - **Track in the top-right corner.** During a run, each pinned badge shows its icon, name and
   condition, taken from the game in your language.
   - A yellow bar and `current / total` for badges with a counter. `LIFETIME` marks counters the game
