@@ -123,6 +123,9 @@ internal static class ModText
 
     public static string Get(ModTextKey key) => Table[key][(int)CurrentLanguage];
 
+    /// <summary>The string in a given language, for texts handed to the game's own table.</summary>
+    public static string In(ModTextKey key, ModLanguage language) => Table[key][(int)language];
+
     public static string Format(ModTextKey key, params object[] arguments) =>
         string.Format(System.Globalization.CultureInfo.CurrentCulture, Get(key), arguments);
 

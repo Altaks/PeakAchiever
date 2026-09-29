@@ -12,8 +12,8 @@ using Zorro.Core;
 namespace PeakAchiever.PauseMenu;
 
 /// <summary>
-/// The biome times of past runs, per ascent, opened from a button shown while the pause menu's badges
-/// page is open: times, median and best of each biome, the whole climb of each map layout, and a
+/// The biome times of past runs, per ascent, opened from a copy of the badges page's own back button
+/// placed under it: times, median and best of each biome, the whole climb of each map layout, and a
 /// two-click erase of the ascent shown.
 /// </summary>
 internal sealed class StatsPanel
@@ -27,15 +27,14 @@ internal sealed class StatsPanel
     private const float BiomeColumnWidth = 230f;
     private const float NumberColumnWidth = 96f;
     private const float TimesColumnWidth = 70f;
-    private static readonly Vector2 ButtonCorner = new(1f, 0f);
-    private static readonly Vector2 ButtonOffset = new(-40f, 40f);
+    private const string ButtonName = "PeakAchiever.StatsButton";
+    private const string ButtonLabelKey = "PEAKACHIEVER_STATISTICS";
     private const float EraseConfirmSeconds = 3f;
     // AscentUI shows ascent n from AscentData.ascents[n + 2] (v2.4.c).
     private const int AscentTitleOffset = 2;
 
     private readonly HudStyle _style;
     private readonly SplitHistoryStore _store;
-    private readonly GameObject _openButton;
     private readonly GameObject _panel;
     private readonly TextMeshProUGUI _ascentName;
     private readonly Button _previous;
@@ -51,14 +50,6 @@ internal sealed class StatsPanel
     {
         _style = style;
         _store = store;
-
-        _openButton = UiFactory.AddButton(canvas, "StatsButton", style, ModText.Get(ModTextKey.StatsButton), Open).gameObject;
-        var buttonRect = (RectTransform)_openButton.transform;
-        buttonRect.anchorMin = ButtonCorner;
-        buttonRect.anchorMax = ButtonCorner;
-        buttonRect.pivot = ButtonCorner;
-        buttonRect.anchoredPosition = ButtonOffset;
-        _openButton.SetActive(false);
 
         _panel = UiFactory.Create("StatsPanel", canvas);
         var panelRect = (RectTransform)_panel.transform;
@@ -105,8 +96,36 @@ internal sealed class StatsPanel
         _panel.SetActive(false);
     }
 
-    /// <summary>The badges page to follow: the button shows while it is open.</summary>
-    public void Watch(PauseMenuAccoladesPage page) => _page = page;
+    /// <summary>
+    /// Follows the badges page: the panel closes with it. The first time, puts a copy of the page's back
+    /// button under it, which opens the panel.
+    /// </summary>
+    public void Watch(PauseMenuAccoladesPage page)
+    {
+        _page = page;
+        GameTextTable.Register(ButtonLabelKey, ModTextKey.StatsButton);
+        Transform column = page.backButton.transform.parent;
+        if (column.Find(ButtonName) != null)
+            return;
+        GameObject copy = Object.Instantiate(page.backButton.gameObject, column);
+        copy.name = ButtonName;
+        copy.transform.SetSiblingIndex(page.backButton.transform.GetSiblingIndex() + 1);
+        Button button = copy.GetComponent<Button>();
+        // A fresh event drops the copied listeners, the inspector's ones included.
+        button.onClick = new Button.ButtonClickedEvent();
+        button.onClick.AddListener(Open);
+        // == null, not a pattern: Unity objects override the null check.
+        LocalizedText label = copy.GetComponentInChildren<LocalizedText>(includeInactive: true);
+        if (label != null)
+        {
+            label.index = ButtonLabelKey;
+            label.tmp.text = LocalizedText.GetText(ButtonLabelKey);
+        }
+        else
+        {
+            copy.GetComponentInChildren<TMP_Text>(includeInactive: true).text = ModText.Get(ModTextKey.StatsButton);
+        }
+    }
 
     /// <summary>Called every frame by the overlay.</summary>
     public void Tick()
@@ -114,7 +133,6 @@ internal sealed class StatsPanel
         bool pageOpen = _page != null && _page.gameObject.activeInHierarchy && GUIManager.InPauseMenu;
         if (!pageOpen && _panel.activeSelf)
             Close();
-        _openButton.SetActive(pageOpen && !_panel.activeSelf);
         if (!float.IsNegativeInfinity(_eraseArmedUntil) && Time.unscaledTime >= _eraseArmedUntil)
             Disarm();
     }
