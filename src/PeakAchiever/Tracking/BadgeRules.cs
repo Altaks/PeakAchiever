@@ -63,7 +63,12 @@ internal static class BadgeRules
             new RunValueCeiling(RUNBASEDVALUETYPE.PermanentItemsPlaced, 0f, BrokenCondition.PlacedPermanentItem)
         ),
         [ACHIEVEMENTTYPE.LoneWolfBadge] = BadgeRule.CleanRun(new SoloOnly()),
-        [ACHIEVEMENTTYPE.SpeedClimberBadge] = BadgeRule.CleanRun(new RunDurationCeiling(AchievementManager.ONE_HOUR_IN_SECONDS)),
+        [ACHIEVEMENTTYPE.SpeedClimberBadge] = BadgeRule
+            .CleanRun(
+                new RunDurationTarget(AchievementManager.ONE_HOUR_IN_SECONDS),
+                new RunDurationCeiling(AchievementManager.ONE_HOUR_IN_SECONDS)
+            )
+            .WithDetail(new RunClockSource()),
 
         // Clean biomes, checked once the next area is reached (MountainProgressHandler.CheckAreaAchievement).
         [ACHIEVEMENTTYPE.CoolCucumberBadge] = BadgeRule.CleanRun(
