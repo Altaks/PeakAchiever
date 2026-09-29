@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- A card whose badge becomes impossible tears in two along a jagged line, then falls to the end of the
+  tracker, where it stays torn and crossed out.
+- A lost run (the end screen with nobody at the summit, solo or the whole team) rules out every badge
+  still in play, "Impossible: run lost", and their cards tear one after the other.
 - Badges already earned can be pinned, to help an ally earn them in a multiplayer run. They stay pinned
   from one run to the next until unpinned; the config marks them with a leading `+`.
 

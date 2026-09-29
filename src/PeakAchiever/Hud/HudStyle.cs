@@ -43,6 +43,12 @@ internal sealed class HudStyle
     // Inner radius of a regular five-point star, as a share of the outer one.
     private const float StarInnerRatio = 0.4f;
     private const int StarSupersampling = 4;
+    // The tear masks: wider than tall like a card, the jagged line down the middle.
+    private const int TearTextureWidth = 128;
+    private const int TearTextureHeight = 64;
+    // Where the line crosses each of its evenly spaced heights, off the middle, in texels:
+    // an irregular zigzag, top to bottom.
+    private static readonly float[] TearZigzag = [0f, 5f, -4f, 6f, -3f, 4f, -6f, 3f, -2f, 5f, 0f];
 
     // Mod assets are embedded under this logical name prefix (see the csproj EmbeddedResource item).
     private const string EmbeddedAssetPrefix = "PeakAchiever.Assets.";
@@ -60,6 +66,8 @@ internal sealed class HudStyle
         Circle = CreateCircle();
         Pill = CreatePill(Circle.texture);
         Star = CreateStar();
+        TearLeft = CreateTear(keepLeft: true);
+        TearRight = CreateTear(keepLeft: false);
         Cross = LoadEmbeddedSprite("Cross.png", log);
         Pin = LoadEmbeddedSprite("Pin.png", log);
         Warning = LoadEmbeddedSprite("Warning.png", log);
@@ -90,6 +98,12 @@ internal sealed class HudStyle
 
     /// <summary>The border of <see cref="Pill"/>, in texture pixels.</summary>
     public const float PillBorder = CircleTextureSize / 2f - 1f;
+
+    /// <summary>Masks the left side of a card, up to a jagged tear down its middle.</summary>
+    public Sprite TearLeft { get; }
+
+    /// <summary>Masks the right side of a card, from the same tear as <see cref="TearLeft"/>.</summary>
+    public Sprite TearRight { get; }
 
     /// <summary>A five-point star, drawn in code like <see cref="Circle"/>.</summary>
     public Sprite Star { get; }
@@ -201,17 +215,42 @@ internal sealed class HudStyle
         return inside;
     }
 
-    private static Texture2D CreateMask(int size, System.Func<int, int, float> alphaAt)
+    private static Sprite CreateTear(bool keepLeft)
     {
-        var texture = new Texture2D(size, size, TextureFormat.RGBA32, mipChain: false)
+        Texture2D texture = CreateMask(
+            TearTextureWidth,
+            TearTextureHeight,
+            (x, y) =>
+            {
+                // One texel of anti-aliasing across the line.
+                float left = Mathf.Clamp01(TearLineAt(y) - x);
+                return keepLeft ? left : 1f - left;
+            }
+        );
+        return Sprite.Create(texture, new Rect(0, 0, TearTextureWidth, TearTextureHeight), new Vector2(0.5f, 0.5f));
+    }
+
+    private static float TearLineAt(int y)
+    {
+        float along = (float)y / (TearTextureHeight - 1) * (TearZigzag.Length - 1);
+        int below = Mathf.Min((int)along, TearZigzag.Length - 2);
+        float offset = Mathf.Lerp(TearZigzag[below], TearZigzag[below + 1], along - below);
+        return TearTextureWidth / 2f + offset;
+    }
+
+    private static Texture2D CreateMask(int size, System.Func<int, int, float> alphaAt) => CreateMask(size, size, alphaAt);
+
+    private static Texture2D CreateMask(int width, int height, System.Func<int, int, float> alphaAt)
+    {
+        var texture = new Texture2D(width, height, TextureFormat.RGBA32, mipChain: false)
         {
             wrapMode = TextureWrapMode.Clamp,
             filterMode = FilterMode.Bilinear,
         };
-        var pixels = new Color32[size * size];
-        for (int y = 0; y < size; y++)
-        for (int x = 0; x < size; x++)
-            pixels[y * size + x] = new Color32(255, 255, 255, (byte)(alphaAt(x, y) * 255));
+        var pixels = new Color32[width * height];
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+            pixels[y * width + x] = new Color32(255, 255, 255, (byte)(alphaAt(x, y) * 255));
         texture.SetPixels32(pixels);
         texture.Apply();
         return texture;

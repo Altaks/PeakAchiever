@@ -331,4 +331,43 @@ public class BadgeRulesTests
         // then
         Assert.Equal(new TrackedStatus.Holding(), status);
     }
+
+    [Fact]
+    public void A_lost_run_rules_out_every_badge_still_in_play()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder().WithCollection(RunCollection.DifferentBerriesEaten, 3).Lost().Build();
+
+        // when
+        TrackedStatus status = BadgeRules.For(ACHIEVEMENTTYPE.ForagingBadge).Evaluate(facts, isUnlocked: false);
+
+        // then
+        Assert.Equal(new TrackedStatus.Unattainable(new UnattainableReason.ConditionBroken(BrokenCondition.RunLost)), status);
+    }
+
+    [Fact]
+    public void A_badge_broken_before_the_run_was_lost_keeps_its_own_reason()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder().WithRunValue(RUNBASEDVALUETYPE.FallDamageTaken, 0.3f).Lost().Build();
+
+        // when
+        TrackedStatus status = BadgeRules.For(ACHIEVEMENTTYPE.BalloonBadge).Evaluate(facts, isUnlocked: false);
+
+        // then
+        Assert.Equal(new TrackedStatus.Unattainable(new UnattainableReason.ConditionBroken(BrokenCondition.TookFallDamage)), status);
+    }
+
+    [Fact]
+    public void A_badge_earned_in_the_lost_run_stays_earned()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder().Lost().Build();
+
+        // when
+        TrackedStatus status = BadgeRules.For(ACHIEVEMENTTYPE.TriedYourBestBadge).Evaluate(facts, isUnlocked: true);
+
+        // then
+        Assert.Equal(new TrackedStatus.Achieved(null), status);
+    }
 }

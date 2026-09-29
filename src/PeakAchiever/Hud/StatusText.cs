@@ -39,6 +39,7 @@ internal static class StatusText
         [BrokenCondition.TooMuchCold] = ModTextKey.ReasonTooMuchCold,
         [BrokenCondition.TooManySpores] = ModTextKey.ReasonTooManySpores,
         [BrokenCondition.HitByTrap] = ModTextKey.ReasonHitByTrap,
+        [BrokenCondition.RunLost] = ModTextKey.ReasonRunLost,
     };
 
     public static string Describe(UnattainableReason reason) =>

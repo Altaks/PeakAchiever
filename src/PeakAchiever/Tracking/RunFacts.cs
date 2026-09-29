@@ -19,7 +19,8 @@ internal sealed class RunFacts
         float secondsSinceRunStarted,
         IReadOnlyList<BiomeSplit> biomeSplits,
         IReadOnlyDictionary<Biome.BiomeType, float> biomeMedians,
-        IReadOnlyCollection<ushort>? itemsOnMap
+        IReadOnlyCollection<ushort>? itemsOnMap,
+        bool runLost
     )
     {
         RunValues = runValues;
@@ -33,6 +34,7 @@ internal sealed class RunFacts
         BiomeSplits = biomeSplits;
         BiomeMedians = biomeMedians;
         ItemsOnMap = itemsOnMap;
+        RunLost = runLost;
     }
 
     /// <summary>Run counters, the higher of the game's int and float tables for each key.</summary>
@@ -63,6 +65,9 @@ internal sealed class RunFacts
 
     /// <summary>Every item id this map can yield, or null when the map could not be read.</summary>
     public IReadOnlyCollection<ushort>? ItemsOnMap { get; }
+
+    /// <summary>True once the run has ended with nobody at the summit.</summary>
+    public bool RunLost { get; }
 
     public float RunValue(RUNBASEDVALUETYPE type) =>
         RunValues.TryGetValue(type, out float value) ? value : 0f;
