@@ -37,10 +37,18 @@ internal static class BadgeRules
         [ACHIEVEMENTTYPE.ArcheryBadge] = BadgeRule.Counted(new RunValueTarget(RUNBASEDVALUETYPE.ArrowsRemoved, ArrowsForArchery)),
 
         // Distinct items eaten this run (AchievementManager.AddTo*Eaten, TestWonRun).
-        [ACHIEVEMENTTYPE.ForagingBadge] = BadgeRule.Counted(new RunCollectionTarget(RunCollection.DifferentBerriesEaten, AchievementManager.FRUITSNEEDEDFORACHIEVEMENT)),
-        [ACHIEVEMENTTYPE.AdvancedMycologyBadge] = BadgeRule.Counted(new RunCollectionTarget(RunCollection.DifferentShroomBerriesEaten, AchievementManager.SHROOMBERRIESNEEDEDFORACHIEVEMENT)),
-        [ACHIEVEMENTTYPE.MycologyBadge] = BadgeRule.Counted(new RunCollectionTarget(RunCollection.DifferentNonToxicMushroomsEaten, AchievementManager.MUSHROOMSNEEDEDFORACHIEVEMENT)),
-        [ACHIEVEMENTTYPE.GourmandBadge] = BadgeRule.Counted(new RunCollectionTarget(RunCollection.GourmandDishesEaten, DishesForGourmand)),
+        [ACHIEVEMENTTYPE.ForagingBadge] = BadgeRule
+            .Counted(new RunCollectionTarget(RunCollection.DifferentBerriesEaten, AchievementManager.FRUITSNEEDEDFORACHIEVEMENT))
+            .WithDetail(new EatenItemsSource(RunCollection.DifferentBerriesEaten)),
+        [ACHIEVEMENTTYPE.AdvancedMycologyBadge] = BadgeRule
+            .Counted(new RunCollectionTarget(RunCollection.DifferentShroomBerriesEaten, AchievementManager.SHROOMBERRIESNEEDEDFORACHIEVEMENT))
+            .WithDetail(new EatenItemsSource(RunCollection.DifferentShroomBerriesEaten)),
+        [ACHIEVEMENTTYPE.MycologyBadge] = BadgeRule
+            .Counted(new RunCollectionTarget(RunCollection.DifferentNonToxicMushroomsEaten, AchievementManager.MUSHROOMSNEEDEDFORACHIEVEMENT))
+            .WithDetail(new EatenItemsSource(RunCollection.DifferentNonToxicMushroomsEaten)),
+        [ACHIEVEMENTTYPE.GourmandBadge] = BadgeRule
+            .Counted(new RunCollectionTarget(RunCollection.GourmandDishesEaten, DishesForGourmand))
+            .WithDetail(new EatenItemsSource(RunCollection.GourmandDishesEaten)),
 
         // Lifetime Steam stats (AchievementManager.steamStatBasedAchievements).
         [ACHIEVEMENTTYPE.CookingBadge] = BadgeRule.Counted(new LifetimeStatTarget(STEAMSTATTYPE.MealsCooked, MealsForCooking)),

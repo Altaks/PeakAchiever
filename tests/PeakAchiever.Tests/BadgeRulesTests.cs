@@ -183,4 +183,54 @@ public class BadgeRulesTests
         // then
         Assert.Equal(new TrackedStatus.Holding(new Progress(percent, limitPercent, ProgressScope.ThisRun, ProgressUnit.Percent)), status);
     }
+    [Fact]
+    public void Foraging_checks_off_the_berries_eaten_among_every_berry_of_the_game()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder()
+            .WithCandidates(RunCollection.DifferentBerriesEaten, 3, 7, 12)
+            .WithEaten(RunCollection.DifferentBerriesEaten, 12, 3)
+            .Build();
+
+        // when
+        BadgeDetail? detail = BadgeRules.For(ACHIEVEMENTTYPE.ForagingBadge).Detail(facts);
+
+        // then
+        Assert.Equal(
+            new BadgeDetail.Checklist([new ChecklistItem(3, Eaten: true), new ChecklistItem(7, Eaten: false), new ChecklistItem(12, Eaten: true)]),
+            detail
+        );
+    }
+
+    [Theory]
+    [InlineData(ACHIEVEMENTTYPE.ForagingBadge, RunCollection.DifferentBerriesEaten)]
+    [InlineData(ACHIEVEMENTTYPE.AdvancedMycologyBadge, RunCollection.DifferentShroomBerriesEaten)]
+    [InlineData(ACHIEVEMENTTYPE.MycologyBadge, RunCollection.DifferentNonToxicMushroomsEaten)]
+    [InlineData(ACHIEVEMENTTYPE.GourmandBadge, RunCollection.GourmandDishesEaten)]
+    // RunCollection is internal, so a public theory takes it as object.
+    public void Each_eating_badge_lists_its_own_collection(ACHIEVEMENTTYPE badge, object listEaten)
+    {
+        // given
+        var collection = (RunCollection)listEaten;
+        RunFacts facts = new RunFactsBuilder().WithCandidates(collection, 42).WithEaten(collection, 42).Build();
+
+        // when
+        BadgeDetail? detail = BadgeRules.For(badge).Detail(facts);
+
+        // then
+        Assert.Equal(new BadgeDetail.Checklist([new ChecklistItem(42, Eaten: true)]), detail);
+    }
+
+    [Fact]
+    public void The_counter_counts_the_distinct_items_eaten()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder().WithEaten(RunCollection.GourmandDishesEaten, 5, 9).Build();
+
+        // when
+        TrackedStatus status = BadgeRules.For(ACHIEVEMENTTYPE.GourmandBadge).Evaluate(facts, isUnlocked: false);
+
+        // then
+        Assert.Equal(new TrackedStatus.Attainable(new Progress(2, 4, ProgressScope.ThisRun)), status);
+    }
 }

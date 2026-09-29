@@ -6,7 +6,8 @@ namespace PeakAchiever.Tests;
 internal sealed class RunFactsBuilder
 {
     private readonly Dictionary<RUNBASEDVALUETYPE, float> _runValues = [];
-    private readonly Dictionary<RunCollection, int> _collections = [];
+    private readonly Dictionary<RunCollection, IReadOnlyCollection<ushort>> _eaten = [];
+    private readonly Dictionary<RunCollection, IReadOnlyList<ushort>> _candidates = [];
     private readonly Dictionary<STEAMSTATTYPE, int> _lifetimeStats = [];
     private Biome.BiomeType[] _segmentBiomes =
     [
@@ -28,9 +29,19 @@ internal sealed class RunFactsBuilder
         return this;
     }
 
-    public RunFactsBuilder WithCollection(RunCollection collection, int count)
+    /// <summary>That many distinct items eaten, whichever they are.</summary>
+    public RunFactsBuilder WithCollection(RunCollection collection, int count) =>
+        WithEaten(collection, Enumerable.Range(0, count).Select(id => (ushort)id).ToArray());
+
+    public RunFactsBuilder WithEaten(RunCollection collection, params ushort[] items)
     {
-        _collections[collection] = count;
+        _eaten[collection] = items;
+        return this;
+    }
+
+    public RunFactsBuilder WithCandidates(RunCollection collection, params ushort[] items)
+    {
+        _candidates[collection] = items;
         return this;
     }
 
@@ -73,7 +84,8 @@ internal sealed class RunFactsBuilder
     public RunFacts Build() =>
         new(
             _runValues,
-            _collections,
+            _eaten,
+            _candidates,
             _lifetimeStats,
             _segmentBiomes,
             _segmentBiomes.Distinct().ToArray(),
