@@ -4,7 +4,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-29
+
 ### Added
+
+- **Scouts panel**, for the host of a multiplayer game: a **Scouts** button on the badges page lists the
+  badges worth pinning for the whole team, those no scout has first ("Recommended"), then those some
+  still miss, with who misses them. Up to `MaxTeamPins` (5 by default) can be pinned. The pins stay in
+  the room when the host leaves, the next host with the mod takes over, and at each run start the pins
+  every scout with the mod has earned are dropped. The team pins do not show on the trackers yet.
+- Players with the mod share which badges they earned, through Photon player properties under a
+  `PeakAchiever.` key: players without the mod ignore them, and appear in the panel as unknown.
 
 - A card whose badge becomes impossible tears in two along a jagged line, then falls to the end of the
   tracker, where it stays torn and crossed out.
@@ -20,6 +30,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   blinks instead of the bar turning orange.
 - The statistics panel is made of PEAK's own parts: the badge popup's paper over a dark veil, the game's
   ribbons as buttons. The ascent arrows turn grey, with a hint, when no other ascent has times.
+- The Back, Statistics and Scouts buttons sit side by side: the Statistics button used to cover Back.
 
 ## [0.2.0]
 
