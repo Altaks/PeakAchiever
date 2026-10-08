@@ -36,6 +36,12 @@ internal abstract record BadgeDetail
 
         public override int GetHashCode() => Items.Count;
     }
+
+    /// <summary>
+    /// The nearest biome ahead where the badge can be earned, and how many biome stretches away it is
+    /// (0 while the team is in it).
+    /// </summary>
+    public sealed record BiomeAhead(Biome.BiomeType Biome, int StretchesAhead) : BadgeDetail;
 }
 
 /// <param name="OnMap">False only when the map was read and nothing on it yields the item: a hint, not proof.</param>
@@ -44,14 +50,15 @@ internal readonly record struct ChecklistItem(ushort ItemId, bool Eaten, bool On
 /// <summary>Reads a card's detail from the run.</summary>
 internal interface IDetailSource
 {
-    BadgeDetail Describe(RunFacts facts);
+    /// <returns>Null when there is nothing to show this refresh.</returns>
+    BadgeDetail? Describe(RunFacts facts);
 }
 
 internal sealed class EatenItemsSource(RunCollection collection) : IDetailSource
 {
     private static readonly IReadOnlyCollection<ushort> NothingEaten = [];
 
-    public BadgeDetail Describe(RunFacts facts)
+    public BadgeDetail? Describe(RunFacts facts)
     {
         IReadOnlyCollection<ushort> eaten = facts.EatenItems.TryGetValue(collection, out IReadOnlyCollection<ushort> ids)
             ? ids
@@ -75,7 +82,7 @@ internal sealed class EatenItemsSource(RunCollection collection) : IDetailSource
 
 internal sealed class RunClockSource(float limitSeconds) : IDetailSource
 {
-    public BadgeDetail Describe(RunFacts facts)
+    public BadgeDetail? Describe(RunFacts facts)
     {
         float? eta = RunEta.Estimate(facts);
         return new BadgeDetail.RunClock(
@@ -84,5 +91,29 @@ internal sealed class RunClockSource(float limitSeconds) : IDetailSource
             eta,
             EtaOverLimit: eta > limitSeconds
         );
+    }
+}
+
+/// <summary>
+/// Where the badge's biome is from here: the first segment ahead holding one of <paramref name="biomes"/>.
+/// Nothing once they are all behind (the red cross tells it then), or in the Nadir.
+/// </summary>
+internal sealed class BiomeAheadSource(params Biome.BiomeType[] biomes) : IDetailSource
+{
+    public BadgeDetail? Describe(RunFacts facts)
+    {
+        if (facts.CurrentSegmentIndex is not { } current)
+            return null;
+        IReadOnlyList<Biome.BiomeType> segments = facts.SegmentBiomes;
+        int stretches = 0;
+        for (int segment = current; segment < segments.Count; segment++)
+        {
+            // Consecutive segments of one biome make a single stretch (BiomeTimeline.Split).
+            if (segment > current && segments[segment] != segments[segment - 1])
+                stretches++;
+            if (biomes.Contains(segments[segment]))
+                return new BadgeDetail.BiomeAhead(segments[segment], stretches);
+        }
+        return null;
     }
 }

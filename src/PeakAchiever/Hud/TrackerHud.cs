@@ -36,11 +36,18 @@ internal sealed class TrackerHud : MonoBehaviour
 
     // Cards of a lost run tear one after the other, this far apart.
     private const float TearStaggerSeconds = 0.18f;
+    // A torn card folds to one line once its tear and fall have played (SlotMotion: rip, then a fall of
+    // at most this long).
+    private const float TearSettleSeconds = 1.3f;
 
     private readonly Dictionary<ACHIEVEMENTTYPE, CardSlot> _slots = [];
     private readonly TornCards _tornCards = new();
     // Torn cards in the order they tore; they sit at the end of the column in that order.
     private readonly List<ACHIEVEMENTTYPE> _tornOrder = [];
+    // When each torn card tore on screen; one torn before it was seen has no entry and shows folded.
+    private readonly Dictionary<ACHIEVEMENTTYPE, float> _toreAt = [];
+    private readonly FoldedCards _foldedCards = new();
+    private IReadOnlyCollection<ACHIEVEMENTTYPE> _folded = [];
     private PinnedBadgeTracker _tracker = null!;
     private TrackerToggleKey _toggleKey = null!;
     private HudStyle? _style;
@@ -126,6 +133,7 @@ internal sealed class TrackerHud : MonoBehaviour
         // Kept current for the team, on the same cadence as the tracker.
         TeamSync.PublishEarned();
         _tracker.Evaluate(facts);
+        _folded = _foldedCards.Update(_tracker.Tracked, Time.unscaledTime);
         ScheduleTears();
         _cardsStale = true;
         // The inventory marks are drawn when the game fills its slots, so have it refill them.
@@ -144,15 +152,17 @@ internal sealed class TrackerHud : MonoBehaviour
             slot.Root.SetActive(false);
         // The banner stays first.
         int place = _banner.transform.GetSiblingIndex() + 1;
-        foreach (TrackedBadge badge in TornCards.Arrange(tracked, _tornOrder))
+        foreach (TrackedBadge badge in TornCards.Arrange(tracked, _tornOrder, _folded))
         {
             if (!_slots.TryGetValue(badge.Badge, out CardSlot slot))
                 _slots[badge.Badge] = slot = new CardSlot(_panel.transform, style);
             slot.Root.SetActive(true);
             slot.Root.transform.SetSiblingIndex(place++);
-            if (slot.Torn != _tornOrder.Contains(badge.Badge))
-                slot.SetTorn(!slot.Torn);
-            slot.Show(BadgeCatalog.Present(badge.Badge), badge.Status, badge.Detail);
+            bool torn = _tornOrder.Contains(badge.Badge);
+            if (slot.Torn != torn)
+                slot.SetTorn(torn);
+            bool settled = !_toreAt.TryGetValue(badge.Badge, out float toreAt) || Time.unscaledTime >= toreAt + TearSettleSeconds;
+            slot.Show(BadgeCatalog.Present(badge.Badge), badge, compact: _folded.Contains(badge.Badge) || (torn && settled));
         }
     }
 
@@ -165,6 +175,8 @@ internal sealed class TrackerHud : MonoBehaviour
         IReadOnlyList<TrackedBadge> tracked = _tracker.Tracked;
         IReadOnlyList<ACHIEVEMENTTYPE> tearing = _tornCards.Update(tracked);
         _tornOrder.RemoveAll(torn => !tracked.Any(badge => badge.Badge == torn && badge.Status is TrackedStatus.Unattainable));
+        foreach (ACHIEVEMENTTYPE gone in _toreAt.Keys.Where(badge => !_tornOrder.Contains(badge)).ToArray())
+            _toreAt.Remove(gone);
         foreach (TrackedBadge badge in tracked)
         {
             if (badge.Status is TrackedStatus.Unattainable && !_tornOrder.Contains(badge.Badge) && !tearing.Contains(badge.Badge))
@@ -189,6 +201,8 @@ internal sealed class TrackerHud : MonoBehaviour
         }
         Dictionary<CardSlot, float> before = _slots.Values.Where(slot => slot.Root.activeSelf).ToDictionary(slot => slot, Height);
         _tornOrder.Add(badge);
+        _toreAt[badge] = Time.unscaledTime;
+        StartCoroutine(RefreshWhenSettled());
         _cardsStale = true;
         ShowCards(_style);
         torn.SetTorn(false);
@@ -201,6 +215,13 @@ internal sealed class TrackerHud : MonoBehaviour
             else if (shift != 0f)
                 slot.Key.Motion.HoldThenSlide(shift);
         }
+    }
+
+    // Folds the torn card once its tear has played.
+    private IEnumerator RefreshWhenSettled()
+    {
+        yield return new WaitForSecondsRealtime(TearSettleSeconds);
+        _cardsStale = true;
     }
 
     // In the column's own units, those the slot's body is shifted in.

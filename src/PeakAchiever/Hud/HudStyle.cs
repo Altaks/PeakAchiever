@@ -27,6 +27,10 @@ internal sealed class HudStyle
     public static readonly Color Caution = Rgb(0xFF, 0x9F, 0x43);
     public static readonly Color LockedIconTint = new(0.45f, 0.45f, 0.45f, 1f);
     public static readonly Color PinMarkerInk = Rgb(0x1D, 0x18, 0x13);
+    // The thread of the card's seam, the warm tan of a scout patch's stitching (signed-off mockup).
+    public static readonly Color Seam = new Color32(0xC9, 0xA8, 0x6B, 0xBF);
+    // A chip's fill, so its outlined text reads over any scene.
+    public static readonly Color ChipFill = new(MarkBackground.r, MarkBackground.g, MarkBackground.b, 0.6f);
 
     // TMP font assets shipped in the game's resources.assets (names read with UnityPy, game v2.4.c).
     private const string DisplayFontName = "DarumaDropOne-Regular SDF";
@@ -36,6 +40,13 @@ internal sealed class HudStyle
     private const string GameCheckSpriteName = "Check";
 
     private const int RoundedTextureSize = 32;
+    // The seam: a dashed rounded outline, tiled along the edges. The edges' tiled middle (size minus both
+    // borders) holds a whole number of dashes, so the tiles join without a gap.
+    private const int SeamTextureSize = 32;
+    private const int SeamCornerRadius = 12;
+    private const float SeamThickness = 1.5f;
+    private const int SeamDashPeriod = 8;
+    private const int SeamDashOn = 5;
     private const int RoundedCornerRadius = 12;
     private const int CircleTextureSize = 64;
     private const int StarTextureSize = 64;
@@ -63,6 +74,7 @@ internal sealed class HudStyle
         BodyFont = FindFont(fonts, BodyFontName, log);
         StrongFont = FindFont(fonts, StrongFontName, log);
         RoundedRect = CreateRoundedRect();
+        SeamOutline = CreateSeam();
         Circle = CreateCircle();
         Pill = CreatePill(Circle.texture);
         Star = CreateStar();
@@ -84,6 +96,9 @@ internal sealed class HudStyle
     public Sprite Cross { get; }
     public Sprite Pin { get; }
     public Sprite Warning { get; }
+
+    /// <summary>The card's stitched seam: a dashed rounded outline, sliced, its edges meant to be tiled.</summary>
+    public Sprite SeamOutline { get; }
 
     /// <summary>A 9-sliced rounded rectangle for card backgrounds and bars.</summary>
     public Sprite RoundedRect { get; }
@@ -144,6 +159,31 @@ internal sealed class HudStyle
             SpriteMeshType.FullRect,
             border
         );
+    }
+
+    private static Sprite CreateSeam()
+    {
+        const float inset = SeamThickness;
+        Texture2D texture = CreateMask(
+            SeamTextureSize,
+            (x, y) =>
+            {
+                float px = x + 0.5f;
+                float py = y + 0.5f;
+                // Distance to the rounded outline, inset so the line stays inside the texture.
+                float cx = Mathf.Clamp(px, SeamCornerRadius, SeamTextureSize - SeamCornerRadius);
+                float cy = Mathf.Clamp(py, SeamCornerRadius, SeamTextureSize - SeamCornerRadius);
+                float fromLine = Mathf.Abs(Vector2.Distance(new Vector2(px, py), new Vector2(cx, cy)) - (SeamCornerRadius - inset));
+                float line = Mathf.Clamp01(SeamThickness / 2f - fromLine + 0.5f);
+                bool onCorner = px != cx && py != cy;
+                // Along a straight edge, the dash pattern follows the coordinate running along it.
+                float along = py == cy ? y : x;
+                bool dash = onCorner || along % SeamDashPeriod < SeamDashOn;
+                return dash ? line : 0f;
+            }
+        );
+        var border = new Vector4(SeamCornerRadius, SeamCornerRadius, SeamCornerRadius, SeamCornerRadius);
+        return Sprite.Create(texture, new Rect(0, 0, SeamTextureSize, SeamTextureSize), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, border);
     }
 
     private static Sprite CreateCircle()

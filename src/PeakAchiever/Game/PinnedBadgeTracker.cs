@@ -26,7 +26,7 @@ internal sealed class PinnedBadgeTracker(PinBoard board)
             {
                 BadgeRule rule = BadgeRules.For(badge);
                 TrackedStatus status = rule.Evaluate(facts, achievements.IsAchievementUnlocked(badge));
-                _tracked.Add(new TrackedBadge(badge, rule, status, rule.Detail(facts)));
+                _tracked.Add(new TrackedBadge(badge, rule, status, rule.Detail(facts), board.IsForAlly(badge)));
             }
         }
         ForbiddenItems = ItemRestrictions.ForbiddenBy(_tracked);

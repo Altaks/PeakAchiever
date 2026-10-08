@@ -10,6 +10,9 @@ internal static class StatusText
 {
     private const string BiomeNameSeparator = " / ";
     private const string SplitSeparator = " · ";
+    // Where the time and the gap of each split line start, as TextMeshPro <pos> offsets of the line.
+    public const string SplitTimeColumn = "48%";
+    public const string SplitDeltaColumn = "74%";
     private const string LineBreak = "\n";
     private const int SecondsPerMinute = 60;
     private const int SecondsPerHour = 3600;
@@ -57,7 +60,8 @@ internal static class StatusText
         progress.Unit switch
         {
             ProgressUnit.Count => $"{progress.Current} / {progress.Target}",
-            ProgressUnit.Duration => $"{Clock(progress.Current)} / {Clock(progress.Target)}",
+            // The limit is in the badge's own description.
+            ProgressUnit.Duration => Clock(progress.Current),
             ProgressUnit.Percent => ModText.Format(ModTextKey.LimitRate, progress.Current, progress.Target),
             _ => throw new System.ArgumentOutOfRangeException(nameof(progress), progress.Unit, "Unhandled progress unit."),
         };
@@ -70,41 +74,43 @@ internal static class StatusText
     }
 
     /// <summary>
-    /// The run clock's lines under the status row: the elapsed time (once the bar is gone) and the ETA,
-    /// then the biome splits. Empty until there is any of them.
+    /// The run clock's lines under the status row: once the bar is gone, the elapsed time and the ETA; then
+    /// the biome splits, one a line. Empty until there is any of them. While the bar shows, the ETA sits
+    /// beside it (<see cref="Eta"/>).
     /// </summary>
     public static string RunClock(BadgeDetail.RunClock clock, bool withElapsed, ClockColors colors)
     {
         var head = new List<string>();
         if (withElapsed)
-            head.Add(Clock(clock.ElapsedSeconds));
-        if (clock.EtaSeconds is { } eta)
         {
-            string text = ModText.Format(ModTextKey.Eta, Clock(eta));
-            head.Add(clock.EtaOverLimit ? $"<color=#{colors.Caution}>{text}</color>" : text);
+            head.Add(Clock(clock.ElapsedSeconds));
+            if (Eta(clock, colors) is { Length: > 0 } eta)
+                head.Add(eta);
         }
-        string[] lines = [string.Join(SplitSeparator, head), Splits(clock.Splits, colors)];
+        string[] lines = [string.Join(SplitSeparator, head), .. clock.Splits.Select(compared => SplitLine(compared, colors))];
         return string.Join(LineBreak, lines.Where(line => line.Length > 0));
     }
 
+    /// <summary>When past runs say the summit should be reached: within the limit in the faster colour, past it in caution.</summary>
+    public static string Eta(BadgeDetail.RunClock clock, ClockColors colors) =>
+        clock.EtaSeconds is { } eta
+            ? $"<color=#{(clock.EtaOverLimit ? colors.Caution : colors.Faster)}>{ModText.Format(ModTextKey.Eta, Clock(eta))}</color>"
+            : "";
+
     /// <summary>
-    /// Each biome with its time, the one still counting in the current colour, then its gap to the median
-    /// signed and coloured (the sign carries it without the colour).
+    /// One biome, its time and its gap to the median in columns; the biome still counting in the current
+    /// colour, the gap signed and coloured (the sign carries it without the colour).
     /// </summary>
-    private static string Splits(IEnumerable<ComparedSplit> splits, ClockColors colors) =>
-        string.Join(
-            SplitSeparator,
-            splits.Select(compared =>
-            {
-                BiomeSplit split = compared.Split;
-                string text = $"{BiomeName(split.Biome)} {Clock(split.Seconds)}";
-                if (split.IsCurrent)
-                    text = $"<color=#{colors.Current}>{text}</color>";
-                if (compared.DeltaSeconds is { } delta)
-                    text += $" <color=#{(delta > 0f ? colors.Slower : colors.Faster)}>({Delta(delta)})</color>";
-                return text;
-            })
-        );
+    private static string SplitLine(ComparedSplit compared, ClockColors colors)
+    {
+        BiomeSplit split = compared.Split;
+        string text = $"{BiomeName(split.Biome)}<pos={SplitTimeColumn}>{Clock(split.Seconds)}";
+        if (split.IsCurrent)
+            text = $"<color=#{colors.Current}>{text}</color>";
+        if (compared.DeltaSeconds is { } delta)
+            text += $"<pos={SplitDeltaColumn}><color=#{(delta > 0f ? colors.Slower : colors.Faster)}>{Delta(delta)}</color>";
+        return text;
+    }
 
     /// <summary>A signed gap: minutes and seconds, hours only from one hour on.</summary>
     public static string Delta(float seconds)

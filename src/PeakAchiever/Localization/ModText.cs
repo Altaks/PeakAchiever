@@ -65,6 +65,13 @@ internal enum ModTextKey
     StatsEraseFailed,
     StatsClose,
     AchievementsDisabled,
+    ChipAllRuns,
+    ChipForAlly,
+    StatusYouHaveIt,
+    LimitLeft,
+    BiomeNow,
+    BiomeNext,
+    BiomeLater,
 }
 
 /// <summary>
@@ -85,6 +92,13 @@ internal static class ModText
         [ModTextKey.StatusAttainable] = ["Doable", "Faisable"],
         [ModTextKey.StatusHolding] = ["Holding so far", "Tenu jusqu'ici"],
         [ModTextKey.StatusAchieved] = ["Earned", "Obtenu"],
+        [ModTextKey.ChipAllRuns] = ["All runs", "Toutes les parties"],
+        [ModTextKey.ChipForAlly] = ["For an ally", "Pour un allié"],
+        [ModTextKey.StatusYouHaveIt] = ["You have it", "Vous l'avez"],
+        [ModTextKey.LimitLeft] = ["{0}% left", "Reste {0} %"],
+        [ModTextKey.BiomeNow] = ["Now, in the {0}", "Maintenant : {0}"],
+        [ModTextKey.BiomeNext] = ["{0}, next biome", "{0}, prochain biome"],
+        [ModTextKey.BiomeLater] = ["{0}, in {1} biomes", "{0}, dans {1} biomes"],
         [ModTextKey.ScopeLifetime] = ["LIFETIME", "À VIE"],
         [ModTextKey.Eta] = ["ETA {0}", "Arrivée estimée : {0}"],
         [ModTextKey.LimitRate] = ["max {0}% / {1}%", "max {0} % / {1} %"],

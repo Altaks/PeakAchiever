@@ -44,6 +44,9 @@ internal sealed class CardSlot
 
     public GameObject Root { get; }
 
+    /// <summary>The card in front, whole or as the left half of a tear.</summary>
+    public BadgeCard Front => _front;
+
     /// <summary>What the animations move; the layout places <see cref="Root"/>.</summary>
     public RectTransform Body { get; }
 
@@ -51,11 +54,11 @@ internal sealed class CardSlot
 
     public bool Torn { get; private set; }
 
-    public void Show(BadgePresentation badge, TrackedStatus status, BadgeDetail? detail)
+    public void Show(BadgePresentation badge, TrackedBadge tracked, bool compact)
     {
-        _front.Show(badge, status, detail);
+        _front.Show(badge, tracked, compact);
         if (Torn)
-            _back.Show(badge, status, detail);
+            _back.Show(badge, tracked, compact);
         var card = (RectTransform)_front.Root.transform;
         LayoutRebuilder.ForceRebuildLayoutImmediate(card);
         float height = LayoutUtility.GetPreferredHeight(card);
