@@ -57,6 +57,19 @@ public class BlockerTests
     }
 
     [Fact]
+    public void InBiome_allows_every_biome_while_in_the_nadir()
+    {
+        // given the Nadir is entered by an item from anywhere, and items can warp back to any segment
+        RunFacts facts = new RunFactsBuilder().InNadir().Build();
+
+        // when
+        UnattainableReason? reason = new InBiome(Biome.BiomeType.Shore).FindBlock(facts);
+
+        // then
+        Assert.Null(reason);
+    }
+
+    [Fact]
     public void InBiome_allows_a_biome_spanning_the_current_segment()
     {
         // given the volcano covers segments 3 and 4, and the team is in the second one

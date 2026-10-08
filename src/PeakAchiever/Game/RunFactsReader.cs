@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Peak;
 using PeakAchiever.Tracking;
 using Zorro.Core;
 
@@ -27,6 +28,11 @@ internal static class RunFactsReader
     /// </summary>
     private static bool JoinedMidRun => Singleton<MountainProgressHandler>.Instance.JoinedInSegment >= 0;
 
+    // The Nadir's segment is appended to the array once the map has a VoidBiome (MapHandler.SetUpVoidSegment
+    // adds VoidBiome.instance.segment, v2.6.b). No step of the climb, it is left out of the order. == null,
+    // not ?.: Unity objects override the null check.
+    private static bool IsNadir(MapHandler.MapSegment segment) => VoidBiome.instance != null && segment == VoidBiome.instance.segment;
+
     public static RunFacts Read(SplitHistory history)
     {
         AchievementManager achievements = Singleton<AchievementManager>.Instance;
@@ -38,9 +44,11 @@ internal static class RunFactsReader
             ReadEatenItems(run),
             ItemCatalog.CollectionCandidates,
             ReadLifetimeStats(achievements),
-            map.segments.Select(segment => segment.biome).ToArray(),
+            map.segments.Where(segment => !IsNadir(segment)).Select(segment => segment.biome).ToArray(),
             map.biomes.ToArray(),
-            (int)map.GetCurrentSegment(),
+            // Outside the Nadir, GetCurrentSegment is the segment's index (MapHandler.currentSegment); in it,
+            // Segment.Void, which is past the array (v2.6.b).
+            map.GetCurrentSegment() == Segment.Void ? null : (int)map.GetCurrentSegment(),
             secondsSinceRunStarted,
             BiomeTimeline.Split(ReadTimeline(), secondsSinceRunStarted, JoinedMidRun),
             history.MediansAt(Ascents.currentAscent),

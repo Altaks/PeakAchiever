@@ -51,6 +51,24 @@ public class RunEtaTests
     }
 
     [Fact]
+    public void No_eta_in_the_nadir()
+    {
+        // given
+        RunFacts facts = new RunFactsBuilder()
+            .InNadir()
+            .AfterSeconds(2000f)
+            .WithBiomeSplits(new(Biome.BiomeType.Shore, 450f, IsCurrent: false), new(Biome.BiomeType.Void, 30f, IsCurrent: true))
+            .WithBiomeMedians(new Dictionary<Biome.BiomeType, float>(EveryBiome) { [Biome.BiomeType.Void] = 60f })
+            .Build();
+
+        // when
+        float? eta = RunEta.Estimate(facts);
+
+        // then: the Nadir is none of the map's segments, so nothing ahead can be counted
+        Assert.Null(eta);
+    }
+
+    [Fact]
     public void No_eta_while_a_biome_ahead_has_no_past_split()
     {
         // given
