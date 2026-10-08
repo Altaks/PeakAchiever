@@ -73,6 +73,10 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   stay when the host leaves (the next host with the mod takes over), and those every scout has earned
   are dropped at the next run start. They show on the tracker of every scout with the mod, as a group
   above their own pins.
+- **In your language.** The mod's own texts come in the game's 15 languages (English, French, Italian,
+  German, Spanish for Spain and Latin America, Brazilian Portuguese, Russian, Ukrainian, Simplified and
+  Traditional Chinese, Japanese, Korean, Polish, Turkish), in the game's own words, and follow the
+  language set in the game's settings.
 - Secret badges keep their `???` until earned. The tracker hides while the pause menu is open.
 - Other players do not need the mod: the mod only shares data under its own keys, which the game ignores.
 

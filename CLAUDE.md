@@ -9,8 +9,9 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
   each badge is judged; `RunFacts` is the snapshot the rules read.
 - `Game/`: adapters reading the game (`RunFactsReader`, `BadgeCatalog`, `PinnedBadgeTracker`) and the
   refresh hooks. `Hud/`, `PauseMenu/`, `Inventory/`, `Controls/`, `Settings/`: UI plus their Harmony hooks.
-- `Localization/ModText.cs`: every mod string, one row per key, English then French. Badge names and
-  descriptions come from the game's own table.
+- `Localization/ModText.cs`: every mod string, one row per key, one named argument per game language
+  (`LocalizedText.Language`, 15 in 2.6.b). Take each language's words and typography from the game's
+  `Localized_Text.csv`. Badge names and descriptions come from the game's own table.
 
 ## Rules for badge logic
 
@@ -50,6 +51,9 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
   instead. Adding a hook means updating its expected count.
 - Prove a new test with a mutation: break the code, watch it go red, restore.
 - xUnit rejects a public theory taking an internal type: pass an internal enum as `object` and cast it.
+- A game call that reaches Unity's native side throws `SecurityException: ECall methods...` in the test host
+  (`Debug.Log`, so `LocalizedText.GetText`, `Setting.SetValue`). Test around them: a biome the mod does not
+  name (`StatusText.BiomeName` then skips the table), a protected setter set by reflection.
 
 ## Investigating the game
 
@@ -63,7 +67,16 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
   `PEAK_Data/data.unity3d`: find it by the name after the `m_Script` header, then decode its raw bytes by
   hand. In 2.4.c, 48 bytes of base-class fields sit before `ScenePaths`, then `BiomeIDs`, then
   `selectedBiomes` (each: `List<BiomeType>` as int32, `List<string>` variant names). At runtime the mod
-  logs the same table: `25 levels, map layouts: ...`.
+  logs the same table: `21 levels, map layouts: ...` (8 layouts in 2.6.b).
+- Item prefabs: `Item` MonoBehaviours in `data.unity3d`. Their fields need the type tree generator
+  (`TypeTreeGenerator(unity_version).load_local_dll_folder(<PEAK>/PEAK_Data/Managed)`, set as
+  `env.typetree_generator`, read only for `Item` scripts). `UIData.itemName` is the key the mod matches items
+  by (`ItemCatalog.ByName`, e.g. "Ancient Idol", "THEBOOKOFBONES"); `UIData.icon` is the inventory icon. A
+  PPtr with `m_FileID != 0` points into `assets_file.externals[fileID - 1]`: look the object up in that file,
+  never by path id alone (path ids repeat across files; it gave the wrong badge icons once).
+- The game's text table is the `Localized_Text` TextAsset in `data.unity3d` (CSV: key, then the 15
+  languages in `LocalizedText.Language` order). Item names are `NAME_<ITEMNAME>`, badges `NAME_<DISPLAYNAME>`
+  and `DESC_<DISPLAYNAME>`, the Nadir `AREA_VOID`.
 - Game facts the rules depend on and the code alone does not show: `SerializableRunBasedValues` does not
   serialize `nonToxicMushroomsEaten`, so Mycology restarts at zero after a reconnect; `RunManager.RunId`
   can be empty (seen in a solo run), hence the mod's own run key in `SplitHistoryStore`.
@@ -90,3 +103,7 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
   fails with "no value for Token".
 - Bump `<Version>` in `src/PeakAchiever/PeakAchiever.csproj` and `CHANGELOG.md` first: a published version
   is permanent. Then `dotnet build -c Release -p:PublishTS=true`, at default verbosity (`-v d` prints the token).
+- The package wiki has an API: `POST /api/experimental/package/Altaks/PeakAchiever/wiki/` with
+  `{title, markdown_content}` (plus `id` to update a page). Drafts live in `docs/wiki/`; `badges.md` is
+  generated from the game's names and descriptions, so regenerate it after a game update. A page is public as
+  soon as it is posted.

@@ -16,6 +16,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The host's team pins now show on every modded tracker, as a group above the own pins.
 - The two pin limits, `MaxPinnedBadges` and `MaxTeamPins`, are sliders at the end of the game's Settings,
   General tab (1 to 12). They edit the same config keys; the refusal toasts now point there.
+- The mod speaks all 15 of the game's languages, not only English and French, using the game's own words.
 
 ### Fixed
 
