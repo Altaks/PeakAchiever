@@ -1,0 +1,120 @@
+using System.Collections.Generic;
+using System.Linq;
+using PeakAchiever.Game;
+using PeakAchiever.Localization;
+using PeakAchiever.Tracking;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace PeakAchiever.Hud;
+
+/// <summary>
+/// What a badge needs, across the card under its text: the needed items on the left ("Needs" or "One
+/// of"), the helpful ones on the right ("Helps"), each as the game's inventory icon with its count.
+/// </summary>
+internal sealed class NeedsBlock
+{
+    // Sizes in reference pixels of the 1920x1080 canvas, taken from the signed-off mockup.
+    private const float TileSize = 26f;
+    private const float TileGap = 4f;
+    private const float HeadFontSize = 11f;
+    private const float CountFontSize = 9.5f;
+    private const float ColumnGap = 10f;
+    private const float RowGap = 3f;
+    private const float CountPadding = 2f;
+    private static readonly Color TileBackground = new(HudStyle.Ink.r, HudStyle.Ink.g, HudStyle.Ink.b, 0.1f);
+
+    private readonly HudStyle _style;
+    private ACHIEVEMENTTYPE? _shown;
+
+    public NeedsBlock(Transform parent, HudStyle style)
+    {
+        _style = style;
+        Root = UiFactory.Create("Needs", parent);
+        HorizontalLayoutGroup columns = Root.AddComponent<HorizontalLayoutGroup>();
+        columns.spacing = ColumnGap;
+        columns.childControlWidth = true;
+        columns.childControlHeight = true;
+        columns.childForceExpandWidth = true;
+        columns.childForceExpandHeight = false;
+        Root.SetActive(false);
+    }
+
+    public GameObject Root { get; }
+
+    /// <summary>Built once per badge: the needs never change during a run.</summary>
+    public void Show(ACHIEVEMENTTYPE badge)
+    {
+        if (_shown == badge)
+            return;
+        _shown = badge;
+        for (int i = Root.transform.childCount - 1; i >= 0; i--)
+            Object.Destroy(Root.transform.GetChild(i).gameObject);
+        BadgeNeed? need = BadgeNeeds.For(badge);
+        Root.SetActive(need != null);
+        if (need == null)
+            return;
+        if (need.Items.Count > 0)
+            Column(ModText.Get(need.Kind == NeedKind.OneOf ? ModTextKey.NeedsOneOf : ModTextKey.NeedsAll), need.Items);
+        if (need.Helps.Count > 0)
+            Column(ModText.Get(ModTextKey.NeedsHelps), need.Helps);
+    }
+
+    private void Column(string head, IReadOnlyList<NeededItem> items)
+    {
+        // Items the game no longer has are left out, and with all of them, the column.
+        (Item Item, int Count)[] found = items
+            .Select(needed => (Item: ItemCatalog.ByName(needed.ItemName), needed.Count))
+            .Where(entry => entry.Item != null)
+            .Select(entry => (entry.Item!, entry.Count))
+            .ToArray();
+        if (found.Length == 0)
+            return;
+        GameObject column = UiFactory.Create("Column", Root.transform);
+        VerticalLayoutGroup stack = column.AddComponent<VerticalLayoutGroup>();
+        stack.spacing = RowGap;
+        stack.childControlWidth = true;
+        stack.childControlHeight = true;
+        stack.childForceExpandWidth = true;
+        stack.childForceExpandHeight = false;
+        column.AddComponent<LayoutElement>().flexibleWidth = 1f;
+        UiFactory.AddText(column.transform, "Head", _style.StrongFont, HeadFontSize, HudStyle.Ink).text = head;
+
+        GameObject tiles = UiFactory.Create("Tiles", column.transform);
+        // A grid in place of a wrapping row: uGUI has no flex-wrap.
+        GridLayoutGroup grid = tiles.AddComponent<GridLayoutGroup>();
+        grid.cellSize = new Vector2(TileSize, TileSize);
+        grid.spacing = new Vector2(TileGap, TileGap);
+        foreach ((Item item, int count) in found)
+            Tile(tiles.transform, item, count);
+    }
+
+    private void Tile(Transform parent, Item item, int count)
+    {
+        GameObject tile = UiFactory.Create("Item", parent);
+        UiFactory.AddImage(tile, _style.RoundedRect, TileBackground).type = Image.Type.Sliced;
+        GameObject icon = UiFactory.Create("Icon", tile.transform);
+        var iconRect = (RectTransform)icon.transform;
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.offsetMin = Vector2.zero;
+        iconRect.offsetMax = Vector2.zero;
+        RawImage image = icon.AddComponent<RawImage>();
+        image.texture = item.UIData.icon;
+        image.raycastTarget = false;
+        if (count <= 1)
+            return;
+        TextMeshProUGUI label = UiFactory.AddText(tile.transform, "Count", _style.StrongFont, CountFontSize, HudStyle.Ink);
+        label.text = ModText.Format(ModTextKey.NeedsCount, count);
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.alignment = TextAlignmentOptions.BottomRight;
+        var countRect = label.rectTransform;
+        countRect.anchorMin = Vector2.zero;
+        countRect.anchorMax = Vector2.one;
+        countRect.offsetMin = new Vector2(0f, -CountPadding);
+        countRect.offsetMax = new Vector2(CountPadding * 2, 0f);
+        label.outlineWidth = 0.2f;
+        label.outlineColor = HudStyle.MarkBackground;
+    }
+}

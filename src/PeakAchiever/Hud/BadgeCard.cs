@@ -81,6 +81,7 @@ internal sealed class BadgeCard
     private readonly ChecklistGrid _onMap;
     private readonly TextMeshProUGUI _notOnMapLabel;
     private readonly ChecklistGrid _notOnMap;
+    private readonly NeedsBlock _needs;
 
     public BadgeCard(Transform parent, HudStyle style)
     {
@@ -202,6 +203,7 @@ internal sealed class BadgeCard
         wideStack.childForceExpandWidth = true;
         wideStack.childForceExpandHeight = false;
         Wide = wide.transform;
+        _needs = new NeedsBlock(Wide, style);
         wide.SetActive(false);
     }
 
@@ -225,6 +227,7 @@ internal sealed class BadgeCard
         _name.color = unattainable ? HudStyle.InkMuted : HudStyle.Ink;
         _description.text = badge.Description;
         _description.color = unattainable ? HudStyle.InkMuted : HudStyle.InkSoft;
+        _needs.Show(tracked.Badge);
         SetCompact(compact);
 
         Progress? progress = status switch

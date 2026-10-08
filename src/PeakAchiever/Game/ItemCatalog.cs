@@ -38,6 +38,33 @@ internal static class ItemCatalog
 
     public static Texture? Icon(ushort itemId) => ItemDatabase.TryGetItem(itemId, out Item item) ? item.UIData.icon : null;
 
+    private static Dictionary<string, Item>? _byName;
+    private static readonly HashSet<string> ReportedMissing = [];
+
+    /// <summary>
+    /// The item whose Item.UIData.itemName is <paramref name="itemName"/>, ignoring case; null, reported once,
+    /// when the game has none (renamed in an update) or the database is not loaded yet.
+    /// </summary>
+    public static Item? ByName(string itemName)
+    {
+        if (_byName == null)
+        {
+            if (SingletonAsset<ItemDatabase>.Instance.itemLookup.Count == 0)
+                return null;
+            _byName = new Dictionary<string, Item>(StringComparer.OrdinalIgnoreCase);
+            foreach (Item item in SingletonAsset<ItemDatabase>.Instance.itemLookup.OrderBy(entry => entry.Key).Select(entry => entry.Value))
+            {
+                if (item.UIData?.itemName is { Length: > 0 } name && !_byName.ContainsKey(name))
+                    _byName[name] = item;
+            }
+        }
+        if (_byName.TryGetValue(itemName, out Item found))
+            return found;
+        if (ReportedMissing.Add(itemName))
+            Plugin.Log.LogWarning($"The game has no item named '{itemName}'; its icon is left off the badge cards.");
+        return null;
+    }
+
     private static IReadOnlyDictionary<RunCollection, IReadOnlyList<ushort>> ReadCandidates()
     {
         var candidates = new Dictionary<RunCollection, List<ushort>>();
