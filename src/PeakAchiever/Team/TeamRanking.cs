@@ -23,8 +23,8 @@ internal static class TeamRanking
         return candidates
             .Select(badge =>
             {
-                string[] missing = known.Where(scout => !scout.Earned!.Contains(badge)).Select(scout => scout.Name).ToArray();
-                return new TeamRow(badge, known.Length - missing.Length, known.Length, missing);
+                IReadOnlyList<string> missing = Scouts.MissingFor(badge, known);
+                return new TeamRow(badge, known.Length - missing.Count, known.Length, missing);
             })
             .Where(row => row.Known == 0 || row.MissingFor.Count > 0)
             // A badge nobody has is missing for every known scout, the most there is: it sorts first.

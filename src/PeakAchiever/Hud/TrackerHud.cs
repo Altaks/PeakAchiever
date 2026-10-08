@@ -31,6 +31,9 @@ internal sealed class TrackerHud : MonoBehaviour
     private const float ToastWidth = 640f;
     private const float ToastFontSize = 16f;
     private const float BannerFontSize = 13f;
+    private const float GroupFontSize = 10f;
+    private const float GroupCharacterSpacing = 6f;
+    private static readonly Vector2 GroupShadow = new(1f, -1f);
     private const int ToastPadding = 12;
     private static readonly Vector2 ToastOutline = new(1.5f, -1.5f);
 
@@ -56,6 +59,8 @@ internal sealed class TrackerHud : MonoBehaviour
     private GameObject _panel = null!;
     private OnScreenMarkers _markers = null!;
     private GameObject _banner = null!;
+    private GameObject _teamHeader = null!;
+    private GameObject _ownHeader = null!;
     private GameObject _toast = null!;
     private TextMeshProUGUI _toastText = null!;
     private bool _refreshRequested = true;
@@ -152,20 +157,45 @@ internal sealed class TrackerHud : MonoBehaviour
         IReadOnlyList<TrackedBadge> tracked = _tracker.Tracked;
         foreach (CardSlot slot in _slots.Values)
             slot.Root.SetActive(false);
-        // The banner stays first.
+        // The banner stays first; the host's team pins then come as a group above the player's own.
         int place = _banner.transform.GetSiblingIndex() + 1;
-        foreach (TrackedBadge badge in TornCards.Arrange(tracked, _tornOrder, _folded))
-        {
-            if (!_slots.TryGetValue(badge.Badge, out CardSlot slot))
-                _slots[badge.Badge] = slot = new CardSlot(_panel.transform, style);
-            slot.Root.SetActive(true);
-            slot.Root.transform.SetSiblingIndex(place++);
-            bool torn = _tornOrder.Contains(badge.Badge);
-            if (slot.Torn != torn)
-                slot.SetTorn(torn);
-            bool settled = !_toreAt.TryGetValue(badge.Badge, out float toreAt) || Time.unscaledTime >= toreAt + TearSettleSeconds;
-            slot.Show(BadgeCatalog.Present(badge.Badge), badge, compact: _folded.Contains(badge.Badge) || (torn && settled));
-        }
+        TrackedBadge[] team = tracked.Where(badge => badge.ForTeam).ToArray();
+        TrackedBadge[] own = tracked.Where(badge => !badge.ForTeam).ToArray();
+        _teamHeader.SetActive(team.Length > 0);
+        _ownHeader.SetActive(team.Length > 0 && own.Length > 0);
+        _teamHeader.transform.SetSiblingIndex(place++);
+        foreach (TrackedBadge badge in TornCards.Arrange(team, _tornOrder, _folded))
+            ShowSlot(style, badge, ref place);
+        _ownHeader.transform.SetSiblingIndex(place++);
+        foreach (TrackedBadge badge in TornCards.Arrange(own, _tornOrder, _folded))
+            ShowSlot(style, badge, ref place);
+    }
+
+    private void ShowSlot(HudStyle style, TrackedBadge badge, ref int place)
+    {
+        if (!_slots.TryGetValue(badge.Badge, out CardSlot slot))
+            _slots[badge.Badge] = slot = new CardSlot(_panel.transform, style);
+        slot.Root.SetActive(true);
+        slot.Root.transform.SetSiblingIndex(place++);
+        bool torn = _tornOrder.Contains(badge.Badge);
+        if (slot.Torn != torn)
+            slot.SetTorn(torn);
+        bool settled = !_toreAt.TryGetValue(badge.Badge, out float toreAt) || Time.unscaledTime >= toreAt + TearSettleSeconds;
+        slot.Show(BadgeCatalog.Present(badge.Badge), badge, compact: _folded.Contains(badge.Badge) || (torn && settled));
+    }
+
+    // A group's title over its cards, in the column's own right-aligned flow.
+    private GameObject GroupHeader(HudStyle style, string name, ModTextKey title)
+    {
+        TextMeshProUGUI text = UiFactory.AddText(_panel.transform, name, style.StrongFont, GroupFontSize, HudStyle.Ink);
+        text.text = ModText.Get(title);
+        text.characterSpacing = GroupCharacterSpacing;
+        text.alignment = TextAlignmentOptions.Left;
+        UiFactory.SetPreferredSize(text.gameObject, BadgeCard.Width, -1f);
+        Shadow shadow = text.gameObject.AddComponent<Shadow>();
+        shadow.effectDistance = GroupShadow;
+        text.gameObject.SetActive(false);
+        return text.gameObject;
     }
 
     /// <summary>
@@ -302,6 +332,8 @@ internal sealed class TrackerHud : MonoBehaviour
         UiFactory.SetPreferredSize(_banner, BadgeCard.Width, -1f);
         TextMeshProUGUI bannerText = UiFactory.AddText(_banner.transform, "Text", style.StrongFont, BannerFontSize, HudStyle.Unattainable);
         bannerText.text = ModText.Get(ModTextKey.AchievementsDisabled);
+        _teamHeader = GroupHeader(style, "TeamPins", ModTextKey.GroupTeam);
+        _ownHeader = GroupHeader(style, "OwnPins", ModTextKey.GroupOwn);
 
         _markers = new OnScreenMarkers(transform, style);
 

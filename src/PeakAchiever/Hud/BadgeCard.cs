@@ -42,6 +42,7 @@ internal sealed class BadgeCard
     private const float SeamInset = 5f;
     private const float Gap = 10f;
     private const float SectionGap = 7f;
+    private const string NameSeparator = ", ";
     private const float LocatorDiscSize = 28f;
     private const float LocatorArrowSize = 18f;
     private const float LocatorFontSize = 14f;
@@ -73,6 +74,8 @@ internal sealed class BadgeCard
     private readonly GameObject _chips;
     private readonly Chip _scopeChip;
     private readonly Chip _allyChip;
+    private readonly Chip _teamChip;
+    private readonly TextMeshProUGUI _missing;
     private readonly TextMeshProUGUI _description;
     private readonly GameObject _statusRow;
     private readonly GameObject _bar;
@@ -184,6 +187,7 @@ internal sealed class BadgeCard
         chipRow.childForceExpandHeight = false;
         _scopeChip = new Chip(_chips.transform, style, ModText.Get(ModTextKey.ChipAllRuns), HudStyle.InkMuted);
         _allyChip = new Chip(_chips.transform, style, ModText.Get(ModTextKey.ChipForAlly), HudStyle.InkSoft);
+        _teamChip = new Chip(_chips.transform, style, ModText.Get(ModTextKey.ChipTeam), HudStyle.ProgressFill);
         _description = UiFactory.AddText(column.transform, "Description", style.BodyFont, DescriptionFontSize, HudStyle.InkSoft);
 
         _statusRow = UiFactory.Create("Status", column.transform);
@@ -219,6 +223,7 @@ internal sealed class BadgeCard
         _count.textWrappingMode = TextWrappingModes.NoWrap;
         _status = UiFactory.AddText(_statusRow.transform, "Label", style.StrongFont, StatusFontSize, HudStyle.ProgressFill);
         _detail = UiFactory.AddText(column.transform, "Detail", style.BodyFont, StatusFontSize, HudStyle.InkSoft);
+        _missing = UiFactory.AddText(column.transform, "MissingFor", style.BodyFont, StatusFontSize, HudStyle.InkSoft);
 
         _onMap = new ChecklistGrid(column.transform, "Checklist", style);
         _notOnMapLabel = UiFactory.AddText(column.transform, "NotOnMapLabel", style.BodyFont, StatusFontSize, HudStyle.InkMuted);
@@ -250,7 +255,8 @@ internal sealed class BadgeCard
     {
         TrackedStatus status = tracked.Status;
         bool unattainable = status is TrackedStatus.Unattainable;
-        bool forAlly = tracked.ForAlly && status is TrackedStatus.Achieved;
+        // Earned already, but pinned for someone else: the run still matters to them, so no check mark.
+        bool forOthers = (tracked.ForAlly || tracked.ForTeam) && status is TrackedStatus.Achieved;
         _icon.texture = badge.Icon;
         _icon.color = badge.IsHidden || unattainable ? HudStyle.LockedIconTint : Color.white;
         _name.text = unattainable ? $"<s>{badge.Name}</s>" : badge.Name;
@@ -264,12 +270,17 @@ internal sealed class BadgeCard
         {
             TrackedStatus.Attainable attainable => attainable.Progress,
             TrackedStatus.Holding holding => holding.Progress,
-            TrackedStatus.Achieved achieved when !forAlly => achieved.Progress,
+            TrackedStatus.Achieved achieved when !forOthers => achieved.Progress,
             _ => null,
         };
         _scopeChip.Root.SetActive(!compact && progress is { Scope: ProgressScope.Lifetime });
-        _allyChip.Root.SetActive(!compact && forAlly);
-        _chips.SetActive(_scopeChip.Root.activeSelf || _allyChip.Root.activeSelf);
+        _allyChip.Root.SetActive(!compact && tracked.ForAlly && !tracked.ForTeam && status is TrackedStatus.Achieved);
+        _teamChip.Root.SetActive(!compact && tracked.ForTeam);
+        _chips.SetActive(_scopeChip.Root.activeSelf || _allyChip.Root.activeSelf || _teamChip.Root.activeSelf);
+        bool showMissing = !compact && tracked.MissingFor is { Count: > 0 };
+        _missing.gameObject.SetActive(showMissing);
+        if (showMissing)
+            _missing.text = ModText.Format(ModTextKey.TeamMissingFor, string.Join(NameSeparator, tracked.MissingFor!));
 
         switch (status)
         {
@@ -293,8 +304,7 @@ internal sealed class BadgeCard
                 else
                     ShowLabel(ModText.Get(ModTextKey.StatusHolding), HudStyle.ProgressFill);
                 break;
-            case TrackedStatus.Achieved when forAlly:
-                // Earned before: the run still matters to the ally, so no check mark.
+            case TrackedStatus.Achieved when forOthers:
                 ShowMark(null, default);
                 ShowProgress(null, default, warn: false, compact);
                 ShowLabel(ModText.Get(ModTextKey.StatusYouHaveIt), HudStyle.InkSoft);

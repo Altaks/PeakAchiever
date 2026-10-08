@@ -6,7 +6,7 @@ namespace PeakAchiever.Tracking;
 /// <summary>
 /// Tells which cards fold to one line: a badge earned this run shows its check mark at full size for a few
 /// seconds, then folds; one already earned when first seen shows folded at once. A badge pinned for an ally
-/// stays whole, since the run still matters to that ally.
+/// or for the team stays whole, since the run still matters to the others.
 /// </summary>
 internal sealed class FoldedCards
 {
@@ -25,7 +25,7 @@ internal sealed class FoldedCards
         foreach (TrackedBadge badge in tracked)
         {
             bool firstSeen = _seen.Add(badge.Badge);
-            if (badge.Status is not TrackedStatus.Achieved || badge.ForAlly)
+            if (badge.Status is not TrackedStatus.Achieved || badge.ForAlly || badge.ForTeam)
             {
                 _earnedAt.Remove(badge.Badge);
                 continue;

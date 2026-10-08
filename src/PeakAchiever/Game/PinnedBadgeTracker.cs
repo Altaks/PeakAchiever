@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using PeakAchiever.Pinning;
+using PeakAchiever.Team;
 using PeakAchiever.Tracking;
 using Zorro.Core;
 
@@ -22,11 +23,13 @@ internal sealed class PinnedBadgeTracker(PinBoard board)
         if (facts != null)
         {
             AchievementManager achievements = Singleton<AchievementManager>.Instance;
-            foreach (ACHIEVEMENTTYPE badge in board.Pins)
+            IReadOnlyList<Scout> scouts = TeamSync.Scouts;
+            foreach ((ACHIEVEMENTTYPE badge, bool forTeam) in TrackedPins.Merge(TeamSync.TeamPins, board.Pins))
             {
                 BadgeRule rule = BadgeRules.For(badge);
                 TrackedStatus status = rule.Evaluate(facts, achievements.IsAchievementUnlocked(badge));
-                _tracked.Add(new TrackedBadge(badge, rule, status, rule.Detail(facts), board.IsForAlly(badge)));
+                IReadOnlyList<string>? missing = forTeam ? Scouts.MissingFor(badge, scouts) : null;
+                _tracked.Add(new TrackedBadge(badge, rule, status, rule.Detail(facts), board.IsForAlly(badge), forTeam, missing));
             }
         }
         ForbiddenItems = ItemRestrictions.ForbiddenBy(_tracked);

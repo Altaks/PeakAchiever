@@ -172,3 +172,56 @@ public class TeamRankingTests
     }
 }
 
+
+public class TrackedPinsTests
+{
+    [Fact]
+    public void Team_pins_come_first_and_a_badge_in_both_lists_shows_once_as_a_team_pin()
+    {
+        // given
+        ACHIEVEMENTTYPE[] team = [ACHIEVEMENTTYPE.DaredevilBadge, ACHIEVEMENTTYPE.PlundererBadge];
+        ACHIEVEMENTTYPE[] own = [ACHIEVEMENTTYPE.SpeedClimberBadge, ACHIEVEMENTTYPE.PlundererBadge, ACHIEVEMENTTYPE.CookingBadge];
+
+        // when
+        IReadOnlyList<(ACHIEVEMENTTYPE Badge, bool ForTeam)> pins = TrackedPins.Merge(team, own);
+
+        // then
+        Assert.Equal(
+            [
+                (ACHIEVEMENTTYPE.DaredevilBadge, true),
+                (ACHIEVEMENTTYPE.PlundererBadge, true),
+                (ACHIEVEMENTTYPE.SpeedClimberBadge, false),
+                (ACHIEVEMENTTYPE.CookingBadge, false),
+            ],
+            pins
+        );
+    }
+
+    [Fact]
+    public void Without_team_pins_the_own_pins_keep_their_order()
+    {
+        // when
+        IReadOnlyList<(ACHIEVEMENTTYPE Badge, bool ForTeam)> pins = TrackedPins.Merge([], [ACHIEVEMENTTYPE.CookingBadge, ACHIEVEMENTTYPE.PeakBadge]);
+
+        // then
+        Assert.Equal([(ACHIEVEMENTTYPE.CookingBadge, false), (ACHIEVEMENTTYPE.PeakBadge, false)], pins);
+    }
+
+    [Fact]
+    public void Missing_for_names_the_known_scouts_without_the_badge()
+    {
+        // given one scout has it, one does not, one runs no mod
+        Scout[] scouts =
+        [
+            new("Mara", IsLocal: false, Earned: [ACHIEVEMENTTYPE.DaredevilBadge]),
+            new("Teo", IsLocal: false, Earned: []),
+            new("Ana", IsLocal: false, Earned: null),
+        ];
+
+        // when
+        IReadOnlyList<string> missing = Scouts.MissingFor(ACHIEVEMENTTYPE.DaredevilBadge, scouts);
+
+        // then
+        Assert.Equal(["Teo"], missing);
+    }
+}

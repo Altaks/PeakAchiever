@@ -8,8 +8,8 @@ public class FoldedCardsTests
     private static readonly TrackedStatus Earned = new TrackedStatus.Achieved(null);
     private static readonly TrackedStatus Crossed = new TrackedStatus.Unattainable(new UnattainableReason.ConditionBroken(BrokenCondition.RunLost));
 
-    private static TrackedBadge Tracked(ACHIEVEMENTTYPE badge, TrackedStatus status, bool forAlly = false) =>
-        new(badge, BadgeRules.For(badge), status, Detail: null, forAlly);
+    private static TrackedBadge Tracked(ACHIEVEMENTTYPE badge, TrackedStatus status, bool forAlly = false, bool forTeam = false) =>
+        new(badge, BadgeRules.For(badge), status, Detail: null, forAlly, forTeam);
 
     [Fact]
     public void A_card_earned_while_followed_stays_whole_for_a_moment()
@@ -62,6 +62,19 @@ public class FoldedCardsTests
 
         // when
         IReadOnlyCollection<ACHIEVEMENTTYPE> shown = folded.Update([Tracked(ACHIEVEMENTTYPE.LoneWolfBadge, Earned, forAlly: true)], now: 999f);
+
+        // then
+        Assert.Empty(shown);
+    }
+
+    [Fact]
+    public void A_team_pin_never_folds_while_scouts_still_miss_it()
+    {
+        // given
+        var folded = new FoldedCards();
+
+        // when
+        IReadOnlyCollection<ACHIEVEMENTTYPE> shown = folded.Update([Tracked(ACHIEVEMENTTYPE.DaredevilBadge, Earned, forTeam: true)], now: 999f);
 
         // then
         Assert.Empty(shown);

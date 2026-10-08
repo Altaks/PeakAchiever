@@ -82,6 +82,9 @@ internal enum ModTextKey
     LocatorDistance,
     SettingsMarkers,
     MarkerLabel,
+    ChipTeam,
+    GroupTeam,
+    GroupOwn,
 }
 
 /// <summary>
@@ -117,6 +120,9 @@ internal static class ModText
         [ModTextKey.LocatorAntlion] = ["Antlion", "Fourmilion"],
         [ModTextKey.LocatorTomb] = ["Mesa tomb", "Tombe du Plateau"],
         [ModTextKey.LocatorDistance] = ["{0} m", "{0} m"],
+        [ModTextKey.ChipTeam] = ["Team", "Équipe"],
+        [ModTextKey.GroupTeam] = ["TEAM · SET BY THE HOST", "ÉQUIPE · CHOISIES PAR L'HÔTE"],
+        [ModTextKey.GroupOwn] = ["YOUR PINS", "VOS ÉPINGLES"],
         [ModTextKey.MarkerLabel] = ["{0} · {1} m", "{0} · {1} m"],
         [ModTextKey.SettingsMarkers] = ["PEAKACHIEVER: ON-SCREEN MARKERS", "PEAKACHIEVER : REPÈRES À L'ÉCRAN"],
         [ModTextKey.ScopeLifetime] = ["LIFETIME", "À VIE"],
