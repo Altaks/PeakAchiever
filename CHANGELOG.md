@@ -4,6 +4,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-08
+
 ### Added
 
 - Tracker cards, redone: a dark stitched patch with chips under the name ("All runs", "For an ally") and a section across the card for what the badge needs.

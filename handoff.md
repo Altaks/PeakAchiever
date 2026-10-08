@@ -7,24 +7,18 @@ user are in French.
 ## Where things stand
 
 - **0.3.0 is published** on Thunderstore (about 1.5k downloads). PEAK updated to **2.6.b** on Oct 6.
-- **An open stack of PRs, nothing merged**, each based on the one before, merge bottom-up:
-  1. #27 `fix/game-2.6.b`: Nadir segment (no ETA crash, no false "behind you" cross), Nadir name
-     (`AREA_VOID`), Scout Effigy out of Leave No Trace, today's map wrapped over `ScenePaths`, docs.
-  2. #28 `fix/stats-height`: the statistics rows scroll past 520 px (`PaperKit.ScrollList`).
-  3. #29 `feat/settings-pin-rows`: MaxPinnedBadges / MaxTeamPins as rows of Settings, General.
-  4. #30 `feat/hud-cards`: new cards, needed items as tabs under the card, locators and on-screen
-     markers (with an OFF / ON row), bell counter, team pins on every modded tracker, wiki drafts.
-  5. #31 `feat/i18n-languages`: the mod's strings in the game's 15 languages, HUD font fallbacks.
-- Gate green on the tip: `dotnet build`, `dotnet test` 254/254. The user tested #30 in game and signed it
-  off ("c'est bon pour moi"); #27 to #29 and #31 are not seen in game yet, each PR lists its checks.
+- **0.4.0 released** (2026-10-08), from the stack #27 to #31 merged into `main`: 2.6.b fixes, statistics
+  height, pin limits in Settings, the new cards (needed items as tabs, locators and markers, bell counter,
+  team pins on every modded tracker), the game's 15 languages.
+- Gate green on `main`: `dotnet build`, `dotnet test` 254/254. The user tested the cards in game and signed
+  them off; the 2.6.b fixes, the statistics scroll, the Settings rows and the languages are not seen in game
+  yet, each merged PR lists its checks.
 - The test profile holds only the Debug build: the Thunderstore copy (`plugins/Altaks-PeakAchiever/`) was
   removed for testing, to be reinstalled from the mod manager.
 
 ## Next steps
 
-1. Merge the stack bottom-up when the user asks (retarget each PR to `main` first, merge commits, delete
-   the branches), then release **0.4.0**: bump `<Version>`, turn `[Unreleased]` into `[0.4.0]`, publish
-   as `CLAUDE.md` says, only once the user confirms.
+1. Watch the 0.4.0 feedback on Thunderstore, and run the unchecked PR checklists in game (#27 to #29, #31).
 2. Screenshots for the Thunderstore page: the user takes them (shot list in the conversation: tracker with
    4 to 5 cards, badges page, Bellringer locator and marker, statistics, Scouts and the team group,
    Settings rows, inventory cross). Commit them under `docs/screenshots/`, link them from the README with
