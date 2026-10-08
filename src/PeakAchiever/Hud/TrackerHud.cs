@@ -26,6 +26,8 @@ internal sealed class TrackerHud : MonoBehaviour
     private const int CanvasSortingOrder = 1000;
     private static readonly Vector2 ReferenceResolution = new(1920f, 1080f);
     private const float ScreenMargin = 30f;
+    // The game writes the ascent's name in the top-right corner (AscentUI); the column starts below it.
+    private const float TopMargin = 72f;
     private const float CardGap = 8f;
     private const float ToastBottomOffset = 120f;
     private const float ToastWidth = 640f;
@@ -314,7 +316,7 @@ internal sealed class TrackerHud : MonoBehaviour
         panelRect.anchorMin = Vector2.one;
         panelRect.anchorMax = Vector2.one;
         panelRect.pivot = Vector2.one;
-        panelRect.anchoredPosition = new Vector2(-ScreenMargin, -ScreenMargin);
+        panelRect.anchoredPosition = new Vector2(-ScreenMargin, -TopMargin);
         VerticalLayoutGroup stack = _panel.AddComponent<VerticalLayoutGroup>();
         stack.spacing = CardGap;
         stack.childAlignment = TextAnchor.UpperRight;
