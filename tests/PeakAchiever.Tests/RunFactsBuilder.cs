@@ -18,7 +18,7 @@ internal sealed class RunFactsBuilder
         Biome.BiomeType.Volcano,
         Biome.BiomeType.Peak,
     ];
-    private int _currentSegment;
+    private int? _currentSegment = 0;
     private float _seconds;
     private BiomeSplit[] _biomeSplits = [];
     private IReadOnlyDictionary<Biome.BiomeType, float> _biomeMedians = new Dictionary<Biome.BiomeType, float>();
@@ -62,6 +62,13 @@ internal sealed class RunFactsBuilder
     public RunFactsBuilder AtSegment(int segment)
     {
         _currentSegment = segment;
+        return this;
+    }
+
+    /// <summary>In the Nadir, which is none of the map's segments.</summary>
+    public RunFactsBuilder InNadir()
+    {
+        _currentSegment = null;
         return this;
     }
 

@@ -5,8 +5,9 @@ namespace PeakAchiever.Tracking;
 
 /// <summary>
 /// The single table of how each badge is tracked. Every entry is traced to the game code that grants it
-/// (decompiled Assembly-CSharp and scene data, game v2.4.c). A one-off with no blocker is a badge the code
-/// shows can happen anywhere in the run: it shows as doable and never gets a red cross.
+/// (decompiled Assembly-CSharp, checked against game v2.6.b) or to scene placements (read in v2.4.c). A
+/// one-off with no blocker is a badge the code shows can happen anywhere in the run: it shows as doable
+/// and never gets a red cross.
 /// </summary>
 internal static class BadgeRules
 {

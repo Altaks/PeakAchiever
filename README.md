@@ -12,8 +12,8 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   on today's map (or the run's), and compatible with your pins and with each other. Badges tied to
   that map's biomes come first (the map alternates, so they wait otherwise), then clean runs. A locked
   secret badge is never starred.
-- **No incompatible pins.** A map has either Tropics, Alpine and Caldera, or Roots, Mesa and the Gloom
-  (read from the game's level table). A badge that needs a biome no map shares with a pinned badge is
+- **No incompatible pins.** After the Shore, a map holds one biome of each pair: Tropics or Roots, Alpine
+  or Mesa, Caldera or the Gloom (read from the game's level table). A badge that needs a biome no map shares with a pinned badge is
   faded on the badges page, its tooltip names the pin in the way, and clicking it is refused. Only
   proven clashes count: Lone Wolf, for instance, stays pinnable with Clutch, since other scouts can
   leave before the summit.
@@ -71,7 +71,7 @@ Requires [BepInExPack for PEAK](https://thunderstore.io/c/peak/p/BepInEx/BepInEx
   PEAK profile and launch the game from the manager.
 - **By hand**: copy `Altaks.PeakAchiever.dll` into `BepInEx/plugins/` of your PEAK BepInEx install.
 
-Tested with PEAK 2.4.c. If a game update breaks the mod, the error shows in `BepInEx/LogOutput.log`.
+Tested with PEAK 2.6.b. If a game update breaks the mod, the error shows in `BepInEx/LogOutput.log`.
 
 ## Configuration
 
@@ -95,8 +95,8 @@ makes when the game gives none), ascent, place in the run, biome, seconds. Delet
 
 ## How badges are judged
 
-Every rule comes from the game's own code and scene data (game version 2.4.c). When nothing in the
-game can rule a badge out, the tracker never shows a red cross for it.
+Every rule comes from the game's own code (checked against game version 2.6.b) and scene data (read in
+2.4.c). When nothing in the game can rule a badge out, the tracker never shows a red cross for it.
 
 | Kind | Badges | Red cross when |
 | --- | --- | --- |

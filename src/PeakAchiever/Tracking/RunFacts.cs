@@ -15,7 +15,7 @@ internal sealed class RunFacts
         IReadOnlyDictionary<STEAMSTATTYPE, int> lifetimeStats,
         IReadOnlyList<Biome.BiomeType> segmentBiomes,
         IReadOnlyCollection<Biome.BiomeType> presentBiomes,
-        int currentSegmentIndex,
+        int? currentSegmentIndex,
         float secondsSinceRunStarted,
         IReadOnlyList<BiomeSplit> biomeSplits,
         IReadOnlyDictionary<Biome.BiomeType, float> biomeMedians,
@@ -53,7 +53,11 @@ internal sealed class RunFacts
 
     public IReadOnlyCollection<Biome.BiomeType> PresentBiomes { get; }
 
-    public int CurrentSegmentIndex { get; }
+    /// <summary>
+    /// The segment the team is in, as an index of <see cref="SegmentBiomes"/>; null in the Nadir, which is
+    /// none of the map's segments.
+    /// </summary>
+    public int? CurrentSegmentIndex { get; }
 
     public float SecondsSinceRunStarted { get; }
 
@@ -78,15 +82,20 @@ internal sealed class RunFacts
     public int LifetimeStat(STEAMSTATTYPE stat) =>
         LifetimeStats.TryGetValue(stat, out int value) ? value : 0;
 
-    /// <summary>True once every segment of this biome lies behind the current segment.</summary>
+    /// <summary>
+    /// True once every segment of this biome lies behind the current segment. Never in the Nadir: an item
+    /// takes the team there from any segment, and Action_WarpToBiome can send it to any segment (v2.6.b).
+    /// </summary>
     public bool HasLeft(Biome.BiomeType biome)
     {
+        if (CurrentSegmentIndex is not { } current)
+            return false;
         bool seenBehind = false;
         for (int segment = 0; segment < SegmentBiomes.Count; segment++)
         {
             if (SegmentBiomes[segment] != biome)
                 continue;
-            if (segment >= CurrentSegmentIndex)
+            if (segment >= current)
                 return false;
             seenBehind = true;
         }
