@@ -38,8 +38,8 @@ internal static class MapCatalog
 
     /// <summary>
     /// The run's map during a run; in the airport, the level the check-in kiosk sends today
-    /// (AirportCheckInKiosk: NextLevelIndexOrFallback + debugLevelIndexOffset, wrapped over the levels,
-    /// v2.4.c). Null anywhere else, or while the level table is not loaded.
+    /// (AirportCheckInKiosk: NextLevelIndexOrFallback + debugLevelIndexOffset, then MapBaker.GetLevel
+    /// wraps it over the scenes, v2.6.b). Null anywhere else, or while the level table is not loaded.
     /// </summary>
     public static KnownMap? CurrentOrToday
     {
@@ -50,14 +50,19 @@ internal static class MapCatalog
             if (Character.localCharacter == null || !Character.localCharacter.inAirport || Levels is not { } levels)
                 return null;
             int index = GameHandler.GetService<NextLevelService>().NextLevelIndexOrFallback + NextLevelService.debugLevelIndexOffset;
-            return new KnownMap(levels[(index % levels.Length + levels.Length) % levels.Length], IsToday: true);
+            // Wrapped as MapBaker.GetLevel wraps it, over the scenes; a level past the biome table is not
+            // known, so nothing is claimed about it.
+            int scenes = SingletonAsset<MapBaker>.Instance.ScenePaths.Length;
+            int level = scenes == 0 ? -1 : (index % scenes + scenes) % scenes;
+            return level >= 0 && level < levels.Length ? new KnownMap(levels[level], IsToday: true) : null;
         }
     }
 
     /// <summary>
-    /// The biomes of each generated level, in climbing order, from MapBaker.selectedBiomes (PEAK 2.4.c:
-    /// 25 levels, alternating Shore / Tropics / Alpine / Volcano and Shore / Roots / Mesa / Swamp, read
-    /// from data.unity3d with UnityPy). Read once it has loaded, then cached.
+    /// The biomes of each generated level, in climbing order, from MapBaker.selectedBiomes. PEAK 2.6.b has
+    /// 21 levels in 8 layouts: after the Shore, Tropics or Roots, Alpine or Mesa, Caldera or the Gloom, each
+    /// pair swapping on its own (MapSegment.hasVariant; the game logs the table at startup). Read once it
+    /// has loaded, then cached.
     /// </summary>
     private static IReadOnlyCollection<Biome.BiomeType>[]? Levels
     {
