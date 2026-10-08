@@ -76,6 +76,12 @@ internal enum ModTextKey
     NeedsOneOf,
     NeedsHelps,
     NeedsCount,
+    LocatorBell,
+    LocatorAntlion,
+    LocatorTomb,
+    LocatorDistance,
+    SettingsMarkers,
+    MarkerLabel,
 }
 
 /// <summary>
@@ -107,6 +113,12 @@ internal static class ModText
         [ModTextKey.NeedsOneOf] = ["One of:", "Un parmi :"],
         [ModTextKey.NeedsHelps] = ["Helps:", "Utile :"],
         [ModTextKey.NeedsCount] = ["×{0}", "×{0}"],
+        [ModTextKey.LocatorBell] = ["Unlit belltower", "Clocher éteint"],
+        [ModTextKey.LocatorAntlion] = ["Antlion", "Fourmilion"],
+        [ModTextKey.LocatorTomb] = ["Mesa tomb", "Tombe du Plateau"],
+        [ModTextKey.LocatorDistance] = ["{0} m", "{0} m"],
+        [ModTextKey.MarkerLabel] = ["{0} · {1} m", "{0} · {1} m"],
+        [ModTextKey.SettingsMarkers] = ["PEAKACHIEVER: ON-SCREEN MARKERS", "PEAKACHIEVER : REPÈRES À L'ÉCRAN"],
         [ModTextKey.ScopeLifetime] = ["LIFETIME", "À VIE"],
         [ModTextKey.Eta] = ["ETA {0}", "Arrivée estimée : {0}"],
         [ModTextKey.LimitRate] = ["max {0}% / {1}%", "max {0} % / {1} %"],

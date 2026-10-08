@@ -370,4 +370,20 @@ public class BadgeRulesTests
         // then
         Assert.Equal(new TrackedStatus.Achieved(null), status);
     }
+
+    [Fact]
+    public void Bellringer_counts_the_bells_the_team_has_lit_against_five()
+    {
+        // given the map holds the Gloom, two bells lit by anyone
+        RunFacts facts = new RunFactsBuilder()
+            .WithSegments(Biome.BiomeType.Shore, Biome.BiomeType.Roots, Biome.BiomeType.Mesa, Biome.BiomeType.Swamp, Biome.BiomeType.Peak)
+            .WithLitBells(2)
+            .Build();
+
+        // when
+        TrackedStatus status = BadgeRules.For(ACHIEVEMENTTYPE.BellringerBadge).Evaluate(facts, isUnlocked: false);
+
+        // then: GhostFire.CheckAchievement counts every lit bell, whoever lit it
+        Assert.Equal(new TrackedStatus.Attainable(new Progress(2, 5, ProgressScope.ThisRun)), status);
+    }
 }

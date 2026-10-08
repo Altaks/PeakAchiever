@@ -122,7 +122,9 @@ internal static class BadgeRules
         [ACHIEVEMENTTYPE.MegaentomologyBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Mesa)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Mesa)), // Antlion
         [ACHIEVEMENTTYPE.DaredevilBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Mesa)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Mesa)), // ScoutCannonAchievementZone
         [ACHIEVEMENTTYPE.WebSecurityBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Roots)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Roots)), // Spider
-        [ACHIEVEMENTTYPE.BellringerBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Swamp)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Swamp)), // GhostFire bells
+        // GhostFire.CheckAchievement counts every lit bell of the map, whoever lit it, and grants the badge at
+        // GhostFire.ACHIEVEMENT_LIT_COUNT (v2.6.b).
+        [ACHIEVEMENTTYPE.BellringerBadge] = BadgeRule.Counted(new LitBellsTarget(GhostFire.ACHIEVEMENT_LIT_COUNT), new InBiome(Biome.BiomeType.Swamp)),
         [ACHIEVEMENTTYPE.AnimalSerenadingBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Alpine, Biome.BiomeType.Mesa)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Alpine, Biome.BiomeType.Mesa)), // Capybara
         [ACHIEVEMENTTYPE.ArboristBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Tropics, Biome.BiomeType.Roots)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Tropics, Biome.BiomeType.Roots)), // GiantTreeAchievementZone
 

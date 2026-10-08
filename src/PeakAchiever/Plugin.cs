@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using PeakAchiever.Controls;
@@ -28,6 +29,9 @@ public partial class Plugin : BaseUnityPlugin
 
     internal static TrackerHud Hud { get; private set; } = null!;
 
+    /// <summary>Whether the markers over locator targets show (the game's Settings menu edits it too).</summary>
+    internal static ConfigEntry<bool> ShowMarkers { get; private set; } = null!;
+
     private void Awake()
     {
         Log = Logger;
@@ -35,6 +39,7 @@ public partial class Plugin : BaseUnityPlugin
         Tracker = new PinnedBadgeTracker(Pins.Board);
         Splits = new SplitHistoryStore(Paths.ConfigPath, Logger);
         ToggleKey = new TrackerToggleKey(Config, Logger);
+        ShowMarkers = Config.Bind("Tracker", "ShowMarkers", true, "Shows a marker over what a pinned badge's locator points at (a belltower, an antlion, the Mesa tomb).");
 
         var overlay = new GameObject("PeakAchiever.Overlay");
         DontDestroyOnLoad(overlay);
@@ -43,7 +48,7 @@ public partial class Plugin : BaseUnityPlugin
 
         new Harmony(Id).PatchAll(typeof(Plugin).Assembly);
         if (SettingsHandler.Instance != null)
-            SettingsPatches.AddPinLimits(SettingsHandler.Instance);
+            SettingsPatches.AddModSettings(SettingsHandler.Instance);
         Log.LogInfo($"Plugin {Name} is loaded!");
     }
 }

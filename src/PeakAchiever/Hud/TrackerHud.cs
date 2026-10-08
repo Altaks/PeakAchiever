@@ -54,6 +54,7 @@ internal sealed class TrackerHud : MonoBehaviour
     private StatsPanel? _stats;
     private TeamPanel? _team;
     private GameObject _panel = null!;
+    private OnScreenMarkers _markers = null!;
     private GameObject _banner = null!;
     private GameObject _toast = null!;
     private TextMeshProUGUI _toastText = null!;
@@ -119,6 +120,7 @@ internal sealed class TrackerHud : MonoBehaviour
         _panel.SetActive(showCards);
         if (showCards)
             ShowCards(_style);
+        PointLocators(showCards);
     }
 
     private void Evaluate()
@@ -165,6 +167,44 @@ internal sealed class TrackerHud : MonoBehaviour
             slot.Show(BadgeCatalog.Present(badge.Badge), badge, compact: _folded.Contains(badge.Badge) || (torn && settled));
         }
     }
+
+    /// <summary>
+    /// Every frame, turns each in-play card's locator towards its target, and places the on-screen markers
+    /// (when the setting is on). Hidden outside a run, while the cards are, and with nothing to point at.
+    /// </summary>
+    private void PointLocators(bool showCards)
+    {
+        _markers.Begin();
+        // == null, not ?. or is: Unity objects override the null check, which the compiler's flow analysis
+        // does not follow, hence the ! once checked.
+        Camera camera = Camera.main;
+        Character scout = Character.localCharacter;
+        bool canPoint = showCards && camera != null && scout != null;
+        foreach (TrackedBadge badge in _tracker.Tracked)
+        {
+            if (!_slots.TryGetValue(badge.Badge, out CardSlot slot))
+                continue;
+            bool inPlay = badge.Status is TrackedStatus.Attainable or TrackedStatus.Holding;
+            Vector3? target = null;
+            LocatorTarget? kind = Locators.TargetOf(badge.Badge);
+            if (canPoint && inPlay && kind != null)
+                target = Locators.Find(kind.Value, scout!.Center);
+            if (target is not { } position)
+            {
+                slot.Front.ShowLocator(null, 0f);
+                continue;
+            }
+            Vector3 toTarget = position - scout!.Center;
+            float bearing = Vector3.SignedAngle(Flat(camera!.transform.forward), Flat(toTarget), Vector3.up);
+            slot.Front.ShowLocator(bearing, toTarget.magnitude);
+            if (Plugin.ShowMarkers.Value)
+                _markers.Place(camera, position, Locators.NameOf(kind!.Value), toTarget.magnitude);
+        }
+        _markers.End();
+    }
+
+    // On the ground plane: the arrow turns like a compass, whatever the camera's pitch.
+    private static Vector3 Flat(Vector3 direction) => new(direction.x, 0f, direction.z);
 
     /// <summary>
     /// Keeps the torn list in step with the statuses: a card already impossible when first seen goes
@@ -262,6 +302,8 @@ internal sealed class TrackerHud : MonoBehaviour
         UiFactory.SetPreferredSize(_banner, BadgeCard.Width, -1f);
         TextMeshProUGUI bannerText = UiFactory.AddText(_banner.transform, "Text", style.StrongFont, BannerFontSize, HudStyle.Unattainable);
         bannerText.text = ModText.Get(ModTextKey.AchievementsDisabled);
+
+        _markers = new OnScreenMarkers(transform, style);
 
         _toast = UiFactory.Create("Toast", transform);
         var toastRect = (RectTransform)_toast.transform;

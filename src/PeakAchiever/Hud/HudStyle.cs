@@ -78,6 +78,7 @@ internal sealed class HudStyle
         Circle = CreateCircle();
         Pill = CreatePill(Circle.texture);
         Star = CreateStar();
+        Arrow = CreateArrow();
         TearLeft = CreateTear(keepLeft: true);
         TearRight = CreateTear(keepLeft: false);
         Cross = LoadEmbeddedSprite("Cross.png", log);
@@ -122,6 +123,9 @@ internal sealed class HudStyle
 
     /// <summary>A five-point star, drawn in code like <see cref="Circle"/>.</summary>
     public Sprite Star { get; }
+
+    /// <summary>An arrow pointing up, drawn in code like <see cref="Star"/>; turned to point at a target.</summary>
+    public Sprite Arrow { get; }
 
     private static TMP_FontAsset FindFont(TMP_FontAsset[] fonts, string name, ManualLogSource log)
     {
@@ -214,6 +218,18 @@ internal sealed class HudStyle
         Texture2D texture = CreateMask(StarTextureSize, (x, y) => SupersampledCoverage(x, y, outline));
         return Sprite.Create(texture, new Rect(0, 0, StarTextureSize, StarTextureSize), new Vector2(0.5f, 0.5f));
     }
+
+    private static Sprite CreateArrow()
+    {
+        Texture2D texture = CreateMask(StarTextureSize, (x, y) => SupersampledCoverage(x, y, ArrowOutline));
+        return Sprite.Create(texture, new Rect(0, 0, StarTextureSize, StarTextureSize), new Vector2(0.5f, 0.5f));
+    }
+
+    // A head over a shaft, pointing up, in texels of the 64 px texture.
+    private static readonly Vector2[] ArrowOutline =
+    [
+        new(32f, 60f), new(56f, 32f), new(41f, 32f), new(41f, 4f), new(23f, 4f), new(23f, 32f), new(8f, 32f),
+    ];
 
     // Ten points alternating outer and inner radius, the first pointing up.
     private static Vector2[] StarOutline(float radius)

@@ -18,6 +18,12 @@ internal sealed class RunCollectionTarget(RunCollection collection, int target) 
         new(facts.CollectionCount(collection), target, ProgressScope.ThisRun);
 }
 
+/// <summary>The belltowers lit this run, by anyone, against the count the game grants Bellringer at.</summary>
+internal sealed class LitBellsTarget(int target) : IProgressMeasure
+{
+    public Progress Measure(RunFacts facts) => new(facts.LitBells, target, ProgressScope.ThisRun);
+}
+
 /// <summary>The run's elapsed time against the most a clean run may take.</summary>
 internal sealed class RunDurationTarget(float maxSeconds) : IProgressMeasure
 {

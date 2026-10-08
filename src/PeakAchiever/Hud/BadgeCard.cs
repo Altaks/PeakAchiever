@@ -42,6 +42,10 @@ internal sealed class BadgeCard
     private const float SeamInset = 5f;
     private const float Gap = 10f;
     private const float SectionGap = 7f;
+    private const float LocatorDiscSize = 28f;
+    private const float LocatorArrowSize = 18f;
+    private const float LocatorFontSize = 14f;
+    private static readonly Color LocatorDisc = new(HudStyle.ProgressFill.r, HudStyle.ProgressFill.g, HudStyle.ProgressFill.b, 0.14f);
     private const float TextGap = 3f;
     private const float StatusRowGap = 8f;
     private const float ChecklistIconSize = 26f;
@@ -82,6 +86,11 @@ internal sealed class BadgeCard
     private readonly TextMeshProUGUI _notOnMapLabel;
     private readonly ChecklistGrid _notOnMap;
     private readonly NeedsBlock _needs;
+    private readonly GameObject _locator;
+    private readonly RectTransform _locatorArrow;
+    private readonly TextMeshProUGUI _locatorDistance;
+    // The distance shown, so the text (and the card's layout) changes only when the metre does.
+    private int _locatorMeters = -1;
 
     public BadgeCard(Transform parent, HudStyle style)
     {
@@ -133,6 +142,27 @@ internal sealed class BadgeCard
         Fill((RectTransform)glyph.transform, (MarkSize - MarkGlyphSize) / 2f);
         _markGlyph = UiFactory.AddImage(glyph, style.Check, Color.white);
         _markGlyph.preserveAspect = true;
+
+        // Where the badge's target is: an arrow turned towards it, the distance under it.
+        _locator = UiFactory.Create("Locator", iconColumn.transform);
+        VerticalLayoutGroup locatorStack = _locator.AddComponent<VerticalLayoutGroup>();
+        locatorStack.spacing = TextGap;
+        locatorStack.childAlignment = TextAnchor.UpperCenter;
+        locatorStack.childControlWidth = true;
+        locatorStack.childControlHeight = true;
+        locatorStack.childForceExpandWidth = false;
+        locatorStack.childForceExpandHeight = false;
+        GameObject disc = UiFactory.Create("Disc", _locator.transform);
+        UiFactory.SetFixedSize(disc, LocatorDiscSize, LocatorDiscSize);
+        UiFactory.AddImage(disc, style.Circle, LocatorDisc);
+        GameObject arrow = UiFactory.Create("Arrow", disc.transform);
+        UiFactory.PinToCorner(arrow, new Vector2(0.5f, 0.5f), Vector2.zero, LocatorArrowSize);
+        UiFactory.AddImage(arrow, style.Arrow, HudStyle.ProgressFill);
+        _locatorArrow = (RectTransform)arrow.transform;
+        _locatorDistance = UiFactory.AddText(_locator.transform, "Distance", style.StrongFont, LocatorFontSize, HudStyle.ProgressFill);
+        _locatorDistance.textWrappingMode = TextWrappingModes.NoWrap;
+        _locatorDistance.alignment = TextAlignmentOptions.Center;
+        _locator.SetActive(false);
 
         GameObject column = UiFactory.Create("Text", top.transform);
         VerticalLayoutGroup stack = column.AddComponent<VerticalLayoutGroup>();
@@ -283,6 +313,23 @@ internal sealed class BadgeCard
                 throw new System.ArgumentOutOfRangeException(nameof(tracked), status, "Unhandled tracked status.");
         }
         ShowDetail(compact ? null : tracked.Detail, unattainable);
+    }
+
+    /// <summary>
+    /// Points the locator at the badge's target: <paramref name="bearing"/> degrees clockwise from where the
+    /// camera faces, <paramref name="meters"/> away. Null hides it.
+    /// </summary>
+    public void ShowLocator(float? bearing, float meters)
+    {
+        _locator.SetActive(bearing.HasValue);
+        if (bearing is not { } degrees)
+            return;
+        _locatorArrow.localEulerAngles = new Vector3(0f, 0f, -degrees);
+        int rounded = Mathf.RoundToInt(meters);
+        if (rounded == _locatorMeters)
+            return;
+        _locatorMeters = rounded;
+        _locatorDistance.text = ModText.Format(ModTextKey.LocatorDistance, rounded);
     }
 
     // Folded: a smaller icon and mark, a thinner card, the name and the status word only.

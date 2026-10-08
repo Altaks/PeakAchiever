@@ -53,7 +53,9 @@ internal static class RunFactsReader
             BiomeTimeline.Split(ReadTimeline(), secondsSinceRunStarted, JoinedMidRun),
             history.MediansAt(Ascents.currentAscent),
             MapItemScanner.ItemsOnMap,
-            RunOutcome.Lost
+            RunOutcome.Lost,
+            // The bells register themselves while their segment is loaded (GloomSafeZone.OnEnable, v2.6.b).
+            GloomSafeZone.ALL_GLOOM_SAFE_ZONES.OfType<GhostFire>().Count(bell => bell.isLit)
         );
     }
 
