@@ -23,15 +23,19 @@ internal sealed class NeedsBlock
     private const float HeadGap = 6f;
     private const float CountFontSize = 9.5f;
     private const float TabGap = 6f;
-    // The tabs sit this far in from the card's right edge, clear of its rounded corner and seam.
-    private const int TabInset = 14;
     private const int TabPaddingX = 8;
     private const int TabPaddingY = 5;
     // Darker than the card, so the tabs read as their own pieces.
     private static readonly Color TabBackground = new(14f / 255, 11f / 255, 9f / 255, 0.92f);
 
-    /// <summary>How far the tabs overlap the card's bottom edge.</summary>
-    public const float Overlap = 4f;
+    /// <summary>A tab's height: one row of icons and its padding.</summary>
+    private const float TabHeight = TileSize + 2 * TabPaddingY;
+
+    /// <summary>
+    /// Half a tab's height: the tabs are centred on the card's bottom edge (they overlap it by this much),
+    /// and the rightmost one juts past the card's right edge by as much (signed-off placement).
+    /// </summary>
+    public const float HalfTab = TabHeight / 2f;
     private const float CountPadding = 2f;
     private static readonly Color TileBackground = new(HudStyle.Ink.r, HudStyle.Ink.g, HudStyle.Ink.b, 0.1f);
 
@@ -44,7 +48,8 @@ internal sealed class NeedsBlock
         Root = UiFactory.Create("Needs", parent);
         HorizontalLayoutGroup tabs = Root.AddComponent<HorizontalLayoutGroup>();
         tabs.spacing = TabGap;
-        tabs.padding = new RectOffset(0, TabInset, 0, 0);
+        // A negative right padding: the last tab's right edge lies half a tab past the card's.
+        tabs.padding = new RectOffset(0, -Mathf.RoundToInt(HalfTab), 0, 0);
         tabs.childAlignment = TextAnchor.UpperRight;
         tabs.childControlWidth = true;
         tabs.childControlHeight = true;

@@ -98,7 +98,7 @@ internal sealed class BadgeCard
         // The card's body, then the needs tabs hung under it, overlapping its bottom edge a little.
         Root = UiFactory.Create("BadgeCard", parent);
         VerticalLayoutGroup hang = Root.AddComponent<VerticalLayoutGroup>();
-        hang.spacing = -NeedsBlock.Overlap;
+        hang.spacing = -NeedsBlock.HalfTab;
         hang.childControlWidth = true;
         hang.childControlHeight = true;
         hang.childForceExpandWidth = true;
@@ -338,9 +338,12 @@ internal sealed class BadgeCard
         float mark = compact ? CompactMarkSize : MarkSize;
         _mark.sizeDelta = new Vector2(mark, mark);
         int paddingY = compact ? CompactPaddingY : Padding;
-        _layout.padding = new RectOffset(Padding, Padding, paddingY, paddingY);
+        // The tabs' upper half lies over the card's bottom: the card grows by as much, so no text runs under them.
+        bool tabs = !compact && _needs.HasItems;
+        int bottom = paddingY + (tabs ? Mathf.CeilToInt(NeedsBlock.HalfTab) : 0);
+        _layout.padding = new RectOffset(Padding, Padding, paddingY, bottom);
         _description.gameObject.SetActive(!compact);
-        _needs.Root.SetActive(!compact && _needs.HasItems);
+        _needs.Root.SetActive(tabs);
     }
 
     /// <summary>
