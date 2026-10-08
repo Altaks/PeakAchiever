@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 
 namespace PeakAchiever.Localization;
@@ -10,11 +9,7 @@ namespace PeakAchiever.Localization;
 internal static class GameTextTable
 {
     /// <summary>Called whenever the element shows: the game rebuilds its table when it reloads the texts.</summary>
-    public static void Register(string gameKey, ModTextKey text)
-    {
-        int languages = Enum.GetValues(typeof(LocalizedText.Language)).Length;
-        var texts = Enumerable.Repeat(ModText.In(text, ModText.ModLanguage.English), languages).ToList();
-        texts[(int)LocalizedText.Language.French] = ModText.In(text, ModText.ModLanguage.French);
-        LocalizedText.mainTable[gameKey] = texts;
-    }
+    public static void Register(string gameKey, ModTextKey text) =>
+        // A row already follows LocalizedText.Language's order, as the game's own rows do.
+        LocalizedText.mainTable[gameKey] = ModText.Table[text].ToList();
 }

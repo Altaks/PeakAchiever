@@ -8,7 +8,7 @@ public class ModTextTests
     public void Every_key_has_a_non_empty_string_in_every_language()
     {
         // given
-        int languageCount = Enum.GetValues<ModText.ModLanguage>().Length;
+        int languageCount = Enum.GetValues<LocalizedText.Language>().Length;
 
         // when
         ModTextKey[] incomplete = Enum.GetValues<ModTextKey>()
