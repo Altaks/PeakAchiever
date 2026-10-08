@@ -9,8 +9,9 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
   each badge is judged; `RunFacts` is the snapshot the rules read.
 - `Game/`: adapters reading the game (`RunFactsReader`, `BadgeCatalog`, `PinnedBadgeTracker`) and the
   refresh hooks. `Hud/`, `PauseMenu/`, `Inventory/`, `Controls/`, `Settings/`: UI plus their Harmony hooks.
-- `Localization/ModText.cs`: every mod string, one row per key, English then French. Badge names and
-  descriptions come from the game's own table.
+- `Localization/ModText.cs`: every mod string, one row per key, one named argument per game language
+  (`LocalizedText.Language`, 15 in 2.6.b). Take each language's words and typography from the game's
+  `Localized_Text.csv`. Badge names and descriptions come from the game's own table.
 
 ## Rules for badge logic
 
