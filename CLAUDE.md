@@ -15,7 +15,8 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
 ## Rules for badge logic
 
 - **Every rule cites its source**: the decompiled class and method, or the scene data it was read from,
-  with the game version. Last verified against **PEAK 2.4.c**; re-check `BadgeRules.cs` after a game update.
+  with the game version. Code rules last verified against **PEAK 2.6.b**; the scene placements behind the
+  "found in a biome" rules were last read in 2.4.c. Re-check `BadgeRules.cs` after a game update.
 - **Never a red cross without proof.** A badge nothing in the game can rule out stays "doable".
 - Read run counters from `runBasedValueData` dictionaries directly: `GetRunBasedInt/Float` write a zero
   for a missing key, which raises `Player.OnAchievementProgressChanged` and loops the refresh.

@@ -4,6 +4,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- PEAK 2.6.b: in the Nadir, Speed Climber no longer breaks the tracker, and badges tied to a biome no
+  longer get a "behind you" red cross (items can warp the team to any segment from there). The Nadir has
+  no ETA, and shows under its own name in the biome times.
+- The Scout Effigy no longer carries the Leave No Trace red cross in the inventory: building it revives a
+  scout and places nothing that counts.
+- In the airport, today's map is worked out over the game's scene list, as the check-in kiosk does.
+
+### Changed
+
+- Checked against PEAK 2.6.b: every badge rule still matches the game. Maps now pair their biomes freely
+  (8 layouts instead of 2), which the pin clashes already follow, read from the game's level table.
+
 ## [0.3.0] - 2026-09-29
 
 ### Added
