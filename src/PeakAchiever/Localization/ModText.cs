@@ -46,6 +46,8 @@ internal enum ModTextKey
     TeamWithoutTheMod,
     RefusalTeamFull,
     ControlsToggleTracker,
+    SettingsMaxPins,
+    SettingsMaxTeamPins,
     ControlsKeySet,
     StatsTitle,
     StatsAscentFallback,
@@ -104,8 +106,8 @@ internal static class ModText
         [ModTextKey.HintClickToUnpin] = ["Click: unpin from tracker", "Clic : retirer du traqueur"],
         [ModTextKey.RefusalBoardFull] =
         [
-            "{0} badges pinned at most. Unpin one, or raise the limit in the config.",
-            "{0} distinctions épinglées au maximum. Retirez-en une, ou augmentez la limite dans la config.",
+            "{0} badges pinned at most. Unpin one, or raise the limit in Settings, General.",
+            "{0} distinctions épinglées au maximum. Retirez-en une, ou augmentez la limite dans Paramètres, Général.",
         ],
         [ModTextKey.RefusalConflict] =
         [
@@ -123,6 +125,8 @@ internal static class ModText
         [ModTextKey.HintSuggestedThisMap] = ["Suggested: doable on this map", "Suggéré : faisable sur cette carte"],
         [ModTextKey.ChecklistNotOnMap] = ["Not seen on this map", "Pas vu sur cette carte"],
         [ModTextKey.ControlsToggleTracker] = ["PeakAchiever: show / hide the tracker", "PeakAchiever : afficher / masquer le traqueur"],
+        [ModTextKey.SettingsMaxPins] = ["PEAKACHIEVER: MAX PINNED BADGES", "PEAKACHIEVER : DISTINCTIONS ÉPINGLÉES MAX."],
+        [ModTextKey.SettingsMaxTeamPins] = ["PEAKACHIEVER: MAX TEAM PINS", "PEAKACHIEVER : ÉPINGLES SCOUTS MAX."],
         [ModTextKey.ControlsKeySet] = ["Tracker key set to {0}.", "Touche du traqueur : {0}."],
         [ModTextKey.TeamButton] = ["Scouts", "Scouts"],
         [ModTextKey.TeamTitle] = ["SCOUTS", "SCOUTS"],
@@ -133,7 +137,7 @@ internal static class ModText
         [ModTextKey.TeamHaveIt] = ["{0} / {1} have it", "{0} / {1} l'ont"],
         [ModTextKey.TeamMissingFor] = ["Missing for {0}", "Il manque à {0}"],
         [ModTextKey.TeamWithoutTheMod] = ["Without the mod: {0}. Their badges are unknown, and they will not see the team pins.", "Sans le mod : {0}. Leurs distinctions sont inconnues, et ils ne verront pas les épingles Scouts."],
-        [ModTextKey.RefusalTeamFull] = ["{0} team pins at most. Unpin one, or raise MaxTeamPins in the config.", "{0} épingles Scouts au maximum. Retirez-en une, ou augmentez MaxTeamPins dans la config."],
+        [ModTextKey.RefusalTeamFull] = ["{0} team pins at most. Unpin one, or raise the limit in Settings, General.", "{0} épingles Scouts au maximum. Retirez-en une, ou augmentez la limite dans Paramètres, Général."],
         [ModTextKey.StatsButton] = ["Statistics", "Statistiques"],
         [ModTextKey.StatsTitle] = ["STATISTICS", "STATISTIQUES"],
         [ModTextKey.StatsAscentFallback] = ["Ascent {0}", "Ascension {0}"],

@@ -4,6 +4,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- The two pin limits, `MaxPinnedBadges` and `MaxTeamPins`, are sliders at the end of the game's Settings,
+  General tab (1 to 12). They edit the same config keys; the refusal toasts now point there.
+
 ### Fixed
 
 - PEAK 2.6.b: in the Nadir, Speed Climber no longer breaks the tracker, and badges tied to a biome no

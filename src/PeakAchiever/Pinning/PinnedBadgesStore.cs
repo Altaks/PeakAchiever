@@ -12,8 +12,6 @@ internal sealed class PinnedBadgesStore
     private const int DefaultTeamCapacity = 5;
 
     private readonly ConfigEntry<string> _pins;
-    private readonly ConfigEntry<int> _capacity;
-    private readonly ConfigEntry<int> _teamCapacity;
     private readonly ManualLogSource _log;
 
     public PinnedBadgesStore(ConfigFile config, ManualLogSource log)
@@ -26,7 +24,7 @@ internal sealed class PinnedBadgesStore
             "Badges pinned to the tracker, in order; a leading + marks one pinned while already earned, to help an ally. "
                 + "Edited from the pause menu badges page."
         );
-        _capacity = config.Bind(
+        Capacity = config.Bind(
             Section,
             "MaxPinnedBadges",
             DefaultCapacity,
@@ -35,7 +33,7 @@ internal sealed class PinnedBadgesStore
                 new AcceptableValueRange<int>(1, MaxCapacity)
             )
         );
-        _teamCapacity = config.Bind(
+        TeamCapacity = config.Bind(
             Section,
             "MaxTeamPins",
             DefaultTeamCapacity,
@@ -47,14 +45,17 @@ internal sealed class PinnedBadgesStore
         PinList stored = PinList.Read(_pins.Value);
         foreach (string name in stored.Unknown)
             _log.LogWarning($"Ignoring unknown pinned badge '{name}' in the config.");
-        Board = new PinBoard(stored.Pins, _capacity.Value, stored.ForAllies);
-        _capacity.SettingChanged += (_, _) => Board.Capacity = _capacity.Value;
+        Board = new PinBoard(stored.Pins, Capacity.Value, stored.ForAllies);
+        Capacity.SettingChanged += (_, _) => Board.Capacity = Capacity.Value;
     }
 
     public PinBoard Board { get; }
 
-    /// <summary>How many badges the host can pin for the team (the MaxTeamPins setting).</summary>
-    public int TeamCapacity => _teamCapacity.Value;
+    /// <summary>The MaxPinnedBadges setting, which the game's Settings menu also edits.</summary>
+    public ConfigEntry<int> Capacity { get; }
+
+    /// <summary>The MaxTeamPins setting, which the game's Settings menu also edits.</summary>
+    public ConfigEntry<int> TeamCapacity { get; }
 
     public void Save() => _pins.Value = PinList.Write(Board);
 }

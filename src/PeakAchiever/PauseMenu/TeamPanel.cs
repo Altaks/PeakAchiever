@@ -141,7 +141,7 @@ internal sealed class TeamPanel
     {
         IReadOnlyList<Scout> scouts = TeamSync.Scouts;
         IReadOnlyList<ACHIEVEMENTTYPE> pins = TeamSync.TeamPins;
-        _summary.text = ModText.Format(ModTextKey.TeamSummary, scouts.Count, pins.Count, Plugin.Pins.TeamCapacity);
+        _summary.text = ModText.Format(ModTextKey.TeamSummary, scouts.Count, pins.Count, Plugin.Pins.TeamCapacity.Value);
         string state = string.Join("|", scouts.Select(scout => scout.Name + ":" + (scout.Earned?.Count ?? -1)));
         if (state != _shown)
         {
@@ -248,7 +248,7 @@ internal sealed class TeamPanel
 
     private void Toggle(ACHIEVEMENTTYPE badge)
     {
-        var board = new PinBoard(TeamSync.TeamPins, Plugin.Pins.TeamCapacity);
+        var board = new PinBoard(TeamSync.TeamPins, Plugin.Pins.TeamCapacity.Value);
         switch (board.Toggle(badge, isEarned: false, MapCatalog.Compatibility))
         {
             case PinToggleOutcome.Pinned:
@@ -258,7 +258,7 @@ internal sealed class TeamPanel
                 Fill();
                 break;
             case PinToggleOutcome.RejectedBoardFull:
-                Plugin.Hud.ShowToast(ModText.Format(ModTextKey.RefusalTeamFull, Plugin.Pins.TeamCapacity));
+                Plugin.Hud.ShowToast(ModText.Format(ModTextKey.RefusalTeamFull, Plugin.Pins.TeamCapacity.Value));
                 break;
             case PinToggleOutcome.RejectedConflict:
                 ACHIEVEMENTTYPE conflict = MapCatalog.Compatibility.FirstConflict(badge, board.Pins)!.Value;

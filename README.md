@@ -80,8 +80,8 @@ Tested with PEAK 2.6.b. If a game update breaks the mod, the error shows in `Bep
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `ToggleKey` | `<Keyboard>/f6` | Shows or hides the tracker during a run. Set it from the game's Controls menu, in the row "PeakAchiever: show / hide the tracker" at the end of the first column (click it and press a key, or reset it to F6). A key saved by 0.1.0 is converted; one with modifiers falls back to F6. |
-| `MaxPinnedBadges` | `5` | How many badges can be pinned at once (1 to 12). |
-| `MaxTeamPins` | `5` | How many badges the host can pin for the whole team in a multiplayer game, on top of their own (1 to 12). |
+| `MaxPinnedBadges` | `5` | How many badges can be pinned at once (1 to 12). Also in the game's Settings, General tab: "PeakAchiever: max pinned badges". |
+| `MaxTeamPins` | `5` | How many badges the host can pin for the whole team in a multiplayer game, on top of their own (1 to 12). Also in Settings, General: "PeakAchiever: max team pins". |
 | `PinnedBadges` | empty | The pins, edited from the pause menu. |
 
 On the badges page, a **Statistics** button next to the Back button opens the biome times per ascent:
