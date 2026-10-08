@@ -11,7 +11,7 @@ Click the pin beside a badge to pin it for the team (up to 5, 1 to 12 in **Setti
 
 ## What every modded scout sees
 
-The team pins show on the tracker of every scout with the mod, as a group above their own pins (**TEAM, SET BY THE HOST**). Each team card carries a **Team** chip and the scouts who still miss it. A badge pinned both ways shows once, as a team pin. If you already have a team badge, its card says "You have it" and stays in place for the others.
+The team pins show on the tracker of every scout with the mod, as a group above their own pins (**TEAM, SET BY THE HOST**). A badge pinned both ways shows once, as a team pin. If you already have a team badge, its card says "You have it" and stays in place for the others.
 
 - Scouts with the mod share which badges they earned; the others show as unknown in the Scouts panel.
 - When the host leaves, the team pins stay: the next host with the mod takes over.

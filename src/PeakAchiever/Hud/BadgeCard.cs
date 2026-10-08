@@ -42,7 +42,6 @@ internal sealed class BadgeCard
     private const float SeamInset = 5f;
     private const float Gap = 10f;
     private const float SectionGap = 7f;
-    private const string NameSeparator = ", ";
     private const float LocatorDiscSize = 28f;
     private const float LocatorArrowSize = 18f;
     private const float LocatorFontSize = 14f;
@@ -74,8 +73,6 @@ internal sealed class BadgeCard
     private readonly GameObject _chips;
     private readonly Chip _scopeChip;
     private readonly Chip _allyChip;
-    private readonly Chip _teamChip;
-    private readonly TextMeshProUGUI _missing;
     private readonly TextMeshProUGUI _description;
     private readonly GameObject _statusRow;
     private readonly GameObject _bar;
@@ -187,7 +184,6 @@ internal sealed class BadgeCard
         chipRow.childForceExpandHeight = false;
         _scopeChip = new Chip(_chips.transform, style, ModText.Get(ModTextKey.ChipAllRuns), HudStyle.InkMuted);
         _allyChip = new Chip(_chips.transform, style, ModText.Get(ModTextKey.ChipForAlly), HudStyle.InkSoft);
-        _teamChip = new Chip(_chips.transform, style, ModText.Get(ModTextKey.ChipTeam), HudStyle.ProgressFill);
         _description = UiFactory.AddText(column.transform, "Description", style.BodyFont, DescriptionFontSize, HudStyle.InkSoft);
 
         _statusRow = UiFactory.Create("Status", column.transform);
@@ -223,7 +219,6 @@ internal sealed class BadgeCard
         _count.textWrappingMode = TextWrappingModes.NoWrap;
         _status = UiFactory.AddText(_statusRow.transform, "Label", style.StrongFont, StatusFontSize, HudStyle.ProgressFill);
         _detail = UiFactory.AddText(column.transform, "Detail", style.BodyFont, StatusFontSize, HudStyle.InkSoft);
-        _missing = UiFactory.AddText(column.transform, "MissingFor", style.BodyFont, StatusFontSize, HudStyle.InkSoft);
 
         _onMap = new ChecklistGrid(column.transform, "Checklist", style);
         _notOnMapLabel = UiFactory.AddText(column.transform, "NotOnMapLabel", style.BodyFont, StatusFontSize, HudStyle.InkMuted);
@@ -275,12 +270,7 @@ internal sealed class BadgeCard
         };
         _scopeChip.Root.SetActive(!compact && progress is { Scope: ProgressScope.Lifetime });
         _allyChip.Root.SetActive(!compact && tracked.ForAlly && !tracked.ForTeam && status is TrackedStatus.Achieved);
-        _teamChip.Root.SetActive(!compact && tracked.ForTeam);
-        _chips.SetActive(_scopeChip.Root.activeSelf || _allyChip.Root.activeSelf || _teamChip.Root.activeSelf);
-        bool showMissing = !compact && tracked.MissingFor is { Count: > 0 };
-        _missing.gameObject.SetActive(showMissing);
-        if (showMissing)
-            _missing.text = ModText.Format(ModTextKey.TeamMissingFor, string.Join(NameSeparator, tracked.MissingFor!));
+        _chips.SetActive(_scopeChip.Root.activeSelf || _allyChip.Root.activeSelf);
 
         switch (status)
         {
@@ -489,6 +479,10 @@ internal sealed class BadgeCard
             layout.childAlignment = TextAnchor.MiddleCenter;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
+            // Not force-expanded: a group that force-expands its children reports a flexible width, and the
+            // chip would stretch across the card.
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
             Root.AddComponent<LayoutElement>().preferredHeight = ChipHeight;
             // The fill inside the rim, so only a thin outline of the ink shows.
             GameObject inside = UiFactory.Create("Inside", Root.transform);

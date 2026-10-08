@@ -72,7 +72,7 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   miss. Scouts with the mod share which badges they earned; the others show as unknown. The team pins
   stay when the host leaves (the next host with the mod takes over), and those every scout has earned
   are dropped at the next run start. They show on the tracker of every scout with the mod, as a group
-  above their own pins, each with a Team chip and the scouts who still miss it.
+  above their own pins.
 - Secret badges keep their `???` until earned. The tracker hides while the pause menu is open.
 - Other players do not need the mod: the mod only shares data under its own keys, which the game ignores.
 

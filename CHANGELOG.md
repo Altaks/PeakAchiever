@@ -6,16 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- Tracker cards, redone: a dark stitched patch with chips under the name ("All runs", "For an ally",
-  "Team") and a section across the card for what the badge needs.
+- Tracker cards, redone: a dark stitched patch with chips under the name ("All runs", "For an ally") and a section across the card for what the badge needs.
 - Biome badges say where their biome is on the run's map ("Mesa, next biome", "Now, in the Mesa").
 - The items each badge needs or is helped by, as the game's inventory icons with a count (from the PEAK
   wiki; 24 Karat takes only the Ancient Idol, the one item the Kiln's lava accepts).
 - Bellringer counts the belltowers the whole team has lit. Bellringer, Megaentomology and 24 Karat get a
   locator under the icon (arrow and distance to the nearest unlit belltower, antlion or the Mesa tomb),
   and an on-screen marker over it, switchable in Settings, General.
-- The host's team pins now show on every modded tracker, as a group above the own pins, with who still
-  misses each one.
+- The host's team pins now show on every modded tracker, as a group above the own pins.
 - The two pin limits, `MaxPinnedBadges` and `MaxTeamPins`, are sliders at the end of the game's Settings,
   General tab (1 to 12). They edit the same config keys; the refusal toasts now point there.
 

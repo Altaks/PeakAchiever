@@ -18,10 +18,10 @@ internal sealed class NeedsBlock
     // Sizes in reference pixels of the 1920x1080 canvas, taken from the signed-off mockup.
     private const float TileSize = 26f;
     private const float TileGap = 4f;
-    private const float HeadFontSize = 11f;
+    private const float HeadFontSize = 10f;
+    private const float HeadGap = 6f;
     private const float CountFontSize = 9.5f;
     private const float ColumnGap = 10f;
-    private const float RowGap = 3f;
     private const float CountPadding = 2f;
     private static readonly Color TileBackground = new(HudStyle.Ink.r, HudStyle.Ink.g, HudStyle.Ink.b, 0.1f);
 
@@ -71,21 +71,30 @@ internal sealed class NeedsBlock
             .ToArray();
         if (found.Length == 0)
             return;
+        Plugin.Log.LogDebug($"{head} {string.Join(", ", found.Select(entry => $"{entry.Item.name} x{entry.Count}"))}");
+        // The label and its icons on one line, the label centred on the icons. The longest list (Rule Zero,
+        // six items) fits the card's width, so the row never needs to wrap.
         GameObject column = UiFactory.Create("Column", Root.transform);
-        VerticalLayoutGroup stack = column.AddComponent<VerticalLayoutGroup>();
-        stack.spacing = RowGap;
-        stack.childControlWidth = true;
-        stack.childControlHeight = true;
-        stack.childForceExpandWidth = true;
-        stack.childForceExpandHeight = false;
+        HorizontalLayoutGroup row = column.AddComponent<HorizontalLayoutGroup>();
+        row.spacing = HeadGap;
+        row.childAlignment = TextAnchor.MiddleLeft;
+        row.childControlWidth = true;
+        row.childControlHeight = true;
+        row.childForceExpandWidth = false;
+        row.childForceExpandHeight = false;
         column.AddComponent<LayoutElement>().flexibleWidth = 1f;
-        UiFactory.AddText(column.transform, "Head", _style.StrongFont, HeadFontSize, HudStyle.Ink).text = head;
+        TextMeshProUGUI label = UiFactory.AddText(column.transform, "Head", _style.StrongFont, HeadFontSize, HudStyle.InkSoft);
+        label.text = head;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
 
         GameObject tiles = UiFactory.Create("Tiles", column.transform);
-        // A grid in place of a wrapping row: uGUI has no flex-wrap.
-        GridLayoutGroup grid = tiles.AddComponent<GridLayoutGroup>();
-        grid.cellSize = new Vector2(TileSize, TileSize);
-        grid.spacing = new Vector2(TileGap, TileGap);
+        HorizontalLayoutGroup tileRow = tiles.AddComponent<HorizontalLayoutGroup>();
+        tileRow.spacing = TileGap;
+        tileRow.childAlignment = TextAnchor.MiddleLeft;
+        tileRow.childControlWidth = true;
+        tileRow.childControlHeight = true;
+        tileRow.childForceExpandWidth = false;
+        tileRow.childForceExpandHeight = false;
         foreach ((Item item, int count) in found)
             Tile(tiles.transform, item, count);
     }
@@ -93,6 +102,7 @@ internal sealed class NeedsBlock
     private void Tile(Transform parent, Item item, int count)
     {
         GameObject tile = UiFactory.Create("Item", parent);
+        UiFactory.SetFixedSize(tile, TileSize, TileSize);
         UiFactory.AddImage(tile, _style.RoundedRect, TileBackground).type = Image.Type.Sliced;
         GameObject icon = UiFactory.Create("Icon", tile.transform);
         var iconRect = (RectTransform)icon.transform;
