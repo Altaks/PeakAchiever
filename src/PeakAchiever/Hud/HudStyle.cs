@@ -73,6 +73,7 @@ internal sealed class HudStyle
         DisplayFont = FindFont(fonts, DisplayFontName, log);
         BodyFont = FindFont(fonts, BodyFontName, log);
         StrongFont = FindFont(fonts, StrongFontName, log);
+        BorrowFallbacks(BodyFont, DisplayFont, log);
         RoundedRect = CreateRoundedRect();
         SeamOutline = CreateSeam();
         Circle = CreateCircle();
@@ -134,6 +135,26 @@ internal sealed class HudStyle
             return font;
         log.LogError($"Game font '{name}' not found; falling back to the TextMeshPro default font.");
         return TMP_Settings.defaultFontAsset;
+    }
+
+    /// <summary>
+    /// Montserrat-Medium SDF holds only basic Latin and no fallback (static, 99 characters), so Cyrillic,
+    /// Polish and Turkish would fall to TMP's default LiberationSans and CJK and Hangul show as boxes.
+    /// DarumaDropOne-Regular SDF falls back to Pangolin, NotoSansSC and Korean Binggrae, and the game's
+    /// FontFallbackSwapper.SetFallbackChinese swaps entry 1 of that same list to NotoSansTC for
+    /// Traditional Chinese (LocalizedText.SetLanguage, v2.6.b). Sharing the list, not a copy, follows
+    /// that swap. Font tables read with UnityPy from data.unity3d, v2.6.b.
+    /// </summary>
+    private static void BorrowFallbacks(TMP_FontAsset font, TMP_FontAsset from, ManualLogSource log)
+    {
+        if (font == from || (font.fallbackFontAssetTable != null && font.fallbackFontAssetTable.Count > 0))
+            return;
+        if (from.fallbackFontAssetTable == null || from.fallbackFontAssetTable.Count == 0)
+        {
+            log.LogWarning($"Font '{from.name}' has no fallbacks to lend; '{font.name}' may miss non-Latin glyphs.");
+            return;
+        }
+        font.fallbackFontAssetTable = from.fallbackFontAssetTable;
     }
 
     private static Sprite LoadEmbeddedSprite(string fileName, ManualLogSource log)
