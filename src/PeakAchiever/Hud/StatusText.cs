@@ -26,6 +26,8 @@ internal static class StatusText
         [Biome.BiomeType.Roots] = "ROOTS",
         // The Gloom's segment is typed Swamp (MountainProgressHandler progress point "GLOOM", biome 8).
         [Biome.BiomeType.Swamp] = "GLOOM",
+        // The Nadir, reached through an item; its name has its own key (Localized_Text.csv, v2.6.b).
+        [Biome.BiomeType.Void] = "AREA_VOID",
     };
 
     private static readonly Dictionary<BrokenCondition, ModTextKey> BrokenConditionKeys = new()
