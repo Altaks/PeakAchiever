@@ -19,32 +19,44 @@ Pin the badges you want to chase, and see during your run which ones you can sti
   leave before the summit.
 - **Track in the top-right corner.** During a run, each pinned badge shows its icon, name and
   condition, taken from the game in your language.
-  - A yellow bar and `current / total` for badges with a counter. `LIFETIME` marks counters the game
-    keeps across all runs (meals cooked, height climbed...).
+  - Each card is a dark, stitched patch: icon and state mark, the name with its chips, the condition,
+    the status, and across the whole card, what the badge needs.
+  - A yellow bar and `current / total` for badges with a counter. An "All runs" chip marks counters
+    the game keeps across all runs (meals cooked, height climbed...).
+  - A badge tied to a biome says where it is on this run's map: "Mesa, next biome", "Mesa, in 2
+    biomes", then "Now, in the Mesa" in yellow.
+  - The items a badge needs, as the game's own inventory icons with a count when several are needed:
+    "Needs" or "One of" on the left, "Helps" on the right (from the PEAK wiki, 24 Karat from the game's
+    code: only the Ancient Idol counts).
+  - Bellringer counts the belltowers the whole team has lit, against 5. Bellringer, Megaentomology and
+    24 Karat have a locator under the icon: an arrow turned towards the nearest unlit belltower,
+    antlion or the Mesa tomb, with its distance. A marker can also show over that target on screen
+    (Settings, General, "On-screen markers"; on by default).
   - "Holding so far" for clean-run badges (no fall damage, no packaged food...) still intact.
-  - Speed Climber shows the run time against one hour, on a bar drawn like the stamina bar's arrow segment, and the time spent in each biome so far (the
-    current one in yellow). The time and splits stay under the red cross once the hour is over.
-  - Each biome time is followed by its gap to the median of past runs at the same ascent: `(+1:20)`
-    in red when slower, `(-0:40)` in green when faster. The biome in progress shows a gap only once
+  - Speed Climber shows the run time on a bar drawn like the stamina bar's arrow segment, its ETA
+    beside it, and the time spent in each biome so far, one biome a line in columns (the current one
+    in yellow). The time and splits stay under the red cross once the hour is over.
+  - Each biome time is followed by its gap to the median of past runs at the same ascent: `+1:20`
+    in red when slower, `-0:40` in green when faster. The biome in progress shows a gap only once
     it runs over its median.
-  - Speed Climber also shows an ETA: the run time so far, plus the median time past runs at the same
-    ascent took for the rest of the current biome and for every biome ahead. It shows once each of
-    those biomes has been finished at least once with the mod installed. It turns orange once it is
-    past one hour.
+  - The ETA is the run time so far, plus the median time past runs at the same ascent took for the
+    rest of the current biome and for every biome ahead. It shows once each of those biomes has been
+    finished at least once with the mod installed: green within the hour, orange past it.
   - Cool Cucumber, Bundled Up and Tread Lightly show the highest heat, cold or spores rate reached in
     their biome against the limit, as `max 4% / 10%` and a bar drawn like that affliction's segment of
-    the stamina bar. From 75% of the limit (8% of 10%) the bar's outline blinks.
+    the stamina bar. From 75% of the limit (8% of 10%) the bar's outline blinks and the margin left
+    shows in orange ("2% left").
   - Foraging, Mycology, Advanced Mycology and Gourmand show every item that counts as a grid of
     icons: dimmed until eaten this run, then in full colour with a green tick. The item lists are read
     from the game, and written to `BepInEx/LogOutput.log` the first time a run needs them. Items no
     spawner, item or luggage of this level can yield move to a fainter row, "Not seen on this map":
     a hint, since an item could still come from somewhere the mod does not read, so the badge never
     gets a red cross for it.
-  - A green check once earned.
+  - A green check once earned; 5 seconds later the card folds to one line, under the cards in play.
   - A red cross, with the reason, once the badge can no longer be earned this run: its biome is not
     on this map or is behind you, the clean-run condition broke, or the run was lost (the end screen
-    opened with nobody at the summit). The card tears in two and falls to the end of the tracker,
-    where it stays torn.
+    opened with nobody at the summit). The card tears in two, falls to the end of the tracker and
+    settles there as one torn line.
 - **Forbidden items marked in the inventory.** While a pinned Naturalist or Leave No Trace badge is
   still holding, a red cross sits in the bottom-right corner of every hotbar slot holding an item that
   would break it (packaged food; pitons, rope spools, the rope cannon, the chain launcher and other
@@ -53,13 +65,14 @@ Pin the badges you want to chase, and see during your run which ones you can sti
 - **Pins persist.** They are saved in the config. At the start of the next run, badges earned are
   unpinned and failed ones are doable again.
 - **Help an ally.** A badge you already earned can be pinned too, as a reminder of what a friend is
-  chasing in a multiplayer run: its card shows it earned, and it stays pinned from one run to the next
-  until you unpin it.
+  chasing in a multiplayer run: its card carries a "For an ally" chip and "You have it", and it stays
+  pinned from one run to the next until you unpin it.
 - **Scouts, for the host.** In a multiplayer game, the host's badges page has a **Scouts** button: it
   lists the badges worth pinning for the team, those nobody has first, then those some scouts still
   miss. Scouts with the mod share which badges they earned; the others show as unknown. The team pins
   stay when the host leaves (the next host with the mod takes over), and those every scout has earned
-  are dropped at the next run start. They do not show on the trackers yet.
+  are dropped at the next run start. They show on the tracker of every scout with the mod, as a group
+  above their own pins, each with a Team chip and the scouts who still miss it.
 - Secret badges keep their `???` until earned. The tracker hides while the pause menu is open.
 - Other players do not need the mod: the mod only shares data under its own keys, which the game ignores.
 

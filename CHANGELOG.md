@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Tracker cards, redone: a dark stitched patch with chips under the name ("All runs", "For an ally",
+  "Team") and a section across the card for what the badge needs.
+- Biome badges say where their biome is on the run's map ("Mesa, next biome", "Now, in the Mesa").
+- The items each badge needs or is helped by, as the game's inventory icons with a count (from the PEAK
+  wiki; 24 Karat takes only the Ancient Idol, the one item the Kiln's lava accepts).
+- Bellringer counts the belltowers the whole team has lit. Bellringer, Megaentomology and 24 Karat get a
+  locator under the icon (arrow and distance to the nearest unlit belltower, antlion or the Mesa tomb),
+  and an on-screen marker over it, switchable in Settings, General.
+- The host's team pins now show on every modded tracker, as a group above the own pins, with who still
+  misses each one.
 - The two pin limits, `MaxPinnedBadges` and `MaxTeamPins`, are sliders at the end of the game's Settings,
   General tab (1 to 12). They edit the same config keys; the refusal toasts now point there.
 
@@ -22,6 +32,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Earned cards fold to one line 5 seconds after the check mark shows; torn cards settle as one torn line
+  once their tear has played. Order: in play, earned, torn.
+- Speed Climber: the ETA sits beside the run time; the splits read one biome a line, in columns.
+- A rate close to its limit shows the margin left.
 - Checked against PEAK 2.6.b: every badge rule still matches the game. Maps now pair their biomes freely
   (8 layouts instead of 2), which the pin clashes already follow, read from the game's level table.
 
