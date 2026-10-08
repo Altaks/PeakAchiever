@@ -44,13 +44,13 @@ public class HarmonyPatchTargetsTests
     }
 
     [Fact]
-    public void All_twelve_hooks_are_discovered()
+    public void All_thirteen_hooks_are_discovered()
     {
         // when
         int count = PatchMethodInfos().Count();
 
         // then
-        Assert.Equal(12, count);
+        Assert.Equal(13, count);
     }
 
     private static IEnumerable<MethodInfo> PatchMethodInfos() =>

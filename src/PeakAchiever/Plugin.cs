@@ -5,6 +5,7 @@ using PeakAchiever.Controls;
 using PeakAchiever.Game;
 using PeakAchiever.Hud;
 using PeakAchiever.Pinning;
+using PeakAchiever.Settings;
 using UnityEngine;
 
 namespace PeakAchiever;
@@ -41,6 +42,8 @@ public partial class Plugin : BaseUnityPlugin
         Hud.Init(Tracker, ToggleKey);
 
         new Harmony(Id).PatchAll(typeof(Plugin).Assembly);
+        if (SettingsHandler.Instance != null)
+            SettingsPatches.AddPinLimits(SettingsHandler.Instance);
         Log.LogInfo($"Plugin {Name} is loaded!");
     }
 }
