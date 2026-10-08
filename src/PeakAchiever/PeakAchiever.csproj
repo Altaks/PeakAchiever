@@ -8,7 +8,7 @@
     <!-- This is the display name of your mod. -->
     <AssemblyTitle>PeakAchiever</AssemblyTitle>
     <!-- The version number for your assembly, BepInEx plugin, and Thunderstore package. -->
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
   </PropertyGroup>
 
   <!-- ThunderPipe properties -->
@@ -17,7 +17,7 @@
     <IsThunderstorePackable>true</IsThunderstorePackable>
     <!-- Package name on Thunderstore. Must not contain spaces ' ' or dashes '-'. -->
     <ThunderstoreName>PeakAchiever</ThunderstoreName>
-    <ThunderstoreDescription>Pin badges from the pause menu and track, during your run, which ones you can still earn: progress bars, timers, item checklists, green checks and red crosses.</ThunderstoreDescription>
+    <ThunderstoreDescription>Pin badges from the pause menu and track, during your run, which ones you can still earn: progress, needed items, locators, timers and red crosses. Team pins for the host. In the game's 15 languages.</ThunderstoreDescription>
     <!--
       Communities and package categories metadata for publishing with ThunderPipe.
       Communities: https://thunderstore.io/api/experimental/community/
