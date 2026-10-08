@@ -17,4 +17,8 @@ internal static class Scouts
         Scout[] known = scouts.Where(scout => scout.Earned != null).ToArray();
         return known.Length > 0 && known.All(scout => scout.Earned!.Contains(badge));
     }
+
+    /// <summary>The scouts whose badges are known and who have not earned it; scouts without the mod are left out.</summary>
+    public static IReadOnlyList<string> MissingFor(ACHIEVEMENTTYPE badge, IEnumerable<Scout> scouts) =>
+        scouts.Where(scout => scout.Earned != null && !scout.Earned.Contains(badge)).Select(scout => scout.Name).ToArray();
 }

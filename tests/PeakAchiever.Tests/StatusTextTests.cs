@@ -21,16 +21,16 @@ public class StatusTextTests
     }
 
     [Fact]
-    public void A_duration_reads_as_clocks_like_the_end_screen()
+    public void A_duration_reads_as_the_elapsed_clock_like_the_end_screen()
     {
-        // given
+        // given the limit is in the badge's description already
         var progress = new Progress(2533, 3600, ProgressScope.ThisRun, ProgressUnit.Duration);
 
         // when
         string text = StatusText.Count(progress);
 
         // then
-        Assert.Equal("0:42:13 / 1:00:00", text);
+        Assert.Equal("0:42:13", text);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class StatusTextTests
         string text = StatusText.RunClock(clock, withElapsed: true, AnyColors);
 
         // then
-        Assert.Equal("1:04:51 \u00B7 ETA 1:38:00", text);
+        Assert.Equal("1:04:51 \u00B7 <color=#00FF00>ETA 1:38:00</color>", text);
     }
 
     [Fact]
@@ -106,9 +106,58 @@ public class StatusTextTests
         var clock = new BadgeDetail.RunClock(1200f, [], EtaSeconds: 3900f, EtaOverLimit: true);
 
         // when
-        string text = StatusText.RunClock(clock, withElapsed: false, AnyColors);
+        string text = StatusText.Eta(clock, AnyColors);
 
         // then
         Assert.Equal("<color=#FF9900>ETA 1:05:00</color>", text);
+    }
+
+    [Fact]
+    public void An_eta_within_the_hour_reads_in_the_faster_colour()
+    {
+        // given
+        var clock = new BadgeDetail.RunClock(1200f, [], EtaSeconds: 3250f, EtaOverLimit: false);
+
+        // when
+        string text = StatusText.Eta(clock, AnyColors);
+
+        // then
+        Assert.Equal("<color=#00FF00>ETA 0:54:10</color>", text);
+    }
+
+    [Fact]
+    public void No_eta_reads_empty()
+    {
+        // given
+        var clock = new BadgeDetail.RunClock(20f, [], EtaSeconds: null, EtaOverLimit: false);
+
+        // when
+        string text = StatusText.Eta(clock, AnyColors);
+
+        // then
+        Assert.Equal("", text);
+    }
+
+    [Fact]
+    public void A_live_run_clock_lists_the_splits_one_biome_a_line_in_columns()
+    {
+        // given one biome done 40 s under its median, the next still counting; biomes the mod names
+        // without the game's text table, which only runs in the game
+        ComparedSplit[] splits =
+        [
+            new(new BiomeSplit(Biome.BiomeType.Grasslands, 252f, IsCurrent: false), DeltaSeconds: -40f),
+            new(new BiomeSplit(Biome.BiomeType.Ocean, 665f, IsCurrent: true), DeltaSeconds: null),
+        ];
+        var clock = new BadgeDetail.RunClock(917f, splits, EtaSeconds: 3250f, EtaOverLimit: false);
+
+        // when
+        string text = StatusText.RunClock(clock, withElapsed: false, AnyColors);
+
+        // then: no ETA here, it sits beside the bar
+        string[] lines = text.Split('\n');
+        Assert.Equal(2, lines.Length);
+        Assert.Equal($"Grasslands<pos={StatusText.SplitTimeColumn}>0:04:12<pos={StatusText.SplitDeltaColumn}><color=#00FF00>-0:40</color>", lines[0]);
+        Assert.StartsWith("<color=#FFFF00>", lines[1]);
+        Assert.DoesNotContain("ETA", text);
     }
 }

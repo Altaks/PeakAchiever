@@ -26,28 +26,43 @@ internal sealed class TrackerHud : MonoBehaviour
     private const int CanvasSortingOrder = 1000;
     private static readonly Vector2 ReferenceResolution = new(1920f, 1080f);
     private const float ScreenMargin = 30f;
+    // The game writes the ascent's name in the top-right corner (AscentUI); the column starts below it.
+    private const float TopMargin = 72f;
     private const float CardGap = 8f;
     private const float ToastBottomOffset = 120f;
     private const float ToastWidth = 640f;
     private const float ToastFontSize = 16f;
     private const float BannerFontSize = 13f;
+    private const float GroupFontSize = 10f;
+    private const float GroupCharacterSpacing = 6f;
+    private static readonly Vector2 GroupShadow = new(1f, -1f);
     private const int ToastPadding = 12;
     private static readonly Vector2 ToastOutline = new(1.5f, -1.5f);
 
     // Cards of a lost run tear one after the other, this far apart.
     private const float TearStaggerSeconds = 0.18f;
+    // A torn card folds to one line once its tear and fall have played (SlotMotion: rip, then a fall of
+    // at most this long).
+    private const float TearSettleSeconds = 1.3f;
 
     private readonly Dictionary<ACHIEVEMENTTYPE, CardSlot> _slots = [];
     private readonly TornCards _tornCards = new();
     // Torn cards in the order they tore; they sit at the end of the column in that order.
     private readonly List<ACHIEVEMENTTYPE> _tornOrder = [];
+    // When each torn card tore on screen; one torn before it was seen has no entry and shows folded.
+    private readonly Dictionary<ACHIEVEMENTTYPE, float> _toreAt = [];
+    private readonly FoldedCards _foldedCards = new();
+    private IReadOnlyCollection<ACHIEVEMENTTYPE> _folded = [];
     private PinnedBadgeTracker _tracker = null!;
     private TrackerToggleKey _toggleKey = null!;
     private HudStyle? _style;
     private StatsPanel? _stats;
     private TeamPanel? _team;
     private GameObject _panel = null!;
+    private OnScreenMarkers _markers = null!;
     private GameObject _banner = null!;
+    private GameObject _teamHeader = null!;
+    private GameObject _ownHeader = null!;
     private GameObject _toast = null!;
     private TextMeshProUGUI _toastText = null!;
     private bool _refreshRequested = true;
@@ -112,6 +127,7 @@ internal sealed class TrackerHud : MonoBehaviour
         _panel.SetActive(showCards);
         if (showCards)
             ShowCards(_style);
+        PointLocators(showCards);
     }
 
     private void Evaluate()
@@ -126,6 +142,7 @@ internal sealed class TrackerHud : MonoBehaviour
         // Kept current for the team, on the same cadence as the tracker.
         TeamSync.PublishEarned();
         _tracker.Evaluate(facts);
+        _folded = _foldedCards.Update(_tracker.Tracked, Time.unscaledTime);
         ScheduleTears();
         _cardsStale = true;
         // The inventory marks are drawn when the game fills its slots, so have it refill them.
@@ -142,19 +159,84 @@ internal sealed class TrackerHud : MonoBehaviour
         IReadOnlyList<TrackedBadge> tracked = _tracker.Tracked;
         foreach (CardSlot slot in _slots.Values)
             slot.Root.SetActive(false);
-        // The banner stays first.
+        // The banner stays first; the host's team pins then come as a group above the player's own.
         int place = _banner.transform.GetSiblingIndex() + 1;
-        foreach (TrackedBadge badge in TornCards.Arrange(tracked, _tornOrder))
+        TrackedBadge[] team = tracked.Where(badge => badge.ForTeam).ToArray();
+        TrackedBadge[] own = tracked.Where(badge => !badge.ForTeam).ToArray();
+        _teamHeader.SetActive(team.Length > 0);
+        _ownHeader.SetActive(team.Length > 0 && own.Length > 0);
+        _teamHeader.transform.SetSiblingIndex(place++);
+        foreach (TrackedBadge badge in TornCards.Arrange(team, _tornOrder, _folded))
+            ShowSlot(style, badge, ref place);
+        _ownHeader.transform.SetSiblingIndex(place++);
+        foreach (TrackedBadge badge in TornCards.Arrange(own, _tornOrder, _folded))
+            ShowSlot(style, badge, ref place);
+    }
+
+    private void ShowSlot(HudStyle style, TrackedBadge badge, ref int place)
+    {
+        if (!_slots.TryGetValue(badge.Badge, out CardSlot slot))
+            _slots[badge.Badge] = slot = new CardSlot(_panel.transform, style);
+        slot.Root.SetActive(true);
+        slot.Root.transform.SetSiblingIndex(place++);
+        bool torn = _tornOrder.Contains(badge.Badge);
+        if (slot.Torn != torn)
+            slot.SetTorn(torn);
+        bool settled = !_toreAt.TryGetValue(badge.Badge, out float toreAt) || Time.unscaledTime >= toreAt + TearSettleSeconds;
+        slot.Show(BadgeCatalog.Present(badge.Badge), badge, compact: _folded.Contains(badge.Badge) || (torn && settled));
+    }
+
+    // A group's title over its cards, in the column's own right-aligned flow.
+    private GameObject GroupHeader(HudStyle style, string name, ModTextKey title)
+    {
+        TextMeshProUGUI text = UiFactory.AddText(_panel.transform, name, style.StrongFont, GroupFontSize, HudStyle.Ink);
+        text.text = ModText.Get(title);
+        text.characterSpacing = GroupCharacterSpacing;
+        text.alignment = TextAlignmentOptions.Left;
+        UiFactory.SetPreferredSize(text.gameObject, BadgeCard.Width, -1f);
+        Shadow shadow = text.gameObject.AddComponent<Shadow>();
+        shadow.effectDistance = GroupShadow;
+        text.gameObject.SetActive(false);
+        return text.gameObject;
+    }
+
+    /// <summary>
+    /// Every frame, turns each in-play card's locator towards its target, and places the on-screen markers
+    /// (when the setting is on). Hidden outside a run, while the cards are, and with nothing to point at.
+    /// </summary>
+    private void PointLocators(bool showCards)
+    {
+        _markers.Begin();
+        // == null, not ?. or is: Unity objects override the null check, which the compiler's flow analysis
+        // does not follow, hence the ! once checked.
+        Camera camera = Camera.main;
+        Character scout = Character.localCharacter;
+        bool canPoint = showCards && camera != null && scout != null;
+        foreach (TrackedBadge badge in _tracker.Tracked)
         {
             if (!_slots.TryGetValue(badge.Badge, out CardSlot slot))
-                _slots[badge.Badge] = slot = new CardSlot(_panel.transform, style);
-            slot.Root.SetActive(true);
-            slot.Root.transform.SetSiblingIndex(place++);
-            if (slot.Torn != _tornOrder.Contains(badge.Badge))
-                slot.SetTorn(!slot.Torn);
-            slot.Show(BadgeCatalog.Present(badge.Badge), badge.Status, badge.Detail);
+                continue;
+            bool inPlay = badge.Status is TrackedStatus.Attainable or TrackedStatus.Holding;
+            Vector3? target = null;
+            LocatorTarget? kind = Locators.TargetOf(badge.Badge);
+            if (canPoint && inPlay && kind != null)
+                target = Locators.Find(kind.Value, scout!.Center);
+            if (target is not { } position)
+            {
+                slot.Front.ShowLocator(null, 0f);
+                continue;
+            }
+            Vector3 toTarget = position - scout!.Center;
+            float bearing = Vector3.SignedAngle(Flat(camera!.transform.forward), Flat(toTarget), Vector3.up);
+            slot.Front.ShowLocator(bearing, toTarget.magnitude);
+            if (Plugin.ShowMarkers.Value)
+                _markers.Place(camera, position, Locators.NameOf(kind!.Value), toTarget.magnitude);
         }
+        _markers.End();
     }
+
+    // On the ground plane: the arrow turns like a compass, whatever the camera's pitch.
+    private static Vector3 Flat(Vector3 direction) => new(direction.x, 0f, direction.z);
 
     /// <summary>
     /// Keeps the torn list in step with the statuses: a card already impossible when first seen goes
@@ -165,6 +247,8 @@ internal sealed class TrackerHud : MonoBehaviour
         IReadOnlyList<TrackedBadge> tracked = _tracker.Tracked;
         IReadOnlyList<ACHIEVEMENTTYPE> tearing = _tornCards.Update(tracked);
         _tornOrder.RemoveAll(torn => !tracked.Any(badge => badge.Badge == torn && badge.Status is TrackedStatus.Unattainable));
+        foreach (ACHIEVEMENTTYPE gone in _toreAt.Keys.Where(badge => !_tornOrder.Contains(badge)).ToArray())
+            _toreAt.Remove(gone);
         foreach (TrackedBadge badge in tracked)
         {
             if (badge.Status is TrackedStatus.Unattainable && !_tornOrder.Contains(badge.Badge) && !tearing.Contains(badge.Badge))
@@ -189,6 +273,8 @@ internal sealed class TrackerHud : MonoBehaviour
         }
         Dictionary<CardSlot, float> before = _slots.Values.Where(slot => slot.Root.activeSelf).ToDictionary(slot => slot, Height);
         _tornOrder.Add(badge);
+        _toreAt[badge] = Time.unscaledTime;
+        StartCoroutine(RefreshWhenSettled());
         _cardsStale = true;
         ShowCards(_style);
         torn.SetTorn(false);
@@ -201,6 +287,13 @@ internal sealed class TrackerHud : MonoBehaviour
             else if (shift != 0f)
                 slot.Key.Motion.HoldThenSlide(shift);
         }
+    }
+
+    // Folds the torn card once its tear has played.
+    private IEnumerator RefreshWhenSettled()
+    {
+        yield return new WaitForSecondsRealtime(TearSettleSeconds);
+        _cardsStale = true;
     }
 
     // In the column's own units, those the slot's body is shifted in.
@@ -223,7 +316,7 @@ internal sealed class TrackerHud : MonoBehaviour
         panelRect.anchorMin = Vector2.one;
         panelRect.anchorMax = Vector2.one;
         panelRect.pivot = Vector2.one;
-        panelRect.anchoredPosition = new Vector2(-ScreenMargin, -ScreenMargin);
+        panelRect.anchoredPosition = new Vector2(-ScreenMargin, -TopMargin);
         VerticalLayoutGroup stack = _panel.AddComponent<VerticalLayoutGroup>();
         stack.spacing = CardGap;
         stack.childAlignment = TextAnchor.UpperRight;
@@ -241,6 +334,10 @@ internal sealed class TrackerHud : MonoBehaviour
         UiFactory.SetPreferredSize(_banner, BadgeCard.Width, -1f);
         TextMeshProUGUI bannerText = UiFactory.AddText(_banner.transform, "Text", style.StrongFont, BannerFontSize, HudStyle.Unattainable);
         bannerText.text = ModText.Get(ModTextKey.AchievementsDisabled);
+        _teamHeader = GroupHeader(style, "TeamPins", ModTextKey.GroupTeam);
+        _ownHeader = GroupHeader(style, "OwnPins", ModTextKey.GroupOwn);
+
+        _markers = new OnScreenMarkers(transform, style);
 
         _toast = UiFactory.Create("Toast", transform);
         var toastRect = (RectTransform)_toast.transform;

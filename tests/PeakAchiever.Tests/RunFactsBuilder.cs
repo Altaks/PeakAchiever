@@ -24,6 +24,7 @@ internal sealed class RunFactsBuilder
     private IReadOnlyDictionary<Biome.BiomeType, float> _biomeMedians = new Dictionary<Biome.BiomeType, float>();
     private IReadOnlyCollection<ushort>? _itemsOnMap;
     private bool _runLost;
+    private int _litBells;
 
     public RunFactsBuilder WithRunValue(RUNBASEDVALUETYPE type, float value)
     {
@@ -96,6 +97,12 @@ internal sealed class RunFactsBuilder
         return this;
     }
 
+    public RunFactsBuilder WithLitBells(int bells)
+    {
+        _litBells = bells;
+        return this;
+    }
+
     public RunFactsBuilder Lost()
     {
         _runLost = true;
@@ -115,6 +122,7 @@ internal sealed class RunFactsBuilder
             _biomeSplits,
             _biomeMedians,
             _itemsOnMap,
-            _runLost
+            _runLost,
+            _litBells
         );
 }

@@ -107,24 +107,26 @@ internal static class BadgeRules
 
         // Area badges, granted for each area passed after the one the player joined in
         // (MountainProgressHandler.CheckAreaAchievement; progress points read from the game's scenes).
-        [ACHIEVEMENTTYPE.BeachcomberBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Shore)),
-        [ACHIEVEMENTTYPE.TrailblazerBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Tropics)),
-        [ACHIEVEMENTTYPE.AlpinistBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Alpine)),
-        [ACHIEVEMENTTYPE.NomadBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Mesa)),
-        [ACHIEVEMENTTYPE.ForestryBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Roots)),
-        [ACHIEVEMENTTYPE.WandererBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Swamp)),
-        [ACHIEVEMENTTYPE.VolcanologyBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Volcano)),
+        [ACHIEVEMENTTYPE.BeachcomberBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Shore)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Shore)),
+        [ACHIEVEMENTTYPE.TrailblazerBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Tropics)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Tropics)),
+        [ACHIEVEMENTTYPE.AlpinistBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Alpine)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Alpine)),
+        [ACHIEVEMENTTYPE.NomadBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Mesa)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Mesa)),
+        [ACHIEVEMENTTYPE.ForestryBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Roots)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Roots)),
+        [ACHIEVEMENTTYPE.WandererBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Swamp)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Swamp)),
+        [ACHIEVEMENTTYPE.VolcanologyBadge] = BadgeRule.OneOff(new BiomeOnMap(Biome.BiomeType.Volcano)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Volcano)),
 
         // One-off events tied to where their trigger is placed.
         // Action_ShowBinocularOverlay.TestLookAtSun requires the current biome to be the Mesa.
-        [ACHIEVEMENTTYPE.AstronomyBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Mesa)),
+        [ACHIEVEMENTTYPE.AstronomyBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Mesa)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Mesa)),
         // Scene placements read from the game's levels: every instance sits under these biomes' roots.
-        [ACHIEVEMENTTYPE.MegaentomologyBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Mesa)), // Antlion
-        [ACHIEVEMENTTYPE.DaredevilBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Mesa)), // ScoutCannonAchievementZone
-        [ACHIEVEMENTTYPE.WebSecurityBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Roots)), // Spider
-        [ACHIEVEMENTTYPE.BellringerBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Swamp)), // GhostFire bells
-        [ACHIEVEMENTTYPE.AnimalSerenadingBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Alpine, Biome.BiomeType.Mesa)), // Capybara
-        [ACHIEVEMENTTYPE.ArboristBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Tropics, Biome.BiomeType.Roots)), // GiantTreeAchievementZone
+        [ACHIEVEMENTTYPE.MegaentomologyBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Mesa)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Mesa)), // Antlion
+        [ACHIEVEMENTTYPE.DaredevilBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Mesa)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Mesa)), // ScoutCannonAchievementZone
+        [ACHIEVEMENTTYPE.WebSecurityBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Roots)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Roots)), // Spider
+        // GhostFire.CheckAchievement counts every lit bell of the map, whoever lit it, and grants the badge at
+        // GhostFire.ACHIEVEMENT_LIT_COUNT (v2.6.b).
+        [ACHIEVEMENTTYPE.BellringerBadge] = BadgeRule.Counted(new LitBellsTarget(GhostFire.ACHIEVEMENT_LIT_COUNT), new InBiome(Biome.BiomeType.Swamp)),
+        [ACHIEVEMENTTYPE.AnimalSerenadingBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Alpine, Biome.BiomeType.Mesa)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Alpine, Biome.BiomeType.Mesa)), // Capybara
+        [ACHIEVEMENTTYPE.ArboristBadge] = BadgeRule.OneOff(new InBiome(Biome.BiomeType.Tropics, Biome.BiomeType.Roots)).WithDetail(new BiomeAheadSource(Biome.BiomeType.Tropics, Biome.BiomeType.Roots)), // GiantTreeAchievementZone
 
         // One-off events with no place constraint the code proves: their trigger is an item or a
         // character that can show up anywhere (Resources prefabs), or the summit itself.

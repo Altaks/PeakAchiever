@@ -25,10 +25,18 @@ internal sealed class TornCards
         return tearing;
     }
 
-    /// <summary>The cards in column order: whole ones in pin order, then torn ones in the order they tore.</summary>
-    public static IReadOnlyList<TrackedBadge> Arrange(IReadOnlyList<TrackedBadge> tracked, IReadOnlyList<ACHIEVEMENTTYPE> tornOrder) =>
+    /// <summary>
+    /// The cards in column order: whole ones in pin order, then the folded earned ones in pin order, then
+    /// torn ones in the order they tore.
+    /// </summary>
+    public static IReadOnlyList<TrackedBadge> Arrange(
+        IReadOnlyList<TrackedBadge> tracked,
+        IReadOnlyList<ACHIEVEMENTTYPE> tornOrder,
+        IReadOnlyCollection<ACHIEVEMENTTYPE> folded
+    ) =>
         tracked
-            .Where(badge => !tornOrder.Contains(badge.Badge))
+            .Where(badge => !tornOrder.Contains(badge.Badge) && !folded.Contains(badge.Badge))
+            .Concat(tracked.Where(badge => folded.Contains(badge.Badge) && !tornOrder.Contains(badge.Badge)))
             .Concat(tornOrder.SelectMany(torn => tracked.Where(badge => badge.Badge == torn)))
             .ToArray();
 }

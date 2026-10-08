@@ -96,7 +96,7 @@ public class TornCardsTests
         ];
 
         // when: Balloon tore first, then Cooking
-        IReadOnlyList<TrackedBadge> column = TornCards.Arrange(tracked, [ACHIEVEMENTTYPE.BalloonBadge, ACHIEVEMENTTYPE.CookingBadge]);
+        IReadOnlyList<TrackedBadge> column = TornCards.Arrange(tracked, [ACHIEVEMENTTYPE.BalloonBadge, ACHIEVEMENTTYPE.CookingBadge], folded: []);
 
         // then
         Assert.Equal(
@@ -109,7 +109,7 @@ public class TornCardsTests
     public void A_torn_badge_no_longer_pinned_is_left_out()
     {
         // when
-        IReadOnlyList<TrackedBadge> column = TornCards.Arrange([Tracked(ACHIEVEMENTTYPE.PeakBadge, Earned)], [ACHIEVEMENTTYPE.CookingBadge]);
+        IReadOnlyList<TrackedBadge> column = TornCards.Arrange([Tracked(ACHIEVEMENTTYPE.PeakBadge, Earned)], [ACHIEVEMENTTYPE.CookingBadge], folded: []);
 
         // then
         Assert.Equal([ACHIEVEMENTTYPE.PeakBadge], column.Select(badge => badge.Badge));

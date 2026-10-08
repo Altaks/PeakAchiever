@@ -20,7 +20,8 @@ internal sealed class RunFacts
         IReadOnlyList<BiomeSplit> biomeSplits,
         IReadOnlyDictionary<Biome.BiomeType, float> biomeMedians,
         IReadOnlyCollection<ushort>? itemsOnMap,
-        bool runLost
+        bool runLost,
+        int litBells = 0
     )
     {
         RunValues = runValues;
@@ -35,6 +36,7 @@ internal sealed class RunFacts
         BiomeMedians = biomeMedians;
         ItemsOnMap = itemsOnMap;
         RunLost = runLost;
+        LitBells = litBells;
     }
 
     /// <summary>Run counters, the higher of the game's int and float tables for each key.</summary>
@@ -72,6 +74,9 @@ internal sealed class RunFacts
 
     /// <summary>True once the run has ended with nobody at the summit.</summary>
     public bool RunLost { get; }
+
+    /// <summary>The Gloom's belltowers lit so far, by anyone in the team.</summary>
+    public int LitBells { get; }
 
     public float RunValue(RUNBASEDVALUETYPE type) =>
         RunValues.TryGetValue(type, out float value) ? value : 0f;
