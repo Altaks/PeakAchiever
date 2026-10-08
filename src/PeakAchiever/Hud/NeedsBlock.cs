@@ -10,8 +10,9 @@ using UnityEngine.UI;
 namespace PeakAchiever.Hud;
 
 /// <summary>
-/// What a badge needs, across the card under its text: the needed items on the left ("Needs" or "One
-/// of"), the helpful ones on the right ("Helps"), each as the game's inventory icon with its count.
+/// What a badge needs, as dark tabs hung under the card's bottom edge and aligned right: one for the needed
+/// items ("Needs" or "One of"), one for the helpful ones ("Helps"), each item as the game's inventory icon
+/// with its count (signed-off sketch).
 /// </summary>
 internal sealed class NeedsBlock
 {
@@ -21,7 +22,16 @@ internal sealed class NeedsBlock
     private const float HeadFontSize = 10f;
     private const float HeadGap = 6f;
     private const float CountFontSize = 9.5f;
-    private const float ColumnGap = 10f;
+    private const float TabGap = 6f;
+    // The tabs sit this far in from the card's right edge, clear of its rounded corner and seam.
+    private const int TabInset = 14;
+    private const int TabPaddingX = 8;
+    private const int TabPaddingY = 5;
+    // Darker than the card, so the tabs read as their own pieces.
+    private static readonly Color TabBackground = new(14f / 255, 11f / 255, 9f / 255, 0.92f);
+
+    /// <summary>How far the tabs overlap the card's bottom edge.</summary>
+    public const float Overlap = 4f;
     private const float CountPadding = 2f;
     private static readonly Color TileBackground = new(HudStyle.Ink.r, HudStyle.Ink.g, HudStyle.Ink.b, 0.1f);
 
@@ -32,16 +42,21 @@ internal sealed class NeedsBlock
     {
         _style = style;
         Root = UiFactory.Create("Needs", parent);
-        HorizontalLayoutGroup columns = Root.AddComponent<HorizontalLayoutGroup>();
-        columns.spacing = ColumnGap;
-        columns.childControlWidth = true;
-        columns.childControlHeight = true;
-        columns.childForceExpandWidth = true;
-        columns.childForceExpandHeight = false;
+        HorizontalLayoutGroup tabs = Root.AddComponent<HorizontalLayoutGroup>();
+        tabs.spacing = TabGap;
+        tabs.padding = new RectOffset(0, TabInset, 0, 0);
+        tabs.childAlignment = TextAnchor.UpperRight;
+        tabs.childControlWidth = true;
+        tabs.childControlHeight = true;
+        tabs.childForceExpandWidth = false;
+        tabs.childForceExpandHeight = false;
         Root.SetActive(false);
     }
 
     public GameObject Root { get; }
+
+    /// <summary>True once the shown badge has at least one item the game knows.</summary>
+    public bool HasItems => Root.transform.childCount > 0 && Root.transform.Cast<Transform>().Any(tab => tab.gameObject.activeSelf);
 
     /// <summary>Built once per badge: the needs never change during a run.</summary>
     public void Show(ACHIEVEMENTTYPE badge)
@@ -49,8 +64,9 @@ internal sealed class NeedsBlock
         if (_shown == badge)
             return;
         _shown = badge;
+        // DestroyImmediate, not Destroy: HasItems reads the children in this same frame.
         for (int i = Root.transform.childCount - 1; i >= 0; i--)
-            Object.Destroy(Root.transform.GetChild(i).gameObject);
+            Object.DestroyImmediate(Root.transform.GetChild(i).gameObject);
         BadgeNeed? need = BadgeNeeds.For(badge);
         Root.SetActive(need != null);
         if (need == null)
@@ -74,15 +90,16 @@ internal sealed class NeedsBlock
         Plugin.Log.LogDebug($"{head} {string.Join(", ", found.Select(entry => $"{entry.Item.name} x{entry.Count}"))}");
         // The label and its icons on one line, the label centred on the icons. The longest list (Rule Zero,
         // six items) fits the card's width, so the row never needs to wrap.
-        GameObject column = UiFactory.Create("Column", Root.transform);
+        GameObject column = UiFactory.Create("Tab", Root.transform);
+        UiFactory.AddImage(column, _style.RoundedRect, TabBackground).type = Image.Type.Sliced;
         HorizontalLayoutGroup row = column.AddComponent<HorizontalLayoutGroup>();
+        row.padding = new RectOffset(TabPaddingX, TabPaddingX, TabPaddingY, TabPaddingY);
         row.spacing = HeadGap;
         row.childAlignment = TextAnchor.MiddleLeft;
         row.childControlWidth = true;
         row.childControlHeight = true;
         row.childForceExpandWidth = false;
         row.childForceExpandHeight = false;
-        column.AddComponent<LayoutElement>().flexibleWidth = 1f;
         TextMeshProUGUI label = UiFactory.AddText(column.transform, "Head", _style.StrongFont, HeadFontSize, HudStyle.InkSoft);
         label.text = head;
         label.textWrappingMode = TextWrappingModes.NoWrap;

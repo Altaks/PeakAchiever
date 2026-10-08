@@ -11,8 +11,8 @@ namespace PeakAchiever.Hud;
 
 /// <summary>
 /// One tracked badge on the HUD, a stitched card: the icon with its state mark beside the name, its chips,
-/// the condition and the status row; under them, across the whole card, what the badge needs. Folded to one
-/// line once earned or torn.
+/// the condition and the status row; hung under its bottom edge, dark tabs with what the badge needs.
+/// Folded to one line once earned or torn.
 /// </summary>
 internal sealed class BadgeCard
 {
@@ -95,19 +95,28 @@ internal sealed class BadgeCard
     public BadgeCard(Transform parent, HudStyle style)
     {
         _style = style;
+        // The card's body, then the needs tabs hung under it, overlapping its bottom edge a little.
         Root = UiFactory.Create("BadgeCard", parent);
-        UiFactory.AddImage(Root, style.RoundedRect, HudStyle.CardBackground).type = Image.Type.Sliced;
-        AddSeam(Root.transform, style);
-        _layout = Root.AddComponent<VerticalLayoutGroup>();
+        VerticalLayoutGroup hang = Root.AddComponent<VerticalLayoutGroup>();
+        hang.spacing = -NeedsBlock.Overlap;
+        hang.childControlWidth = true;
+        hang.childControlHeight = true;
+        hang.childForceExpandWidth = true;
+        hang.childForceExpandHeight = false;
+        UiFactory.SetPreferredSize(Root, Width, -1f);
+
+        GameObject body = UiFactory.Create("Body", Root.transform);
+        UiFactory.AddImage(body, style.RoundedRect, HudStyle.CardBackground).type = Image.Type.Sliced;
+        AddSeam(body.transform, style);
+        _layout = body.AddComponent<VerticalLayoutGroup>();
         _layout.padding = new RectOffset(Padding, Padding, Padding, Padding);
         _layout.spacing = SectionGap;
         _layout.childControlWidth = true;
         _layout.childControlHeight = true;
         _layout.childForceExpandWidth = true;
         _layout.childForceExpandHeight = false;
-        UiFactory.SetPreferredSize(Root, Width, -1f);
 
-        GameObject top = UiFactory.Create("Top", Root.transform);
+        GameObject top = UiFactory.Create("Top", body.transform);
         HorizontalLayoutGroup row = top.AddComponent<HorizontalLayoutGroup>();
         row.spacing = Gap;
         row.childAlignment = TextAnchor.UpperLeft;
@@ -225,25 +234,13 @@ internal sealed class BadgeCard
         _notOnMapLabel.text = ModText.Get(ModTextKey.ChecklistNotOnMap);
         _notOnMap = new ChecklistGrid(column.transform, "NotOnMap", style);
 
-        GameObject wide = UiFactory.Create("Wide", Root.transform);
-        VerticalLayoutGroup wideStack = wide.AddComponent<VerticalLayoutGroup>();
-        wideStack.spacing = SectionGap;
-        wideStack.childControlWidth = true;
-        wideStack.childControlHeight = true;
-        wideStack.childForceExpandWidth = true;
-        wideStack.childForceExpandHeight = false;
-        Wide = wide.transform;
-        _needs = new NeedsBlock(Wide, style);
-        wide.SetActive(false);
+        _needs = new NeedsBlock(Root.transform, style);
     }
 
     public GameObject Root { get; }
 
     /// <summary>The column under the icon, for what points at the badge's target.</summary>
     public Transform IconColumn { get; }
-
-    /// <summary>The section across the whole card, under the icon and the text.</summary>
-    public Transform Wide { get; }
 
     /// <param name="compact">One line: the icon, the name and the status word or reason only.</param>
     public void Show(BadgePresentation badge, TrackedBadge tracked, bool compact)
@@ -343,7 +340,7 @@ internal sealed class BadgeCard
         int paddingY = compact ? CompactPaddingY : Padding;
         _layout.padding = new RectOffset(Padding, Padding, paddingY, paddingY);
         _description.gameObject.SetActive(!compact);
-        Wide.gameObject.SetActive(!compact && Wide.Cast<Transform>().Any(child => child.gameObject.activeSelf));
+        _needs.Root.SetActive(!compact && _needs.HasItems);
     }
 
     /// <summary>
