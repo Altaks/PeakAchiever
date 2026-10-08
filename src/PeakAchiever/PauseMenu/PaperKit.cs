@@ -25,6 +25,10 @@ internal sealed class PaperKit
     public const float Gap = 6f;
     private const float ColumnGap = 18f;
     private const float ButtonGap = 18f;
+    private const float ScrollSensitivity = 30f;
+    // The tallest a panel's list gets: with the selector, title, paddings and buttons around it, the
+    // panel stays inside the 1080 px canvas.
+    public const float MaxListHeight = 520f;
     // The mod's buttons in the page's Back column all carry this name prefix.
     private const string ModButtonPrefix = "PeakAchiever.";
     private const float DotsHeight = 7f;
@@ -243,6 +247,54 @@ internal sealed class PaperKit
             button.anchoredPosition = new Vector2(x + button.rect.width * button.pivot.x, back.anchoredPosition.y);
             x += button.rect.width + ButtonGap;
         }
+    }
+
+    /// <summary>
+    /// A list that scrolls with the wheel inside the sheet, its rows stacked in the returned content.
+    /// The viewport is <paramref name="height"/> tall; <see cref="FitScrollList"/> shrinks it to shorter rows.
+    /// </summary>
+    public static Transform ScrollList(Transform sheet, string name, float height)
+    {
+        GameObject viewport = UiFactory.Create(name, sheet);
+        UiFactory.SetPreferredSize(viewport, -1f, height);
+        viewport.AddComponent<RectMask2D>();
+        // A clear image, so the wheel over a gap between rows still reaches the scroll.
+        Image catcher = viewport.AddComponent<Image>();
+        catcher.color = Color.clear;
+        GameObject content = UiFactory.Create("Content", viewport.transform);
+        var contentRect = (RectTransform)content.transform;
+        contentRect.anchorMin = new Vector2(0f, 1f);
+        contentRect.anchorMax = new Vector2(1f, 1f);
+        contentRect.pivot = new Vector2(0.5f, 1f);
+        contentRect.offsetMin = Vector2.zero;
+        contentRect.offsetMax = Vector2.zero;
+        VerticalLayoutGroup stack = content.AddComponent<VerticalLayoutGroup>();
+        stack.spacing = Gap;
+        stack.childControlWidth = true;
+        stack.childControlHeight = true;
+        stack.childForceExpandWidth = true;
+        stack.childForceExpandHeight = false;
+        content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        ScrollRect scroll = viewport.AddComponent<ScrollRect>();
+        scroll.viewport = (RectTransform)viewport.transform;
+        scroll.content = contentRect;
+        scroll.horizontal = false;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = ScrollSensitivity;
+        return content.transform;
+    }
+
+    /// <summary>
+    /// Sizes a <see cref="ScrollList"/> to its rows, never past <paramref name="maxHeight"/>, and scrolls it
+    /// back to the top. Call it once the rows are in.
+    /// </summary>
+    public static void FitScrollList(Transform content, float maxHeight)
+    {
+        var contentRect = (RectTransform)content;
+        LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+        float rows = LayoutUtility.GetPreferredHeight(contentRect);
+        UiFactory.SetPreferredSize(content.parent.gameObject, -1f, Mathf.Min(rows, maxHeight));
+        contentRect.anchoredPosition = Vector2.zero;
     }
 
     /// <summary>A dotted rule, the badge popup's own separator.</summary>

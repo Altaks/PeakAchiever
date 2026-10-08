@@ -96,13 +96,8 @@ internal sealed class StatsPanel
         _previous = RibbonHint.AttachTo(previous, _root.transform, _kit.Paper, _kit.Font, _kit.FontMaterial, PaperKit.PaperInk);
         _next = RibbonHint.AttachTo(next, _root.transform, _kit.Paper, _kit.Font, _kit.FontMaterial, PaperKit.PaperInk);
 
-        _rows = UiFactory.Create("Rows", sheet).transform;
-        VerticalLayoutGroup rowStack = _rows.gameObject.AddComponent<VerticalLayoutGroup>();
-        rowStack.spacing = PaperKit.Gap;
-        rowStack.childControlWidth = true;
-        rowStack.childControlHeight = true;
-        rowStack.childForceExpandWidth = true;
-        rowStack.childForceExpandHeight = false;
+        // Eight map layouts in 2.6.b give as many total rows: past the cap, the rows scroll.
+        _rows = PaperKit.ScrollList(sheet, "Rows", PaperKit.MaxListHeight);
 
         _kit.Title(sheet, ModText.Get(ModTextKey.StatsTitle));
 
@@ -170,8 +165,12 @@ internal sealed class StatsPanel
     private void Fill()
     {
         FillRows();
-        // The rows were just rebuilt: size the sheet to them now, not a frame later.
-        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)_rows.parent.parent);
+        // The rows were just rebuilt: size the sheet to them now, not a frame later. Widths first, since
+        // the rows' heights depend on them, then the list's height, then the sheet around it.
+        var column = (RectTransform)_root!.transform.GetChild(0);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(column);
+        PaperKit.FitScrollList(_rows, PaperKit.MaxListHeight);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(column);
     }
 
     private void FillRows()

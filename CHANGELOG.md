@@ -12,6 +12,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The Scout Effigy no longer carries the Leave No Trace red cross in the inventory: building it revives a
   scout and places nothing that counts.
 - In the airport, today's map is worked out over the game's scene list, as the check-in kiosk does.
+- The statistics panel no longer runs off the screen: past 520 px its rows scroll with the mouse wheel,
+  and a short ascent still gets a short panel. PEAK 2.6.b has eight map layouts, one total row each.
 
 ### Changed
 

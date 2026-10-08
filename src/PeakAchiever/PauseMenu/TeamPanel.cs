@@ -21,8 +21,6 @@ internal sealed class TeamPanel
 {
     // Sizes in reference pixels of the 1920x1080 canvas.
     private const float SheetWidth = 820f;
-    private const float ListHeight = 520f;
-    private const float ScrollSensitivity = 30f;
     private const float IconSize = 44f;
     private const float PinSize = 36f;
     private const float PinGlyphSize = 18f;
@@ -111,33 +109,8 @@ internal sealed class TeamPanel
         Transform sheet = _kit.Sheet(column, SheetWidth);
         _summary = _kit.Text(sheet, "Summary", SummaryFontSize, PaperKit.PaperInk, TextAlignmentOptions.Center);
 
-        // The list scrolls within a fixed height; the wheel moves it.
-        GameObject viewport = UiFactory.Create("List", sheet);
-        UiFactory.SetPreferredSize(viewport, -1f, ListHeight);
-        viewport.AddComponent<RectMask2D>();
-        Image catcher = viewport.AddComponent<Image>();
-        catcher.color = Color.clear;
-        GameObject content = UiFactory.Create("Content", viewport.transform);
-        var contentRect = (RectTransform)content.transform;
-        contentRect.anchorMin = new Vector2(0f, 1f);
-        contentRect.anchorMax = new Vector2(1f, 1f);
-        contentRect.pivot = new Vector2(0.5f, 1f);
-        contentRect.offsetMin = Vector2.zero;
-        contentRect.offsetMax = Vector2.zero;
-        VerticalLayoutGroup stack = content.AddComponent<VerticalLayoutGroup>();
-        stack.spacing = PaperKit.Gap;
-        stack.childControlWidth = true;
-        stack.childControlHeight = true;
-        stack.childForceExpandWidth = true;
-        stack.childForceExpandHeight = false;
-        content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        ScrollRect scroll = viewport.AddComponent<ScrollRect>();
-        scroll.viewport = (RectTransform)viewport.transform;
-        scroll.content = contentRect;
-        scroll.horizontal = false;
-        scroll.movementType = ScrollRect.MovementType.Clamped;
-        scroll.scrollSensitivity = ScrollSensitivity;
-        _list = content.transform;
+        // A fixed height, so the panel does not jump as scouts join and earn badges.
+        _list = PaperKit.ScrollList(sheet, "List", PaperKit.MaxListHeight);
 
         _unknown = _kit.Text(sheet, "WithoutTheMod", SubFontSize, PaperKit.PaperInk, TextAlignmentOptions.Left);
         _kit.Title(sheet, ModText.Get(ModTextKey.TeamTitle));
