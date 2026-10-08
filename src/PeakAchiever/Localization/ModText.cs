@@ -7,7 +7,6 @@ internal enum ModTextKey
     StatusAttainable,
     StatusHolding,
     StatusAchieved,
-    ScopeLifetime,
     LimitRate,
     Eta,
     SecretPlaceholder,
@@ -472,23 +471,6 @@ internal static class ModText
             korean: "PEAKACHIEVER: 화면 표시",
             polish: "PEAKACHIEVER: ZNACZNIKI NA EKRANIE",
             turkish: "PEAKACHIEVER: EKRAN İŞARETÇİLERİ"
-        ),
-        [ModTextKey.ScopeLifetime] = Row(
-            english: "LIFETIME",
-            french: "À VIE",
-            italian: "COMPLESSIVO",
-            german: "GESAMT",
-            spanishSpain: "ACUMULADO",
-            spanishLatam: "ACUMULADO",
-            brPortuguese: "ACUMULADO",
-            russian: "ЗА ВСЁ ВРЕМЯ",
-            ukrainian: "ЗА ВЕСЬ ЧАС",
-            simplifiedChinese: "累计",
-            traditionalChinese: "累計",
-            japanese: "累計",
-            korean: "누적",
-            polish: "ŁĄCZNIE",
-            turkish: "TOPLAM"
         ),
         [ModTextKey.Eta] = Row(
             english: "ETA {0}",
