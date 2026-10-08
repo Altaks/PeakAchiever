@@ -8,7 +8,7 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
 - `src/PeakAchiever/Tracking/`: pure rules, no Unity calls. `BadgeRules.cs` is the single table of how
   each badge is judged; `RunFacts` is the snapshot the rules read.
 - `Game/`: adapters reading the game (`RunFactsReader`, `BadgeCatalog`, `PinnedBadgeTracker`) and the
-  refresh hooks. `Hud/`, `PauseMenu/`, `Inventory/`, `Controls/`: UI plus their Harmony hooks.
+  refresh hooks. `Hud/`, `PauseMenu/`, `Inventory/`, `Controls/`, `Settings/`: UI plus their Harmony hooks.
 - `Localization/ModText.cs`: every mod string, one row per key, English then French. Badge names and
   descriptions come from the game's own table.
 
@@ -30,6 +30,9 @@ earned. User-facing behaviour is in `README.md`; this file holds what the code a
   component, give its `Button` a fresh `onClick` (that also drops the inspector's listeners), and insert it
   in the menu's own layout. Its label goes through `GameTextTable`, so its `LocalizedText` keeps
   translating. `UiFactory` widgets are only for the mod's own surfaces (tracker cards, toast, stats panel).
+- The Settings menu is the exception: `SharedSettingsMenu.ShowSettings` rebuilds its rows on every tab switch,
+  so a clone would vanish. Register a `Zorro.Settings` setting implementing `IExposedSetting` with
+  `SettingsHandler.AddSetting` instead (see `Settings/PinLimitSetting.cs`); the game builds the row itself.
 - Unity objects override the null check: never `?.`, `??` or `is { }` on them, compare with `== null`.
 
 ## Build and tests
